@@ -1,0 +1,12 @@
+{
+    "Name": "kPM",
+    "Description": "Promod for competitive Battlefield 3 experience.",
+    "Authors": [ "kiwidog", "KVN" ],
+    "Tags": [ "isnipe" ],
+    "Version": "0.7.0",
+    "HasVeniceEXT": true,
+    "HasWebUI": true,
+    "Dependencies": {
+        "veniceext": "^1.0.0"
+    }
+}
