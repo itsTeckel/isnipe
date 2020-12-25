@@ -10,17 +10,19 @@ interface Props {
 const ScoreboardPlayer: React.FC<Props> = ({ player, gameState }) => {
     return (
         <>
-            <div className={"playerHolder " + (player.isDead ? 'isDead' : 'isAlive')}>
-                <div className="playerPing">{player.ping??0}</div>
+            {player.name &&
+                <div className={"playerHolder " + (player.isDead ? 'isDead' : 'isAlive')}>
+                    <div className="playerPing">{player.ping??0}</div>
 
-                {(gameState === GameStates.Warmup) &&
-                    <div className={"playerReady " + (player.isReady ? 'ready' : 'wait')}>{player.isReady ? 'Ready' : 'Waiting'}</div>
-                }
+                    {(gameState === GameStates.Warmup) &&
+                        <div className={"playerReady " + (player.isReady ? 'ready' : 'wait')}>{player.isReady ? 'Ready' : 'Waiting'}</div>
+                    }
 
-                <div className="playerName">{player.name??' - '}</div>
-                <div className="playerKill">{player.kill??' - '}</div>
-                <div className="playerDeath">{player.death??' - '}</div>
-            </div>
+                    <div className="playerName">{player.name??' - '}</div>
+                    <div className="playerKill">{player.kill??' - '}</div>
+                    <div className="playerDeath">{player.death??' - '}</div>
+                </div>
+            }
         </>
     );
 };

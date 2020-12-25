@@ -14,4 +14,5 @@ export interface Player {
 export interface Players {
     [Teams.Attackers]: Player[],
     [Teams.Defenders]: Player[],
+    [Teams.None]: Player[],
 }

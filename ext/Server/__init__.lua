@@ -67,13 +67,10 @@ function kPMServer:RegisterEvents()
     -- Damage hooks
     self.m_SoldierDamageHook = Hooks:Install("Soldier:Damage", 1, self, self.OnSoldierDamage)
 
-    -- Events from the client
-    self.m_ToggleRupEvent = NetEvents:Subscribe("kPM:ToggleRup", self, self.OnToggleRup)
-    self.m_TogglePlantEvent = NetEvents:Subscribe("kPM:TogglePlant", self, self.OnTogglePlant)
-
     self.m_PlaySoundPlantingEvent = NetEvents:Subscribe("kPM:PlaySoundPlanting", self, self.OnPlaySoundPlanting)
 
     -- TODO: This is a debug only function
+    self.m_ToggleRupEvent = NetEvents:Subscribe("kPM:ToggleRup", self, self.OnToggleRup)
     self.m_ForceToggleRupEvent = NetEvents:Subscribe("kPM:ForceToggleRup", self, self.OnForceToggleRup)
     self.m_PlayerConnectedEvent = NetEvents:Subscribe("kPM:PlayerConnected", self, self.OnPlayerConnected)
     self.m_PlayerSetSelectedTeamEvent = NetEvents:Subscribe("kPM:PlayerSetSelectedTeam", self, self.OnPlayerSetSelectedTeam)
@@ -147,27 +144,7 @@ function kPMServer:OnPlayerRequestJoin(p_Hook, p_JoinMode, p_AccountGuid, p_Play
     end
 
     -- Handle player joining
-
-    -- If we are in the warmup gamestate or the endgame gamestate then allow players that aren't on the whitelist to join
-    -- On public gametype everyone can join at any time
-    if kPMConfig.GameType == GameTypes.Public or self.m_GameState == GameStates.Warmup or self.m_GameState == GameStates.None then
-        p_Hook:Return(true)
-        return
-    end
-
-    for l_Index, l_Guid in ipairs(self.m_AllowedGuids) do
-        -- Check if the guid is on the allow list
-        if l_Guid == p_AccountGuid then
-            -- Allow for reconnects if a player disconnects
-            p_Hook:Return(true)
-            return
-        end
-    end
-
-    -- This means that we were not in warmup, endgame, or no gamestate
-    -- And a player tried to join a match in progress that wasn't there at the beginning
-
-    p_Hook:Return(false)
+    p_Hook:Return(true)
 end
 
 -- This function takes a snapshot of all players in the server and adds them to the allow list
@@ -221,6 +198,9 @@ function kPMServer:OnPlayerConnected(p_Player)
 
     -- Send out the gametype if he connects or reconnects
     NetEvents:SendTo("kPM:GameTypeChanged", p_Player, kPMConfig.GameType)
+
+    -- Send out the teams if he connects or reconnects
+    NetEvents:SendTo("kPM:UpdateTeams", p_Player, self.m_Attackers:GetTeamId(), self.m_Defenders:GetTeamId())
 end
 
 function kPMServer:OnPlayerLeft(p_Player)
@@ -297,7 +277,7 @@ function kPMServer:OnPlayerSetSelectedKit(p_Player, p_Data)
     
     self.m_LoadoutManager:SetPlayerLoadout(p_Player, l_Data)
 
-    if self.m_GameState == GameStates.Warmup or self.m_GameState == GameStates.None or self.m_GameState == GameStates.Strat then
+    --if self.m_GameState == GameStates.Warmup or self.m_GameState == GameStates.None or self.m_GameState == GameStates.Strat then
         -- If the current gamestate is Warmup or None we can switch kit instantly
         local l_SoldierBlueprint = ResourceManager:SearchForDataContainer('Characters/Soldiers/MpSoldier')
 
@@ -313,7 +293,7 @@ function kPMServer:OnPlayerSetSelectedKit(p_Player, p_Data)
             false,
             self.m_LoadoutManager:GetPlayerLoadout(p_Player)
         )
-    end
+    --end
 end
 
 function kPMServer:OnPlayerFindBestSquad(p_Hook, p_Player)
@@ -342,17 +322,6 @@ function kPMServer:OnSoldierDamage(p_Hook, p_Soldier, p_Info, p_GiverInfo)
 
     if p_Info == nil then
         return
-    end
-
-    -- TODO: Fixme
-    -- If we are in warmup, then disable damage of all kind
-    if self.m_GameState == GameStates.None or self.m_GameState == GameStates.Warmup then
-        if p_GiverInfo.giver == nil or p_GiverInfo.damageType == DamageType.Suicide then
-            return
-        end
-
-        p_Info.damage = 0.0
-        p_Hook:Pass(p_Soldier, p_Info, p_GiverInfo)
     end
 end
 
@@ -481,13 +450,18 @@ function kPMServer:ChangeGameState(p_GameState)
     NetEvents:Broadcast("kPM:GameStateChanged", s_OldGameState, p_GameState)
 end
 
-function kPMServer:SetClientTimer(p_Time)
+function kPMServer:SetClientTimer(p_Time, p_Player)
     if p_Time == nil then
         print("err: no time to send to the clients")
         return
     end
 
     NetEvents:Broadcast("kPM:StartWebUITimer", p_Time)
+    if p_Player ~= nil then
+        NetEvents:SendTo("kPM:StartWebUITimer", p_Player, p_Time)
+    else
+        NetEvents:Broadcast("kPM:StartWebUITimer", p_Time)
+    end
 end
 
 function kPMServer:SetRoundEndInfoBox(p_WinnerTeamId)

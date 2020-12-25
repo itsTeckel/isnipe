@@ -40,14 +40,7 @@ const Scoreboard: React.FC<Props> = ({ showScoreboard, teamAttackersScore, teamD
         <>
             {showScoreboard &&
                 <div id="inGameScoreboard" className="fadeInBottom">
-                    <ScoreboardTeam team={Teams.Attackers} score={teamAttackersScore} players={players[Teams.Attackers]} gameState={gameState} />
-                    <div className="roundCounter">
-                        Round {round??0} / {maxRounds??0}
-                        {/*<div className="roundList">
-                            {rounds}
-                        </div>*/}
-                    </div>
-                    <ScoreboardTeam team={Teams.Defenders} score={teamDefendersScore} players={players[Teams.Defenders]} gameState={gameState} />
+                    <ScoreboardTeam team={Teams.None} score={teamAttackersScore} players={players[Teams.None]} gameState={gameState} />
                 </div>
             }
         </>

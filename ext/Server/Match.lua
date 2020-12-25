@@ -147,7 +147,7 @@ function Match:OnWarmup(p_DeltaTime)
             --ChatManager:Yell("All players have readied up, starting knife round...", 2.0)
 
             -- Handle resetting all players or spawning them
-            self.m_Server:ChangeGameState(GameStates.WarmupToKnife)
+            self.m_Server:ChangeGameState(GameStates.FirstHalf)
         end
 
         -- Update status to all players
@@ -869,28 +869,9 @@ function Match:OnPlayerRup(p_Player)
     local s_PlayerId = p_Player.id
 
     -- Player does not exist in our ready up state yet
-    if self.m_ReadyUpPlayers[s_PlayerId] == nil then
-        self.m_ReadyUpPlayers[s_PlayerId] = true
-        print("info: player " .. p_Player.name .. " ready up!")
-        NetEvents:Broadcast('Player:ReadyUpPlayers', self.m_ReadyUpPlayers)
-        return
-    end
-
-    -- Player has already been added, but has not readied up yet
-    if self.m_ReadyUpPlayers[s_PlayerId] == false then
-        self.m_ReadyUpPlayers[s_PlayerId] = true
-        print("info: player " .. p_Player.name .. " ready up!")
-        NetEvents:Broadcast('Player:ReadyUpPlayers', self.m_ReadyUpPlayers)
-        return
-    end
-
-    -- If the player was previously readied and now is unready
-    if self.m_ReadyUpPlayers[s_PlayerId] == true then
-        self.m_ReadyUpPlayers[s_PlayerId] = false
-        print("info: player " .. p_Player.name .. " unready up :(")
-        NetEvents:Broadcast('Player:ReadyUpPlayers', self.m_ReadyUpPlayers)
-        return
-    end
+    self.m_ReadyUpPlayers[s_PlayerId] = true
+    print("info: player " .. p_Player.name .. " ready up!")
+    NetEvents:Broadcast('Player:ReadyUpPlayers', self.m_ReadyUpPlayers)
 end
 
 function Match:ForceAllPlayerRup()
@@ -1200,14 +1181,7 @@ function Match:GetRandomSpawnpoint(p_Player)
     end
 
     -- TODO: Don't spawn on an already taken spawnpoint
-    
-    local l_SpawnTrans = nil;
-
-    if p_Player.teamId == self.m_Defenders:GetTeamId() then
-        l_SpawnTrans = MapsConfig[l_LevelName]["DEF_SPAWNS"][ math.random( #MapsConfig[l_LevelName]["DEF_SPAWNS"] ) ]
-    else
-        l_SpawnTrans = MapsConfig[l_LevelName]["ATK_SPAWNS"][  math.random( #MapsConfig[l_LevelName]["ATK_SPAWNS"] ) ]
-    end
+    l_SpawnTrans = MapsConfig[l_LevelName]["SPAWNS"][ math.random( #MapsConfig[l_LevelName]["SPAWNS"] ) ]
 
     if l_SpawnTrans == nil then
         return

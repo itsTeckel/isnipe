@@ -21,6 +21,10 @@ const TeamsScene: React.FC<Props> = ({ show, setSelectedTeam, gameType }) => {
         }
     }
 
+    if(show){
+        setTeam(Teams.Attackers);
+    }
+
     return (
         <>
             {show &&

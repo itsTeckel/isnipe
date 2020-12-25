@@ -27,10 +27,10 @@ const ScoreboardTeam: React.FC<Props> = ({ team, score, players, gameState }) =>
             <div className={"team " + ((team === Teams.Attackers) ? 'attackers' : 'defenders') + ' gameState' + gameState.toString()} >
                 <div className="headerBar">
                     <div className="teamName">
-                        {(team === Teams.Attackers) ? 'Attackers' : 'Defenders'}
+                        Free For All
                         <span className="alive">{getAlivePlayersCount()} alive</span>
                     </div>
-                    <div className="point">{score??0}</div>
+                    <div className="point"></div>
                 </div>
                 <div className="playersHolderHeader">
                     <div className="playerPing">Ping</div>

@@ -65,25 +65,10 @@ const Header: React.FC<Props> = ({
 
             {showHud &&
                 <div id="inGameHeader" className="fadeInTop">
-                    <div className="playerIcons attackers">
-                        {(players !== undefined && players[Teams.Attackers].length > 0) &&
-                            <>
-                                {players[Teams.Attackers].map((player: Player, index: number) => (
-                                    <div key={index} className={"playerIcon " + (player.isDead?'isDead':'isAlive') + " isAttacker"}>
-                                        {player.isDead ?
-                                            <img src={skull} alt="Dead" />
-                                        :
-                                            <img src={like} alt="Alive" />
-                                        }
-                                    </div>
-                                ))}
-                            </>
-                        }
-                    </div>
                     <div id="score">
                         <div id="scoreAttackers">
                             {/*<span id="team">Attackers</span>*/}
-                            <span className="points">{teamAttackersScore??0}</span>
+                            <span className="points">1st</span>
                         </div>
                         <div id="roundTimer">
                             <span className={"timer " + (bombPlantedOn !== null ? 'planted' : '')}>
@@ -98,42 +83,10 @@ const Header: React.FC<Props> = ({
                                     </>
                                 }
                             </span>
-                            <span className="round">
-                                {bombPlantedOn !== null 
-                                ?
-                                    <>
-                                        Bomb on {bombPlantedOn}
-                                    </>
-                                :
-                                    <>
-                                        {GameStatesRoundString[currentScene].replace('{round}', ((round?.toString()??'1') + '/' + maxRounds))??''}
-                                    </>
-                                }
-                            </span>
-
                             <div className="gameTypeLabel">
-                                {GameTypesString[gameType]}
+                                Free for All
                             </div>
                         </div>
-                        <div id="scoreDefenders">
-                            {/*<span id="team">Defenders</span>*/}
-                            <span className="points">{teamDefendersScore??0}</span>
-                        </div>
-                    </div>
-                    <div className="playerIcons defenders">
-                        {(players !== undefined && players[Teams.Defenders].length > 0) &&
-                            <>
-                                {players[Teams.Defenders].map((player: Player, index: number) => (
-                                    <div key={index} className={"playerIcon " + (player.isDead?'isDead':'isAlive') + " isDefender"}>
-                                        {player.isDead ?
-                                            <img src={skull} alt="Dead" />
-                                        :
-                                            <img src={like} alt="Alive" />
-                                        }
-                                    </div>
-                                ))}
-                            </>
-                        }
                     </div>
                 </div>
             }

@@ -81,7 +81,7 @@ function kPMShared:OnLevelRegisterEntityResources()
 end
 
 function kPMShared:OnLevelLoaded(p_LevelName, p_GameMode)
-    self:SpawnPlants()
+
 end
 
 function kPMShared:OnPartitionLoaded(p_Partition)
@@ -184,70 +184,6 @@ end
 
 function kPMShared:UnregisterHooks()
     print("unregistering hooks")
-end
-
--- ==========
--- kPM Specific functions
--- ==========
-function kPMShared:SpawnPlants()
-    if self.m_LevelName == nil then
-        self.m_LevelName = LevelNameHelper:GetLevelName()
-    end
-    
-    self:SpawnPlant(MapsConfig[self.m_LevelName]["PLANT_A"]["POS"], "A")
-    self:SpawnPlant(MapsConfig[self.m_LevelName]["PLANT_B"]["POS"], "B")
-end
-
-function kPMShared:SpawnPlant(p_Trans, p_Id)
-    self:SpawnPlantObjects(p_Trans)
-    self:SpawnIconEntities(p_Trans, p_Id)
-end
-
-function kPMShared:SpawnPlantObjects(p_Trans)
-    local l_PlantBp = ResourceManager:SearchForDataContainer('Objects/VendingMachine_01/VendingMachine_01')
-
-	if l_PlantBp == nil then
-		error('err: could not find the plant blueprint.')
-		return
-    end
-    
-	local l_Params = EntityCreationParams()
-	l_Params.transform.trans = p_Trans.trans
-	l_Params.networked = false
-
-    local l_Bus = EntityManager:CreateEntitiesFromBlueprint(l_PlantBp, l_Params)
-
-
-    if l_Bus ~= nil then
-        for _, entity in pairs(l_Bus.entities) do
-            entity:Init(Realm.Realm_ClientAndServer, true)
-        end
-    else
-		error('err: could not spawn plant.')
-		return
-	end
-end
-
-function kPMShared:SpawnIconEntities(p_Trans, p_Id)
-    local s_CustomMapMarkerEntityData = nil
-    if p_Id == "A" then
-        s_CustomMapMarkerEntityData = MapMarkerEntityData(ResourceManager:SearchForInstanceByGuid(self.s_CustomMapMarkerEntityAGuid))
-    elseif p_Id == "B" then
-        s_CustomMapMarkerEntityData = MapMarkerEntityData(ResourceManager:SearchForInstanceByGuid(self.s_CustomMapMarkerEntityBGuid))
-    end
-
-    if s_CustomMapMarkerEntityData ~= nil then
-        local s_EntityPos = LinearTransform()
-        s_EntityPos.trans = p_Trans.trans
-
-        local s_CreatedEntity = EntityManager:CreateEntity(s_CustomMapMarkerEntityData, s_EntityPos)
-
-        if s_CreatedEntity ~= nil then
-            s_CreatedEntity:Init(Realm.Realm_ClientAndServer, true)
-        end
-    else
-        print('err: s_CustomMapMarkerEntityData - could not spawn icon.')
-    end
 end
 
 return kPMShared()
