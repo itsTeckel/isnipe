@@ -204,13 +204,13 @@ const App: React.FC = () => {
     });
 
     const [clientPlayer, setClientPlayer] = useState<Player>({
-        id: 0,
+        id: -1,
         name: '',
         ping: 0,
         kill: 0,
         death: 0,
         isDead: false,
-        place: 0,
+        index: 0,
         team: Teams.All,
     });
 
@@ -233,7 +233,7 @@ const App: React.FC = () => {
                 kill: 18,
                 death: 5,
                 isDead: (Math.random() < 0.5),
-                place: (index + 1),
+                index: index,
                 team: Teams.None,
             });
         }

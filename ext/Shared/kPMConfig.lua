@@ -54,13 +54,13 @@ kPMConfig =
     MaxTransititionTime = 5.0,
 
     -- Round time (default: 10 minutes)
-    MaxRoundTime = 240.0,
+    MaxRoundTime = 610.0,
 
     -- Game end time (default: 20 sec)
-    MaxEndgameTime = 20.0,
+    MaxEndgameTime = 10.0,
 
     -- Squad size
-    SquadSize = 24,
+    SquadSize = 1,
 
     -- Default gametype is GameTypes.Public
     GameType = GameTypes.Public,

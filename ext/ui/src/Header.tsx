@@ -26,7 +26,10 @@ const Header: React.FC<Props> = ({
         start();
         reset();
     }
-    var position = clientPlayer["place"] == 0 ? "-" : window.stringifyNumber(clientPlayer["place"]);
+    var position = "-";
+    if(clientPlayer["id"] != -1) {
+        position = window.stringifyNumber(clientPlayer["index"]);
+    }
 
     const { value, controls: { setTime, reset, start }} = useTimer({ initialTime: 0, direction: "backward", startImmediately: false });
 
@@ -48,6 +51,8 @@ const Header: React.FC<Props> = ({
 
             {showHud &&
                 <div id="inGameHeader" className="fadeInTop">
+                    <div className="playerIcons attackers">
+                    </div>
                     <div id="score">
                         <div id="scoreAttackers">
                             <span className="points">{position}</span>
@@ -69,6 +74,11 @@ const Header: React.FC<Props> = ({
                                 Free for All
                             </div>
                         </div>
+                        <div id="scoreDefenders">
+                            <span className="points">{clientPlayer.kill} kills</span>
+                        </div>
+                    </div>
+                    <div className="playerIcons defenders">
                     </div>
                 </div>
             }

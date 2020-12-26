@@ -351,7 +351,7 @@ function kPMClient:OnUIInputConceptEvent(p_Hook, p_EventType, p_Action)
             if p_EventType == UIInputActionEventType.UIInputActionEventType_Pressed then
                 if not self.m_ScoreboardActive then
                     self.m_ScoreboardActive = true
-                    self:OnUpdateScoreboard(s_Player)
+                    self:OnUpdateScoreboard()
                     WebUI:ExecuteJS("OpenCloseScoreboard(" .. string.format('%s', true) .. ");")
                 end
             else
@@ -416,10 +416,7 @@ end
 function kPMClient:OnEngineUpdate(p_DeltaTime, p_SimulationDeltaTime)
     if self.m_TabHeldTime >= 3.0 then
         if self.m_ScoreboardActive then
-            local s_Player = PlayerManager:GetLocalPlayer()
-            if s_Player ~= nil then
-                self:OnUpdateScoreboard(s_Player)
-            end
+            self:OnUpdateScoreboard()
         end
         self.m_TabHeldTime = 0.0
     end
@@ -515,36 +512,14 @@ function kPMClient:OnUpdateTeams(p_AttackersTeamId, p_DefendersTeamId)
     end
 end
 
-function kPMClient:OnUpdateScoreboard(p_Player)
+function kPMClient:OnUpdateScoreboard()   
+    print("OnUpdateScoreboard")
+
+    local l_PlayerList = PlayerManager:GetPlayers()
+    local p_Player = PlayerManager:GetLocalPlayer()
     if p_Player == nil then
         return
     end
-    
-    print("OnUpdateScoreboard")
-
-    local l_Ping = "0"
-    if self.m_PingTable[p_Player.id] ~= nil and self.m_PingTable[p_Player.id] >= 0 and self.m_PingTable[p_Player.id] < 999 then
-        l_Ping = self.m_PingTable[p_Player.id]
-    end
-
-    local l_Ready = false
-    if self.m_PlayerReadyUpPlayersTable[p_Player.id] ~= nil then
-        l_Ready = self.m_PlayerReadyUpPlayersTable[p_Player.id]
-    end
-
-    local l_PlayerClient = {
-        ["id"] = p_Player.id,
-        ["name"] = p_Player.name,
-        ["ping"] = l_Ping,
-        ["kill"] = p_Player.kills,
-        ["death"] = p_Player.deaths,
-        ["isDead"] = not p_Player.alive,
-        ["place"] = 0,
-        ["team"] = p_Player.teamId,
-    }
-    local l_PlayerClientPlace = 0
-
-    local l_PlayerList = PlayerManager:GetPlayers()
 
     table.sort(l_PlayerList, function(a, b) 
 		return a.kills > b.kills
@@ -553,13 +528,14 @@ function kPMClient:OnUpdateScoreboard(p_Player)
     local l_PlayersObject = {}
     l_PlayersObject["all"] = {}
     
+    local l_PlayerClientIndex = 0
     for index, l_Player in pairs(l_PlayerList) do
 		local l_Ping = "0"
 		if self.m_PingTable[l_Player.id] ~= nil and self.m_PingTable[l_Player.id] >= 0 and self.m_PingTable[l_Player.id] < 999 then
 			l_Ping = self.m_PingTable[l_Player.id]
         end
 
-        if l_Player.id == p_Player.id then
+        if l_Player.name == p_Player.name then
             l_PlayerClientIndex = index
         end
         
@@ -570,11 +546,23 @@ function kPMClient:OnUpdateScoreboard(p_Player)
             ["kill"] = l_Player.kills,
             ["death"] = l_Player.deaths,
             ["isDead"] = not l_Player.alive,
-            ["place"] = index,
+            ["index"] = index,
             ["team"] = l_Player.teamId,
         })
     end
-    l_PlayerClient["place"] = l_PlayerClientPlace
+
+    local l_PlayerClient = {
+        ["id"] = p_Player.id,
+        ["name"] = p_Player.name,
+        ["ping"] = l_Ping,
+        ["kill"] = p_Player.kills,
+        ["death"] = p_Player.deaths,
+        ["isDead"] = not p_Player.alive,
+        ["index"] = l_PlayerClientIndex,
+        ["team"] = p_Player.teamId,
+    }
+
+    print(json.encode(l_PlayerClient))
 
     WebUI:ExecuteJS(string.format("UpdatePlayers(%s, %s);", json.encode(l_PlayersObject), json.encode(l_PlayerClient)))
 end
@@ -861,7 +849,7 @@ function kPMClient:OnPlayerRespawn(p_Player)
         return
     end
 
-    self:OnUpdateScoreboard(s_Player)
+    self:OnUpdateScoreboard()
 
     if p_Player.name == s_Player.name then
         --self.m_SpecCam:Disable()
