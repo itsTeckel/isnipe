@@ -197,7 +197,7 @@ const App: React.FC = () => {
     }
 
     const [players, setPlayers] = useState<Players>({
-        [Teams.None]: [],
+        [Teams.All]: [],
         [Teams.Attackers]: [],
         [Teams.Defenders]: [],
     });
@@ -210,17 +210,15 @@ const App: React.FC = () => {
         death: 0,
         isDead: false,
         isReady: false,
-        team: Teams.None,
+        team: Teams.All,
     });
 
     window.UpdatePlayers = function (p_Players: any, p_ClientPlayer: any) {
         setClientPlayer(p_ClientPlayer);
-        var all = p_Players["attackers"].concat(p_Players["defenders"]);
-        console.log('all', all);
         setPlayers({
-            [Teams.None]: all,
-            [Teams.Attackers]: p_Players["attackers"],
-            [Teams.Defenders]: p_Players["defenders"],
+            [Teams.All]: p_Players["all"],
+            [Teams.Attackers]: [],
+            [Teams.Defenders]: [],
         });
     }
 
@@ -240,9 +238,9 @@ const App: React.FC = () => {
         }
 
         setPlayers({
-            [Teams.None]: dummyPlayers,
-            [Teams.Attackers]: dummyPlayers,
-            [Teams.Defenders]: dummyPlayers,
+            [Teams.All]: dummyPlayers,
+            [Teams.Attackers]: [],
+            [Teams.Defenders]: [],
         });
     }
 

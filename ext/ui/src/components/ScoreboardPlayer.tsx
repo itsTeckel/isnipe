@@ -12,7 +12,6 @@ const ScoreboardPlayer: React.FC<Props> = ({ player, gameState }) => {
         <>
             {player.name &&
                 <div className={"playerHolder " + (player.isDead ? 'isDead' : 'isAlive')}>
-                    <div className="playerPing">{player.ping??0}</div>
 
                     {(gameState === GameStates.Warmup) &&
                         <div className={"playerReady " + (player.isReady ? 'ready' : 'wait')}>{player.isReady ? 'Ready' : 'Waiting'}</div>
@@ -21,6 +20,7 @@ const ScoreboardPlayer: React.FC<Props> = ({ player, gameState }) => {
                     <div className="playerName">{player.name??' - '}</div>
                     <div className="playerKill">{player.kill??' - '}</div>
                     <div className="playerDeath">{player.death??' - '}</div>
+                    <div className="playerPing">{player.ping??0}</div>
                 </div>
             }
         </>

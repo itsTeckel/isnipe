@@ -56,6 +56,7 @@ function kPMServer:RegisterEvents()
     self.m_PlayerRequestJoinHook = Hooks:Install("Player:RequestJoin", 1, self, self.OnPlayerRequestJoin)
 
     self.m_PlayerJoiningEvent = Events:Subscribe("Player:Joining", self, self.OnPlayerJoining)
+    self.m_PlayerKilledEvent = Events:Subscribe("Player:Killed", self, self.OnPlayerKilled)
     self.m_PlayerLeaveEvent = Events:Subscribe("Player:Left", self, self.OnPlayerLeft)
 
     -- Team management
@@ -183,6 +184,27 @@ end
 function kPMServer:OnPlayerJoining(p_Name, p_Guid, p_IpAddress, p_AccountGuid)
     -- Here we can send the event to whichever state we are running in
     print("info: player " .. p_Name .. " is joining the server")
+end
+
+function kPMServer:OnPlayerKilled(p_Player)
+    if p_Player == nil then
+        print("Player is nil. Could not spawn")
+        return
+    end
+    local l_SoldierBlueprint = ResourceManager:SearchForDataContainer('Characters/Soldiers/MpSoldier')
+    if p_Player == nil then
+        print("l_SoldierBlueprint is nil")
+        return
+    end
+
+    self.m_Match:AddPlayerToSpawnQueue(
+        p_Player, 
+        self.m_Match:GetRandomSpawnpoint(p_Player), 
+        CharacterPoseType.CharacterPoseType_Stand, 
+        l_SoldierBlueprint, 
+        false,
+        self.m_LoadoutManager:GetPlayerLoadout(p_Player)
+    )
 end
 
 function kPMServer:OnPlayerConnected(p_Player)

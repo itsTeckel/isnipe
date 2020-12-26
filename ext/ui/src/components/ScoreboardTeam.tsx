@@ -33,15 +33,13 @@ const ScoreboardTeam: React.FC<Props> = ({ team, score, players, gameState }) =>
                     <div className="point"></div>
                 </div>
                 <div className="playersHolderHeader">
-                    <div className="playerPing">Ping</div>
-
                     {(gameState === GameStates.Warmup) &&
                         <div className="playerReady">Ready</div>
                     }
-
                     <div className="playerName">Name</div>
                     <div className="playerKill">Kill</div>
                     <div className="playerDeath">Death</div>
+                    <div className="playerPing">Ping</div>
                 </div>
                 <div className="playersHolder">
                     <div className="playersHolderInner">

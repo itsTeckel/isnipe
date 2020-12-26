@@ -12,7 +12,7 @@ export interface Player {
 };
 
 export interface Players {
+    [Teams.All]: Player[],
     [Teams.Attackers]: Player[],
     [Teams.Defenders]: Player[],
-    [Teams.None]: Player[],
 }

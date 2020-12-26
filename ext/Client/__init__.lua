@@ -301,11 +301,37 @@ function kPMClient:OnUpdateInput(p_DeltaTime)
     end]]
 
     -- Open Team menu
-    if InputManager:WentKeyDown(InputDeviceKeys.IDK_F9) then
+    --if InputManager:WentKeyDown(InputDeviceKeys.IDK_F9) then
         -- If the player never spawned we should force him to pick a team and a loadout first
-        if self.m_FirstSpawn then
-            WebUI:ExecuteJS("OpenCloseTeamMenu();")
+    --    if self.m_FirstSpawn then
+    --        WebUI:ExecuteJS("OpenCloseTeamMenu();")
+    --    end
+    --end
+
+    if InputManager:WentKeyDown(InputDeviceKeys.IDK_F9) then
+        local localPlayer = PlayerManager:GetLocalPlayer()
+        if localPlayer == nil then
+            return
         end
+
+        -- Check to see if the player is alive
+        if localPlayer.alive == false then
+            return
+        end
+
+        -- Get the local soldier instance
+        local localSoldier = localPlayer.soldier
+        if localSoldier == nil then
+            return
+        end
+
+        -- Get the soldier LinearTransform
+        local soldierLinearTransform = localSoldier.worldTransform
+
+        -- Get the position vector
+
+        -- Return the formatted string (x, y, z)
+        print("coordinate: Vec3(" .. soldierLinearTransform.left.x .. ", " .. soldierLinearTransform.left.y .. ", " .. soldierLinearTransform.left.z .. "), Vec3(" .. soldierLinearTransform.up.x .. ", " .. soldierLinearTransform.up.y .. ", " .. soldierLinearTransform.up.z .. "), Vec3(" .. soldierLinearTransform.forward.x .. ", " .. soldierLinearTransform.forward.y .. ", " .. soldierLinearTransform.forward.z .. "), Vec3(" .. soldierLinearTransform.trans.x .. ", " .. soldierLinearTransform.trans.y .. ", " .. soldierLinearTransform.trans.z .. ")")
     end
 
     -- Open Loadout menu
@@ -495,22 +521,16 @@ function kPMClient:OnUpdateScoreboard(p_Player)
     
     print("OnUpdateScoreboard")
 
-    local l_PlayerListDefenders = PlayerManager:GetPlayersByTeam(self.m_DefendersTeamId)
-    local l_PlayerListAttackers = PlayerManager:GetPlayersByTeam(self.m_AttackersTeamId)
+    local l_PlayerList = PlayerManager:GetPlayers()
 
-    table.sort(l_PlayerListDefenders, function(a, b) 
-		return a.score > b.score
-    end)
-    
-    table.sort(l_PlayerListAttackers, function(a, b) 
-		return a.score > b.score
+    table.sort(l_PlayerList, function(a, b) 
+		return a.kills > b.kills
     end)
 
     local l_PlayersObject = {}
-    l_PlayersObject["defenders"] = {}
-    l_PlayersObject["attackers"] = {}
+    l_PlayersObject["all"] = {}
     
-    for index, l_Player in pairs(l_PlayerListDefenders) do
+    for index, l_Player in pairs(l_PlayerList) do
 		local l_Ping = "0"
 		if self.m_PingTable[l_Player.id] ~= nil and self.m_PingTable[l_Player.id] >= 0 and self.m_PingTable[l_Player.id] < 999 then
 			l_Ping = self.m_PingTable[l_Player.id]
@@ -521,30 +541,7 @@ function kPMClient:OnUpdateScoreboard(p_Player)
             l_Ready = self.m_PlayerReadyUpPlayersTable[l_Player.id]
         end
         
-		table.insert(l_PlayersObject["defenders"], {
-            ["id"] = l_Player.id,
-            ["name"] = l_Player.name,
-            ["ping"] = l_Ping,
-            ["kill"] = l_Player.kills,
-            ["death"] = l_Player.deaths,
-            ["isDead"] = not l_Player.alive,
-            ["isReady"] = l_Ready,
-            ["team"] = l_Player.teamId,
-        })
-    end
-
-    for index, l_Player in pairs(l_PlayerListAttackers) do
-		local l_Ping = "0"
-		if self.m_PingTable[l_Player.id] ~= nil and self.m_PingTable[l_Player.id] >= 0 and self.m_PingTable[l_Player.id] < 999 then
-			l_Ping = self.m_PingTable[l_Player.id]
-        end
-
-        local l_Ready = false
-        if self.m_PlayerReadyUpPlayersTable[l_Player.id] ~= nil then
-            l_Ready = self.m_PlayerReadyUpPlayersTable[l_Player.id]
-        end
-
-		table.insert(l_PlayersObject["attackers"], {
+		table.insert(l_PlayersObject["all"], {
             ["id"] = l_Player.id,
             ["name"] = l_Player.name,
             ["ping"] = l_Ping,
@@ -887,12 +884,7 @@ function kPMClient:OnPlayerKilled(p_Player)
     if p_Player.id == s_Player.id then
         self:EnablePlayerInputs()
 
-        if self.m_GameState == GameStates.FirstHalf or
-            self.m_GameState == GameStates.SecondHalf
-        then
-            --self.m_SpecCam:Enable()
-            IngameSpectator:enable()
-        end
+        IngameSpectator:enable()
     end
 end
 
