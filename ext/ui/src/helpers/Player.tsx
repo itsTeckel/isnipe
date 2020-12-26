@@ -7,7 +7,7 @@ export interface Player {
     kill: number;
     death: number;
     isDead: boolean;
-    isReady: boolean;
+    place: number;
     team?: Teams;
 };
 

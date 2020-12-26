@@ -8,10 +8,11 @@ interface Props {
     team: Teams;
     score: number;
     players?: Player[];
+    clientPlayer: Player;
     gameState: GameStates;
 }
 
-const ScoreboardTeam: React.FC<Props> = ({ team, score, players, gameState }) => {
+const ScoreboardTeam: React.FC<Props> = ({ team, score, players, clientPlayer, gameState }) => {
 
     const getAlivePlayersCount = () => {
         if (players !== undefined && players.length > 0) {
@@ -33,20 +34,18 @@ const ScoreboardTeam: React.FC<Props> = ({ team, score, players, gameState }) =>
                     <div className="point"></div>
                 </div>
                 <div className="playersHolderHeader">
-                    {(gameState === GameStates.Warmup) &&
-                        <div className="playerReady">Ready</div>
-                    }
+                    <div className="playerPosition">Pos</div>
                     <div className="playerName">Name</div>
-                    <div className="playerKill">Kill</div>
-                    <div className="playerDeath">Death</div>
+                    <div className="playerKill">Kills</div>
+                    <div className="playerDeath">Deaths</div>
                     <div className="playerPing">Ping</div>
                 </div>
                 <div className="playersHolder">
                     <div className="playersHolderInner">
                         {(players !== undefined && players.length > 0)
                         ?
-                            players.map((player: Player, key: number) => (
-                                <ScoreboardPlayer player={player} key={key} gameState={gameState} />
+                            players.map((player: Player, place: number) => (
+                                <ScoreboardPlayer player={player} place={place} clientPlayer={clientPlayer} gameState={gameState} />
                             ))
                         :
                             <div className="noPlayers">No players...</div>

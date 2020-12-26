@@ -277,6 +277,7 @@ function kPMClient:OnLevelDestroyed()
     self.m_PlantedSoundEntityData = nil
     self.m_AlarmEntity = nil
     self.m_PlantSent = false
+    WebUI:ExecuteJS('ResetUI();')
 end
 
 function kPMClient:OnLevelLoaded()
@@ -521,38 +522,6 @@ function kPMClient:OnUpdateScoreboard(p_Player)
     
     print("OnUpdateScoreboard")
 
-    local l_PlayerList = PlayerManager:GetPlayers()
-
-    table.sort(l_PlayerList, function(a, b) 
-		return a.kills > b.kills
-    end)
-
-    local l_PlayersObject = {}
-    l_PlayersObject["all"] = {}
-    
-    for index, l_Player in pairs(l_PlayerList) do
-		local l_Ping = "0"
-		if self.m_PingTable[l_Player.id] ~= nil and self.m_PingTable[l_Player.id] >= 0 and self.m_PingTable[l_Player.id] < 999 then
-			l_Ping = self.m_PingTable[l_Player.id]
-        end
-
-        local l_Ready = false
-        if self.m_PlayerReadyUpPlayersTable[l_Player.id] ~= nil then
-            l_Ready = self.m_PlayerReadyUpPlayersTable[l_Player.id]
-        end
-        
-		table.insert(l_PlayersObject["all"], {
-            ["id"] = l_Player.id,
-            ["name"] = l_Player.name,
-            ["ping"] = l_Ping,
-            ["kill"] = l_Player.kills,
-            ["death"] = l_Player.deaths,
-            ["isDead"] = not l_Player.alive,
-            ["isReady"] = l_Ready,
-            ["team"] = l_Player.teamId,
-        })
-    end
-
     local l_Ping = "0"
     if self.m_PingTable[p_Player.id] ~= nil and self.m_PingTable[p_Player.id] >= 0 and self.m_PingTable[p_Player.id] < 999 then
         l_Ping = self.m_PingTable[p_Player.id]
@@ -570,9 +539,42 @@ function kPMClient:OnUpdateScoreboard(p_Player)
         ["kill"] = p_Player.kills,
         ["death"] = p_Player.deaths,
         ["isDead"] = not p_Player.alive,
-        ["isReady"] = l_Ready,
+        ["place"] = 0,
         ["team"] = p_Player.teamId,
     }
+    local l_PlayerClientPlace = 0
+
+    local l_PlayerList = PlayerManager:GetPlayers()
+
+    table.sort(l_PlayerList, function(a, b) 
+		return a.kills > b.kills
+    end)
+
+    local l_PlayersObject = {}
+    l_PlayersObject["all"] = {}
+    
+    for index, l_Player in pairs(l_PlayerList) do
+		local l_Ping = "0"
+		if self.m_PingTable[l_Player.id] ~= nil and self.m_PingTable[l_Player.id] >= 0 and self.m_PingTable[l_Player.id] < 999 then
+			l_Ping = self.m_PingTable[l_Player.id]
+        end
+
+        if l_Player.id == p_Player.id then
+            l_PlayerClientIndex = index
+        end
+        
+		table.insert(l_PlayersObject["all"], {
+            ["id"] = l_Player.id,
+            ["name"] = l_Player.name,
+            ["ping"] = l_Ping,
+            ["kill"] = l_Player.kills,
+            ["death"] = l_Player.deaths,
+            ["isDead"] = not l_Player.alive,
+            ["place"] = index,
+            ["team"] = l_Player.teamId,
+        })
+    end
+    l_PlayerClient["place"] = l_PlayerClientPlace
 
     WebUI:ExecuteJS(string.format("UpdatePlayers(%s, %s);", json.encode(l_PlayersObject), json.encode(l_PlayerClient)))
 end

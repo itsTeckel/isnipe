@@ -7,6 +7,7 @@ import RoundEndInfoBox from "./components/RoundEndInfoBox";
 
 import TeamsScene from "./scenes/TeamsScene";
 import WarmupScene from "./scenes/WarmupScene";
+import EndgameScene from "./scenes/EndgameScene";
 import KnifeRoundScene from "./scenes/KnifeRoundScene";
 import LoadoutScene from "./scenes/LoadoutScene";
 
@@ -209,7 +210,7 @@ const App: React.FC = () => {
         kill: 0,
         death: 0,
         isDead: false,
-        isReady: false,
+        place: 0,
         team: Teams.All,
     });
 
@@ -226,13 +227,13 @@ const App: React.FC = () => {
         var dummyPlayers:Player[] = []
         for (let index = 0; index < 10; index++) {
             dummyPlayers.push({
-                id: 0,
+                id: index,
                 name: 'Teszt',
                 ping: 0,
                 kill: 18,
                 death: 5,
                 isDead: (Math.random() < 0.5),
-                isReady: (Math.random() < 0.5),
+                place: (index + 1),
                 team: Teams.None,
             });
         }
@@ -263,7 +264,7 @@ const App: React.FC = () => {
     }
 
     window.ResetUI = function() {
-        //setScene(GameStates.Warmup);
+        setShowHud(false);
         setRound(0);
         setRoundWon(false);
         setWinningTeam(Teams.Attackers);
@@ -289,6 +290,21 @@ const App: React.FC = () => {
         setPlantOrDefuse("plant");
     }
 
+    window.stringifyNumber = function(i) {
+        var j = i % 10,
+        k = i % 100;
+        if (j == 1 && k != 11) {
+            return i + "st";
+        }
+        if (j == 2 && k != 12) {
+            return i + "nd";
+        }
+        if (j == 3 && k != 13) {
+            return i + "rd";
+        }
+        return i + "th";
+    }
+
     const [spectating, setSpectating] = useState<boolean>(false);
     window.SpectatorEnabled = function(p_Enabled: boolean) {
         console.log('SpectatorEnabled ' + p_Enabled);
@@ -302,25 +318,24 @@ const App: React.FC = () => {
     }
 
     const GameStatesPage = () => {
+        if(!showHud){
+            return <></>;
+        }
         switch (scene) {
             default:
             case GameStates.None:
                 return <></>;
 
-            case GameStates.WarmupToKnife:
             case GameStates.Warmup:
                 return <WarmupScene rupProgress={rupProgress} players={players} clientPlayer={clientPlayer} />;
 
-            case GameStates.KnifeRound:
-                return <KnifeRoundScene />;
-
-            /*case GameStates.EndGame:
+            case GameStates.EndGame:
                 return <EndgameScene
                     roundWon={roundWon}
                     winningTeam={winningTeam}
                     teamAttackersScore={teamAttackersScore}
                     teamDefendersScore={teamDefendersScore}
-                />;*/
+                />;
         }
     }
 
@@ -342,8 +357,7 @@ const App: React.FC = () => {
             
             <div id="debug" className="global">
                 <button onClick={() => setScene(GameStates.Warmup)}>Warmup</button>
-                {/*<button onClick={() => setScene(GameStates.EndGame)}>EndGame</button>*/}
-                <button onClick={() => setScene(GameStates.Strat)}>Strat</button>
+                <button onClick={() => setScene(GameStates.EndGame)}>EndGame</button>
                 <button onClick={() => setShowHud(prevState => !prevState)}>ShowHeader On / Off</button>
                 <button onClick={() => setShowScoreboard(prevState => !prevState)}>Scoreboard On / Off</button>
                 <button onClick={() => SetDummyPlayers()}>Set dummy players</button>
@@ -364,33 +378,25 @@ const App: React.FC = () => {
             <div className="window">
                 <Header
                     showHud={showHud}
-                    currentScene={scene}
-                    teamAttackersScore={teamAttackersScore}
-                    teamDefendersScore={teamDefendersScore}
-                    teamAttackersClan=""
-                    teamDefendersClan=""
-                    round={round}
-                    gameType={gameType}
-                    bombPlantedOn={bombPlantedOn}
-                    maxRounds={maxRounds}
-                    players={players}
+                    clientPlayer={clientPlayer}
                 />
                 <GameStatesPage />
                 <TeamsScene
-                    show={showTeamsPage}
+                    show={showTeamsPage && showHud}
                     selectedTeam={selectedTeam}
                     setSelectedTeam={(team: Teams) => setTeam(team)}
                     gameType={gameType}
                 />
                 <LoadoutScene
-                    show={showLoadoutPage}
+                    show={showLoadoutPage && showHud}
                     setShowLoadoutPage={(show) => setShowLoadoutPage(show)}
                 />
                 <Scoreboard 
-                    showScoreboard={showScoreboard}
+                    showScoreboard={showScoreboard && showHud}
                     teamAttackersScore={teamAttackersScore}
                     teamDefendersScore={teamDefendersScore}
                     players={players}
+                    clientPlayer={clientPlayer}
                     gameState={scene}
                     round={round}
                     maxRounds={maxRounds}
@@ -456,6 +462,7 @@ declare global {
         PlantInteractProgress: (m_PlantOrDefuseHeldTime: number, PlantTime: number, plantOrDefuse: string) => void
         ResetUI: () => void;
         RoundCount: (p_Count: number) => void;
+        stringifyNumber: (i: number) => string;
 
         //Spectator
         SpectatorTarget: (p_TargetName: string) => void;

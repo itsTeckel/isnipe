@@ -13,37 +13,20 @@ import like from './assets/img/helmet.svg';
 import './Header.scss';
 
 interface Props {
-    teamAttackersScore: number;
-    teamDefendersScore: number;
-    teamAttackersClan?: string;
-    teamDefendersClan?: string;
-    currentScene: GameStates;
-    round: number|null;
     showHud: boolean;
-    gameType: GameTypes;
-    bombPlantedOn: string|null;
-    maxRounds: number;
-    players?: Players;
+    clientPlayer: Player;
 }
 
-const Header: React.FC<Props> = ({ 
-    teamAttackersClan,
-    teamDefendersClan,
-    teamAttackersScore,
-    teamDefendersScore,
-    currentScene,
-    round,
+const Header: React.FC<Props> = ({
     showHud,
-    gameType,
-    bombPlantedOn,
-    maxRounds,
-    players
+    clientPlayer
  }) => {
     window.SetTimer = function(p_Time: number) {
         setTime(1000 * p_Time);
         start();
         reset();
     }
+    var position = clientPlayer["place"] == 0 ? "-" : window.stringifyNumber(clientPlayer["place"]);
 
     const { value, controls: { setTime, reset, start }} = useTimer({ initialTime: 0, direction: "backward", startImmediately: false });
 
@@ -67,11 +50,10 @@ const Header: React.FC<Props> = ({
                 <div id="inGameHeader" className="fadeInTop">
                     <div id="score">
                         <div id="scoreAttackers">
-                            {/*<span id="team">Attackers</span>*/}
-                            <span className="points">1st</span>
+                            <span className="points">{position}</span>
                         </div>
                         <div id="roundTimer">
-                            <span className={"timer " + (bombPlantedOn !== null ? 'planted' : '')}>
+                            <span className={"timer"}>
                                 {(value !== null)
                                 ?
                                     <>
@@ -95,10 +77,7 @@ const Header: React.FC<Props> = ({
 };
 
 Header.defaultProps = {
-    currentScene: GameStates.None,
-    teamAttackersScore: 0,
-    teamDefendersScore: 0,
-    round: 0,
+
 };
 
 export default Header;

@@ -148,39 +148,6 @@ function kPMServer:OnPlayerRequestJoin(p_Hook, p_JoinMode, p_AccountGuid, p_Play
     p_Hook:Return(true)
 end
 
--- This function takes a snapshot of all players in the server and adds them to the allow list
-function kPMServer:UpdateAllowedGuids()
-    if kPMConfig.GameType == GameTypes.Public then
-        return
-    end
-
-    -- Clear our the previous guids
-    self.m_AllowedGuids = { }
-
-    -- Iterate through all players
-    local s_Players = PlayerManager:GetPlayers()
-    for l_Index, l_Player in ipairs(s_Players) do
-        -- Validate the player
-        if l_Player == nil then
-            if kPMConfig.DebugMode then
-                print("err: invalid player at index: " .. l_Index)
-            end
-            goto update_allowed_guids_continue
-        end
-
-        -- Add the account guid to the allowed guid
-        table.insert(self.m_AllowedGuids, l_Player.accountGuid)
-
-        -- Debug logging
-        if kPMConfig.DebugMode then
-            print("added player: " .. tostring(l_Player.name) .. " guid: " .. tostring(l_Player.accountGuid) .. " to the allow list.")
-        end
-
-        -- Lua does not have continue statement, so this hack is a workaround
-        ::update_allowed_guids_continue::
-    end
-end
-
 function kPMServer:OnPlayerJoining(p_Name, p_Guid, p_IpAddress, p_AccountGuid)
     -- Here we can send the event to whichever state we are running in
     print("info: player " .. p_Name .. " is joining the server")
@@ -463,11 +430,6 @@ function kPMServer:ChangeGameState(p_GameState)
 
     local s_OldGameState = self.m_GameState
     self.m_GameState = p_GameState
-
-    -- Call UpdateAllowedGuids when Warmup ends
-    if p_GameState ~= GameStates.Warmup and s_OldGameState == GameStates.Warmup then
-        self:UpdateAllowedGuids()
-    end
 
     NetEvents:Broadcast("kPM:GameStateChanged", s_OldGameState, p_GameState)
 end

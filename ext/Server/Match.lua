@@ -75,6 +75,7 @@ function Match:OnUpdateManagerUpdate(p_DeltaTime, p_UpdatePass)
         end
 
         if self.m_RestartQueue then
+            self:RestartMatch()
             RCON:SendCommand('mapList.runNextRound')
             self.m_RestartQueue = false
         end
@@ -208,6 +209,7 @@ end
 
 function Match:OnEndGame(p_DeltaTime)
     if self.m_UpdateTicks[GameStates.EndGame] == 0.0 then
+        self:DisablePlayerInputs()
         if self.m_Attackers:CountRoundWon() == self.m_Defenders:CountRoundWon() then
             print('Game end: Draw')
             self.m_Server:SetGameEnd(nil)
