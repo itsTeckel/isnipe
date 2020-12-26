@@ -39,34 +39,14 @@ function Match:__init(p_Server, p_TeamAttackers, p_TeamDefenders, p_RoundCount, 
     -- State callbacks
     self.m_UpdateStates = { }
     self.m_UpdateStates[GameStates.Warmup] = self.OnWarmup
-    self.m_UpdateStates[GameStates.WarmupToKnife] = self.OnWarmupToKnife
-    self.m_UpdateStates[GameStates.KnifeRound] = self.OnKnifeRound
-    self.m_UpdateStates[GameStates.KnifeToFirst] = self.OnKnifeToFirst
-    self.m_UpdateStates[GameStates.FirstHalf] = self.OnFirstHalf
-    self.m_UpdateStates[GameStates.FirstToHalf] = self.OnFirstToHalf
-    self.m_UpdateStates[GameStates.HalfTime] = self.OnHalfTime
-    self.m_UpdateStates[GameStates.HalfToSecond] = self.OnHalfToSecond
-    self.m_UpdateStates[GameStates.SecondHalf] = self.OnSecondHalf
-    self.m_UpdateStates[GameStates.Timeout] = self.OnTimeout -- TODO: FIXME
-    self.m_UpdateStates[GameStates.Strat] = self.OnStrat
-    --self.m_UpdateStates[GameStates.NadeTraining] = self.OnNadeTraining -- TODO: FIXME
+    self.m_UpdateStates[GameStates.Playing] = self.OnPlaying
     self.m_UpdateStates[GameStates.EndGame] = self.OnEndGame
 
     -- State ticks
     self.m_UpdateTicks = { }
     self.m_UpdateTicks[GameStates.None] = 0.0
     self.m_UpdateTicks[GameStates.Warmup] = 0.0
-    self.m_UpdateTicks[GameStates.WarmupToKnife] = 0.0
-    self.m_UpdateTicks[GameStates.KnifeRound] = 0.0
-    self.m_UpdateTicks[GameStates.KnifeToFirst] = 0.0
-    self.m_UpdateTicks[GameStates.FirstHalf] = 0.0
-    self.m_UpdateTicks[GameStates.FirstToHalf] = 0.0
-    self.m_UpdateTicks[GameStates.HalfTime] = 0.0
-    self.m_UpdateTicks[GameStates.HalfToSecond] = 0.0
-    self.m_UpdateTicks[GameStates.SecondHalf] = 0.0
-    self.m_UpdateTicks[GameStates.Timeout] = 0.0
-    self.m_UpdateTicks[GameStates.Strat] = 0.0
-    self.m_UpdateTicks[GameStates.NadeTraining] = 0.0
+    self.m_UpdateTicks[GameStates.Playing] = 0.0
     self.m_UpdateTicks[GameStates.EndGame] = 0.0
 
     self.m_LoadoutManager = p_LoadoutManager
@@ -95,11 +75,8 @@ function Match:OnUpdateManagerUpdate(p_DeltaTime, p_UpdatePass)
         end
 
         if self.m_RestartQueue then
-            if self.m_Defenders:CountRoundWon() > self.m_Attackers:CountRoundWon() then
-                RCON:SendCommand('mapList.endround', {tostring(self.m_Defenders:GetTeamId())})
-            else
-                RCON:SendCommand('mapList.endround', {tostring(self.m_Attackers:GetTeamId())})
-            end
+            RCON:SendCommand('mapList.runNextRound')
+            self.m_RestartQueue = false
         end
     end
 end
@@ -147,7 +124,7 @@ function Match:OnWarmup(p_DeltaTime)
             --ChatManager:Yell("All players have readied up, starting knife round...", 2.0)
 
             -- Handle resetting all players or spawning them
-            self.m_Server:ChangeGameState(GameStates.FirstHalf)
+            self.m_Server:ChangeGameState(GameStates.Playing)
         end
 
         -- Update status to all players
@@ -163,36 +140,6 @@ function Match:OnWarmup(p_DeltaTime)
 
     -- Add the delta time to our rup timer
     self.m_UpdateTicks[GameStates.Warmup] = self.m_UpdateTicks[GameStates.Warmup] + p_DeltaTime
-end
-
-function Match:OnWarmupToKnife(p_DeltaTime)
-    if self.m_UpdateTicks[GameStates.WarmupToKnife] == 0.0 then
-        self.m_Server:SetClientTimer(kPMConfig.MaxTransititionTime)
-
-        -- Kill all players disabling their ability to spawn
-        self:KillAllPlayers(false)
-    end
-
-    -- TODO: Disable knife canned animations
-
-    -- If we have reached the maximum time here
-    if self.m_UpdateTicks[GameStates.WarmupToKnife] >= kPMConfig.MaxTransititionTime then
-        self.m_UpdateTicks[GameStates.WarmupToKnife] = 0.0
-
-        -- Tried this to remove the animated melee attack, not really working
-        -- self:FireEventForSpecificEntity("ServerMeleeEntity", "DisableMeleeTarget")
-
-        if self.m_GameType == GameTypes.Public then
-            self.m_Server:ChangeGameState(GameStates.FirstHalf)
-        end
-
-        if self.m_GameType == GameTypes.Comp then
-            self.m_Server:ChangeGameState(GameStates.KnifeRound)
-        end
-    end
-
-    -- Update the tick
-    self.m_UpdateTicks[GameStates.WarmupToKnife] = self.m_UpdateTicks[GameStates.WarmupToKnife] + p_DeltaTime
 end
 
 function Match:GetPlayerCounts()
@@ -244,457 +191,20 @@ function Match:GetPlayerCounts()
     return s_AttackerAliveCount, s_AttackerDeadCount, s_AttackerTotalCount, s_DefenderAliveCount, s_DefenderDeadCount, s_DefenderTotalCount
 end
 
-function Match:OnKnifeRound(p_DeltaTime)
-    if self.m_UpdateTicks[GameStates.KnifeRound] == 0.0 then
-        self:SpawnAllPlayers(true)
-        self.m_Server:SetClientTimer(kPMConfig.MaxKnifeRoundTime)
-    end
 
-    if TableHelper:empty(self.m_SpawnQueue) then
-        if self.m_Attackers == nil then
-            print("could not find attackers")
-            return
-        end
-
-        if self.m_Defenders == nil then
-            print("could not find defenders")
-            return
-        end
-
-        local s_AttackerId = self.m_Attackers:GetTeamId()
-        local s_DefenderId = self.m_Defenders:GetTeamId()
-
-        local s_AttackerAliveCount, s_AttackerDeadCount, s_AttackerTotalCount, s_DefenderAliveCount, s_DefenderDeadCount, s_DefenderTotalCount = self:GetPlayerCounts()
-
-        -- Check the round state
-        local s_Winner = TeamId.TeamNeutral
-        if s_AttackerTotalCount > 0 and s_AttackerAliveCount == 0 then
-            -- If all attackers have been eliminated
-            s_Winner = s_DefenderId
-        elseif s_DefenderTotalCount > 0 and s_DefenderAliveCount == 0 then
-            -- All defenders have been eliminated
-            s_Winner = s_AttackerId
-        end
-
-        if s_Winner ~= TeamId.TeamNeutral then
-            self.m_Server:ChangeGameState(GameStates.KnifeToFirst)
-            self.m_Server:SetRoundEndInfoBox(s_Winner)
-            return
-        end
-
-        -- Check to see if we have triggered a round end
-        if self.m_UpdateTicks[GameStates.KnifeRound] >= kPMConfig.MaxKnifeRoundTime then
-            self.m_UpdateTicks[GameStates.KnifeRound] = 0.0
-
-            -- Trigger
-            if s_Winner == TeamId.TeamNeutral then
-                print("no team won? this is probably an error")
-                return
-            end
-
-            -- Change the game state to the first half
-            self.m_Server:ChangeGameState(GameStates.KnifeToFirst)
-            return
-        end
-    end
-
-    self.m_UpdateTicks[GameStates.KnifeRound] = self.m_UpdateTicks[GameStates.KnifeRound] + p_DeltaTime
-end
-
-function Match:OnKnifeToFirst(p_DeltaTime)
-    if self.m_UpdateTicks[GameStates.KnifeToFirst] == 0.0 then
-        self.m_Server:SetClientTimer(kPMConfig.MaxTransititionTime)
-
-        -- Kill all players before the first round
-        self:KillAllPlayers(false)
-    end
-
-    if self.m_UpdateTicks[GameStates.KnifeToFirst] > kPMConfig.MaxTransititionTime then
-        self.m_UpdateTicks[GameStates.KnifeToFirst] = 0.0
-
-        -- Tried this to remove the animated melee attack
-        -- self:FireEventForSpecificEntity("ServerMeleeEntity", "EnableMeleeTarget")
-
-        self.m_Server:ChangeGameState(GameStates.FirstHalf)
-        return
-    end
-
-    self.m_UpdateTicks[GameStates.KnifeToFirst] = self.m_UpdateTicks[GameStates.KnifeToFirst] + p_DeltaTime
-end
-
--- Shamelessly stolen and modified from https://github.com/BF3RM
-
-function Match:SwitchTeams()
-    -- Save and swap the attackers and defenders
-    local s_OldAttackers = self.m_Attackers
-    local s_OldDefenders = self.m_Defenders
-
-    self.m_Attackers = s_OldDefenders
-    self.m_Defenders = s_OldAttackers
-
-    NetEvents:Broadcast("kPM:UpdateTeams", self.m_Attackers:GetTeamId(), self.m_Defenders:GetTeamId())
-
-    print("switched teams")
-end
-
-function Match:OnFirstHalf(p_DeltaTime)
-    -- Handle the case of when a round ends then restart the round
-    if self.m_UpdateTicks[GameStates.FirstHalf] >= 8000.0 then
-
-        if self.m_UpdateTicks[GameStates.FirstHalf] == 8000.0 then
-            self.m_Server:SetClientTimer(kPMConfig.MaxTransititionTime)
-            NetEvents:Broadcast("kPM:UpdateHeader", self.m_Attackers:CountRoundWon(), self.m_Defenders:CountRoundWon(), self.m_CurrentRound)
-        end
-
-        if self.m_UpdateTicks[GameStates.FirstHalf] >= (8000.0 + kPMConfig.MaxTransititionTime) then
-            self.m_UpdateTicks[GameStates.FirstHalf] = 0.0
-            return
-        end
-
-        self.m_UpdateTicks[GameStates.FirstHalf] = self.m_UpdateTicks[GameStates.FirstHalf] + p_DeltaTime
-        return
-    end
-
-    -- Handle the case of when a round first starts, otherwise it will run "normal" code
-    if self.m_UpdateTicks[GameStates.FirstHalf] == 0.0 then
-        -- Switch to strat time for 5 seconds
-
-        -- Kill all players
-        self:KillAllPlayers(false)
-
-        -- Respawn all players
-        self:SpawnAllPlayers(false)
-
-        self.m_BombSite = nil
-        self.m_BombLocation = nil
-        self.m_BombTime = nil
-        
-        NetEvents:Broadcast("kPM:UpdateHeader", self.m_Attackers:CountRoundWon(), self.m_Defenders:CountRoundWon(), self.m_CurrentRound)
-
-        -- Manually update the ticks
-        self.m_UpdateTicks[GameStates.FirstHalf] = self.m_UpdateTicks[GameStates.FirstHalf] + p_DeltaTime
-
-        -- Switch to strat time, do not touch the FirstHalf timer, this ensures that we pick up "normal" round
-        self.m_Server:ChangeGameState(GameStates.Strat)
-    end
-
-    -- TODO: FIXME
-    -- When start ends we need to update the UI's timer. Its kinda hacky now, needs a better solution
-    if self.m_UpdateTicks[GameStates.FirstHalf] >= 0.25 and self.m_UpdateTicks[GameStates.FirstHalf] <= 1.5 then
+function Match:OnPlaying(p_DeltaTime)
+    if self.m_UpdateTicks[GameStates.Playing] == 0.0 then
         self.m_Server:SetClientTimer(kPMConfig.MaxRoundTime)
     end
 
-    if TableHelper:empty(self.m_SpawnQueue) then
-        -- Get the player counts
-        local s_AttackerAliveCount, s_AttackerDeadCount, s_AttackerTotalCount, s_DefenderAliveCount, s_DefenderDeadCount, s_DefenderTotalCount = self:GetPlayerCounts()
-
-        self:CheckTeamCounts(s_AttackerTotalCount, s_DefenderTotalCount)
-        -- The round is running as expected, check the ending conditions
-
-        -- Which are if all attackers are dead
-        if s_AttackerAliveCount == 0 and self.m_BombSite == nil and self.m_BombLocation == nil and self.m_BombTime == nil then
-            print("all attackers are dead and the bomb is not planted, round is over")
-            -- Give a round to the defenders
-            self.m_Defenders:RoundWon(self.m_CurrentRound)
-
-            -- Give a loss to the attackers
-            self.m_Attackers:RoundLoss(self.m_CurrentRound)
-
-            -- Update the round count
-            self.m_CurrentRound = self.m_CurrentRound + 1
-
-            self.m_Server:SetRoundEndInfoBox(self.m_Defenders:GetTeamId())
-
-            self:IsRoundHalfTime()
-
-            -- Set this round to be over
-            self.m_UpdateTicks[GameStates.FirstHalf] = 8000.0
-            return
-        end
-        
-        -- TODO: If the objectives have been completed
-
-        -- If all defenders are dead
-        if s_DefenderAliveCount == 0 then
-            print("all defenders are dead, round is over")
-
-            -- Give a loss to the defenders
-            self.m_Defenders:RoundLoss(self.m_CurrentRound)
-
-            -- Give a win to the attackers
-            self.m_Attackers:RoundWon(self.m_CurrentRound)
-
-            -- Update the round count
-            self.m_CurrentRound = self.m_CurrentRound + 1
-
-            self.m_Server:SetRoundEndInfoBox(self.m_Attackers:GetTeamId())
-
-            self:IsRoundHalfTime()
-
-            -- Set this round to be over
-            self.m_UpdateTicks[GameStates.FirstHalf] = 8000.0
-            return
-        end
-
-        -- If the round is over
-        if self.m_BombSite == nil and self.m_BombLocation == nil and self.m_BombTime == nil then
-            if self.m_UpdateTicks[GameStates.FirstHalf] >= kPMConfig.MaxRoundTime then
-                -- If the defenders have any players alive, they win, simple
-                if s_DefenderAliveCount > 0 then
-                    self.m_Defenders:RoundWon(self.m_CurrentRound)
-                    self.m_Attackers:RoundLoss(self.m_CurrentRound)
-
-                    self.m_Server:SetRoundEndInfoBox(self.m_Defenders:GetTeamId())
-                else
-                    self.m_Attackers:RoundWon(self.m_CurrentRound)
-                    self.m_Defenders:RoundLoss(self.m_CurrentRound)
-
-                    self.m_Server:SetRoundEndInfoBox(self.m_Attackers:GetTeamId())
-                end
-
-                -- Update the round count
-                self.m_CurrentRound = self.m_CurrentRound + 1
-
-                self:IsRoundHalfTime()
-
-                -- Leave the timer at 0.0 in the same state, it will catch at the top
-                -- of this function and enable strat mode
-                self.m_UpdateTicks[GameStates.FirstHalf] = 8000.0
-                return
-            end
-        else
-            if self.m_UpdateTicks[GameStates.FirstHalf] >= self.m_BombTime then
-                NetEvents:Broadcast("kPM:BombKaboom")
-                
-                self.m_Attackers:RoundWon(self.m_CurrentRound)
-                self.m_Defenders:RoundLoss(self.m_CurrentRound)
-                self.m_Server:SetRoundEndInfoBox(self.m_Attackers:GetTeamId())
-    
-                -- Update the round count
-                self.m_CurrentRound = self.m_CurrentRound + 1
-    
-                self:IsRoundHalfTime()
-    
-                -- Leave the timer at 0.0 in the same state, it will catch at the top
-                -- of this function and enable strat mode
-                self.m_UpdateTicks[GameStates.FirstHalf] = 8000.0
-                return
-            end
-        end
-    end
-
-    -- Update the tick
-    self.m_UpdateTicks[GameStates.FirstHalf] = self.m_UpdateTicks[GameStates.FirstHalf] + p_DeltaTime
-end
-
-function Match:IsRoundHalfTime()
-    if self.m_CurrentRound >= (self.m_RoundCount / 2) then
-        self.m_Server:ChangeGameState(GameStates.FirstToHalf)
-    end
-end
-
-function Match:OnFirstToHalf(p_DeltaTime)
-    if self.m_UpdateTicks[GameStates.FirstToHalf] == 0.0 then
-        NetEvents:Broadcast("kPM:UpdateHeader", self.m_Attackers:CountRoundWon(), self.m_Defenders:CountRoundWon(), self.m_CurrentRound)
-        self.m_Server:SetClientTimer(kPMConfig.MaxTransititionTime)
-    end
-
-    if self.m_UpdateTicks[GameStates.FirstToHalf] >= kPMConfig.MaxTransititionTime then
+    if self.m_UpdateTicks[GameStates.Playing] >= kPMConfig.MaxRoundTime then
         self:KillAllPlayers(false)
-        self.m_Server:ChangeGameState(GameStates.HalfTime)
-    end
-
-    self.m_UpdateTicks[GameStates.FirstToHalf] = self.m_UpdateTicks[GameStates.FirstToHalf] + p_DeltaTime
-end
-
-function Match:OnHalfTime(p_DeltaTime)
-    if self.m_UpdateTicks[GameStates.HalfTime] == 0.0 then
-        NetEvents:Broadcast("kPM:UpdateHeader", self.m_Attackers:CountRoundWon(), self.m_Defenders:CountRoundWon(), self.m_CurrentRound)
-        self.m_Server:SetClientTimer(kPMConfig.MaxStratTime)
-    end
-
-    if self.m_UpdateTicks[GameStates.HalfTime] >= kPMConfig.MaxStratTime then
-        self:SwitchTeams()
-        self.m_Server:ChangeGameState(GameStates.HalfToSecond)
-    end
-
-    self.m_UpdateTicks[GameStates.HalfTime] = self.m_UpdateTicks[GameStates.HalfTime] + p_DeltaTime
-end
-
-function Match:OnHalfToSecond(p_DeltaTime)
-    self.m_Server:ChangeGameState(GameStates.SecondHalf)
-end
-
-function Match:OnSecondHalf(p_DeltaTime)
-    -- Handle the case of when a round ends then restart the round
-    if self.m_UpdateTicks[GameStates.SecondHalf] >= 8000.0 then
-
-        if self.m_UpdateTicks[GameStates.SecondHalf] == 8000.0 then
-            self.m_Server:SetClientTimer(kPMConfig.MaxTransititionTime)
-            NetEvents:Broadcast("kPM:UpdateHeader", self.m_Attackers:CountRoundWon(), self.m_Defenders:CountRoundWon(), self.m_CurrentRound)
-        end
-
-        if self.m_UpdateTicks[GameStates.SecondHalf] >= (8000.0 + kPMConfig.MaxTransititionTime) then
-            self.m_UpdateTicks[GameStates.SecondHalf] = 0.0
-            return
-        end
-
-        self.m_UpdateTicks[GameStates.SecondHalf] = self.m_UpdateTicks[GameStates.SecondHalf] + p_DeltaTime
-        return
-    end
-
-    -- Handle the case of when a round first starts, otherwise it will run "normal" code
-    if self.m_UpdateTicks[GameStates.SecondHalf] == 0.0 then
-        -- Switch to strat time for 5 seconds
-
-        -- Kill all players
-        self:KillAllPlayers(false)
-
-        -- Respawn all players
-        self:SpawnAllPlayers(false)
-
-        self.m_BombSite = nil
-        self.m_BombLocation = nil
-        self.m_BombTime = nil
-        
-        NetEvents:Broadcast("kPM:UpdateHeader", self.m_Attackers:CountRoundWon(), self.m_Defenders:CountRoundWon(), self.m_CurrentRound, "nil")
-
-        -- Manually update the ticks
-        self.m_UpdateTicks[GameStates.SecondHalf] = self.m_UpdateTicks[GameStates.SecondHalf] + p_DeltaTime
-
-        -- Switch to strat time, do not touch the SecondHalf timer, this ensures that we pick up "normal" round
-        self.m_Server:ChangeGameState(GameStates.Strat)
-    end
-
-    -- TODO: FIXME
-    -- When start ends we need to update the UI's timer. Its kinda hacky now, needs a better solution
-    if self.m_UpdateTicks[GameStates.SecondHalf] >= 0.25 and self.m_UpdateTicks[GameStates.SecondHalf] <= 1.5 then
-        self.m_Server:SetClientTimer(kPMConfig.MaxRoundTime)
-    end
-
-    if TableHelper:empty(self.m_SpawnQueue) then
-        -- Get the player counts
-        local s_AttackerAliveCount, s_AttackerDeadCount, s_AttackerTotalCount, s_DefenderAliveCount, s_DefenderDeadCount, s_DefenderTotalCount = self:GetPlayerCounts()
-
-        self:CheckTeamCounts(s_AttackerTotalCount, s_DefenderTotalCount)
-        -- The round is running as expected, check the ending conditions
-
-        -- Which are if all attackers are dead
-        if s_AttackerAliveCount == 0 and self.m_BombSite == nil and self.m_BombLocation == nil and self.m_BombTime == nil then
-            print("all attackers are dead and the bomb is not planted, round is over")
-
-            -- Give a round to the defenders
-            self.m_Defenders:RoundWon(self.m_CurrentRound)
-
-            -- Give a loss to the attackers
-            self.m_Attackers:RoundLoss(self.m_CurrentRound)
-
-            -- Update the round count
-            self.m_CurrentRound = self.m_CurrentRound + 1
-
-            self.m_Server:SetRoundEndInfoBox(self.m_Defenders:GetTeamId())
-
-            self:IsAnyTeamWon()
-
-            -- Set this round to be over
-            self.m_UpdateTicks[GameStates.SecondHalf] = 8000.0
-            return
-        end
-
-        -- If all defenders are dead
-        if s_DefenderAliveCount == 0 then
-            print("all defenders are dead, round is over")
-
-            -- Give a loss to the defenders
-            self.m_Defenders:RoundLoss(self.m_CurrentRound)
-
-            -- Give a win to the attackers
-            self.m_Attackers:RoundWon(self.m_CurrentRound)
-
-            -- Update the round count
-            self.m_CurrentRound = self.m_CurrentRound + 1
-
-            self.m_Server:SetRoundEndInfoBox(self.m_Attackers:GetTeamId())
-
-            self:IsAnyTeamWon()
-
-            -- Set this round to be over
-            self.m_UpdateTicks[GameStates.SecondHalf] = 8000.0
-            return
-        end
-
-        -- If the round is over
-        if self.m_BombSite == nil and self.m_BombLocation == nil and self.m_BombTime == nil then
-            if self.m_UpdateTicks[GameStates.SecondHalf] >= kPMConfig.MaxRoundTime then
-                -- If the defenders have any players alive, they win, simple
-                if s_DefenderAliveCount > 0 then
-                    self.m_Defenders:RoundWon(self.m_CurrentRound)
-                    self.m_Attackers:RoundLoss(self.m_CurrentRound)
-    
-                    self.m_Server:SetRoundEndInfoBox(self.m_Defenders:GetTeamId())
-                else
-                    self.m_Attackers:RoundWon(self.m_CurrentRound)
-                    self.m_Defenders:RoundLoss(self.m_CurrentRound)
-    
-                    self.m_Server:SetRoundEndInfoBox(self.m_Attackers:GetTeamId())
-                end
-    
-                -- Update the round count
-                self.m_CurrentRound = self.m_CurrentRound + 1
-    
-                self:IsAnyTeamWon()
-    
-                -- Leave the timer at 0.0 in the same state, it will catch at the top
-                -- of this function and enable strat mode
-                self.m_UpdateTicks[GameStates.SecondHalf] = 8000.0
-                return
-            end
-        else
-            if self.m_UpdateTicks[GameStates.SecondHalf] >= self.m_BombTime then
-                NetEvents:Broadcast("kPM:BombKaboom")
-
-                self.m_Attackers:RoundWon(self.m_CurrentRound)
-                self.m_Defenders:RoundLoss(self.m_CurrentRound)
-                self.m_Server:SetRoundEndInfoBox(self.m_Attackers:GetTeamId())
-    
-                -- Update the round count
-                self.m_CurrentRound = self.m_CurrentRound + 1
-    
-                self:IsAnyTeamWon()
-    
-                -- Leave the timer at 0.0 in the same state, it will catch at the top
-                -- of this function and enable strat mode
-                self.m_UpdateTicks[GameStates.SecondHalf] = 8000.0
-                return
-            end
-        end
-    end
-
-    -- Update the tick
-    self.m_UpdateTicks[GameStates.SecondHalf] = self.m_UpdateTicks[GameStates.SecondHalf] + p_DeltaTime
-end
-
-function Match:IsAnyTeamWon()
-    if self.m_Attackers:CountRoundWon() >= (self.m_RoundCount / 2 + 1) or 
-        self.m_Defenders:CountRoundWon() >= (self.m_RoundCount / 2 + 1) then
-        NetEvents:Broadcast("kPM:UpdateHeader", self.m_Attackers:CountRoundWon(), self.m_Defenders:CountRoundWon(), self.m_CurrentRound, "nil")
-        self.m_Server:ChangeGameState(GameStates.EndGame)
-        return
-    end
-
-    if self.m_CurrentRound >= self.m_RoundCount then
-        NetEvents:Broadcast("kPM:UpdateHeader", self.m_Attackers:CountRoundWon(), self.m_Defenders:CountRoundWon(), self.m_CurrentRound, "nil")
-        self.m_Server:ChangeGameState(GameStates.EndGame)
-        return
-    end
-end
-
-function Match:CheckTeamCounts(p_AttackerTotalCount, p_DefenderTotalCount)
-    if p_AttackerTotalCount == 0 or p_DefenderTotalCount == 0 then
-        NetEvents:Broadcast("kPM:UpdateHeader", self.m_Attackers:CountRoundWon(), self.m_Defenders:CountRoundWon(), self.m_CurrentRound, "nil")
         self.m_Server:ChangeGameState(GameStates.EndGame)
     end
+
+    self.m_UpdateTicks[GameStates.Playing] = self.m_UpdateTicks[GameStates.Playing] + p_DeltaTime
 end
+
 
 function Match:OnEndGame(p_DeltaTime)
     if self.m_UpdateTicks[GameStates.EndGame] == 0.0 then
@@ -720,39 +230,6 @@ function Match:OnEndGame(p_DeltaTime)
     end
 
     self.m_UpdateTicks[GameStates.EndGame] = self.m_UpdateTicks[GameStates.EndGame] + p_DeltaTime
-end
-
-function Match:OnTimeout(p_DeltaTime)
-end
-
-function Match:OnStrat(p_DeltaTime)
-    if self.m_UpdateTicks[GameStates.Strat] == 0.0 then
-        self.m_Server:SetClientTimer(kPMConfig.MaxStratTime)
-    end
-
-    if self.m_UpdateTicks[GameStates.Strat] >= kPMConfig.MaxStratTime then
-        self.m_UpdateTicks[GameStates.Strat] = 0.0
-
-        -- One more cleanup, they can respawn and change / drop kits... dont leave those kits on the floor
-        self:Cleanup();
-
-        -- Check the previous state
-        local s_LastState = self.m_LastState
-        if s_LastState ~= GameStates.KnifeToFirst and s_LastState ~= GameStates.HalfToSecond and s_LastState ~= GameStates.FirstHalf and s_LastState ~= GameStates.SecondHalf then
-            print("ERROR coming from invalid state: " .. s_LastState)
-            return
-        end
-
-        self:EnablePlayerInputs()
-        self.m_Server:ChangeGameState(s_LastState)
-        return
-    else
-        -- Maybe overkill to set it every tick, but remember, players can respawn or rejoin when Start
-        self:DisablePlayerInputs()
-    end
-
-    -- Update the strat tick counter
-    self.m_UpdateTicks[GameStates.Strat] = self.m_UpdateTicks[GameStates.Strat] + p_DeltaTime
 end
 
 function Match:ForceUpdateHeader(p_Player)
@@ -796,67 +273,6 @@ end
 function Match:ClearReadyUpState()
     -- Clear out all ready up state entries
     self.m_ReadyUpPlayers = { }
-end
-
-function Match:OnTogglePlant(p_Player, p_PlantOrDefuse, p_BombSite, p_BombLocation, p_Force)
-    if p_PlantOrDefuse == "plant" then
-        if p_Player.teamId ~= self.m_Attackers:GetTeamId() then
-            if p_Force == nil then
-                return
-            end
-        end
-
-        if p_BombSite == nil or p_BombLocation == nil then
-            return
-        end 
-
-        if self.m_BombSite ~= nil or self.m_BombLocation ~= nil then
-            -- If the bomb already planted return
-            return
-        end
-
-        self.m_BombSite = p_BombSite
-        self.m_BombLocation = p_BombLocation
-        if self.m_CurrentState == GameStates.FirstHalf then
-            self.m_BombTime = self.m_UpdateTicks[GameStates.FirstHalf] + kPMConfig.BombTime
-        elseif self.m_CurrentState == GameStates.SecondHalf then
-            self.m_BombTime = self.m_UpdateTicks[GameStates.SecondHalf] + kPMConfig.BombTime
-        end
-
-        print('info: bomb has been planted on ' .. p_BombSite)
-
-        NetEvents:Broadcast("kPM:UpdateHeader", self.m_Attackers:CountRoundWon(), self.m_Defenders:CountRoundWon(), self.m_CurrentRound, p_BombSite)
-
-        -- Notify players that the bomb has been planted and start the timer
-        self.m_Server:SetClientTimer(kPMConfig.BombTime)
-        NetEvents:Broadcast('kPM:BombPlanted', p_BombSite, p_BombLocation)
-    elseif p_PlantOrDefuse == "defuse" then
-        if p_Player.teamId ~= self.m_Defenders:GetTeamId() then
-            return
-        end
-
-        if self.m_BombSite == nil or self.m_BombLocation == nil then
-            return
-        end
-
-        print('info: bomb has been defused')
-
-        -- Notify players that the bomb has been defused and end the round
-        NetEvents:Broadcast('kPM:BombDefused')
-
-        self.m_Defenders:RoundWon(self.m_CurrentRound)
-        self.m_Attackers:RoundLoss(self.m_CurrentRound)
-        self.m_CurrentRound = self.m_CurrentRound + 1
-        self.m_Server:SetRoundEndInfoBox(self.m_Defenders:GetTeamId())
-
-        if self.m_CurrentState == GameStates.FirstHalf then
-            self:IsRoundHalfTime()
-            self.m_UpdateTicks[GameStates.FirstHalf] = 0.0
-        elseif self.m_CurrentState == GameStates.SecondHalf then
-            self:IsAnyTeamWon()
-            self.m_UpdateTicks[GameStates.SecondHalf] = 0.0
-        end
-    end
 end
 
 function Match:OnPlayerRup(p_Player)
@@ -1265,17 +681,7 @@ function Match:RestartMatch()
     self.m_UpdateTicks = { }
     self.m_UpdateTicks[GameStates.None] = 0.0
     self.m_UpdateTicks[GameStates.Warmup] = 0.0
-    self.m_UpdateTicks[GameStates.WarmupToKnife] = 0.0
-    self.m_UpdateTicks[GameStates.KnifeRound] = 0.0
-    self.m_UpdateTicks[GameStates.KnifeToFirst] = 0.0
-    self.m_UpdateTicks[GameStates.FirstHalf] = 0.0
-    self.m_UpdateTicks[GameStates.FirstToHalf] = 0.0
-    self.m_UpdateTicks[GameStates.HalfTime] = 0.0
-    self.m_UpdateTicks[GameStates.HalfToSecond] = 0.0
-    self.m_UpdateTicks[GameStates.SecondHalf] = 0.0
-    self.m_UpdateTicks[GameStates.Timeout] = 0.0
-    self.m_UpdateTicks[GameStates.Strat] = 0.0
-    self.m_UpdateTicks[GameStates.NadeTraining] = 0.0
+    self.m_UpdateTicks[GameStates.Playing] = 0.0
     self.m_UpdateTicks[GameStates.EndGame] = 0.0
 
     self.m_KillQueue = { }
@@ -1291,8 +697,6 @@ function Match:RestartMatch()
     self.m_Defenders:RoundReset()
 
     self.m_Server:ChangeGameState(GameStates.Warmup)
-
-    self:SwitchTeams()
 
     NetEvents:Broadcast("kPM:ResetUI")
 
