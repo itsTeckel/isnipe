@@ -53,7 +53,7 @@ function kPMServer:RegisterEvents()
     self.m_EngineUpdateEvent = Events:Subscribe("Engine:Update", self, self.OnEngineUpdate)
 
     -- Player join/leave
-    self.m_PlayerRequestJoinHook = Hooks:Install("Player:RequestJoin", 1, self, self.OnPlayerRequestJoin)
+    --self.m_PlayerRequestJoinHook = Hooks:Install("Player:RequestJoin", 1, self, self.OnPlayerRequestJoin)
 
     self.m_PlayerJoiningEvent = Events:Subscribe("Player:Joining", self, self.OnPlayerJoining)
     self.m_PlayerKilledEvent = Events:Subscribe("Player:Killed", self, self.OnPlayerKilled)
@@ -153,7 +153,7 @@ function kPMServer:OnPlayerJoining(p_Name, p_Guid, p_IpAddress, p_AccountGuid)
     print("info: player " .. p_Name .. " is joining the server")
 end
 
-function kPMServer:OnPlayerKilled(p_Player)
+function kPMServer:OnPlayerKilled(p_Player, p_inflictor, position, weapon, isRoadKill, isHeadShot, wasVictimInReviveState, info)
     if p_Player == nil then
         print("Player is nil. Could not spawn")
         return
@@ -190,6 +190,8 @@ function kPMServer:OnPlayerConnected(p_Player)
 
     -- Send out the teams if he connects or reconnects
     NetEvents:SendTo("kPM:UpdateTeams", p_Player, self.m_Attackers:GetTeamId(), self.m_Defenders:GetTeamId())
+
+    p_Player.teamId = 3
 end
 
 function kPMServer:OnPlayerLeft(p_Player)
@@ -197,58 +199,26 @@ function kPMServer:OnPlayerLeft(p_Player)
 end
 
 function kPMServer:OnPlayerSetSelectedTeam(p_Player, p_Team)
-    if p_Player == nil or p_Team == nil then
+    if p_Player == nil then
+        print("Could not spawn player")
         return
     end
     
     local l_SoldierBlueprint = ResourceManager:SearchForDataContainer('Characters/Soldiers/MpSoldier')
 
-    if kPMConfig.GameType == GameTypes.Public then
-        if self.m_GameState == GameStates.Strat or
-            self.m_GameState == GameStates.None or 
-            self.m_GameState == GameStates.Warmup
-        then
-            print("info: player " .. p_Player.name .. " has selected " .. p_Team .." team")
-            p_Player.teamId = p_Team;
+    p_Player.teamId = 3
 
-            if p_Player.soldier ~= nil then
-                self.m_Match:KillPlayer(p_Player, false)
+    if p_Player.soldier ~= nil then
+        self.m_Match:KillPlayer(p_Player, false)
 
-                self.m_Match:AddPlayerToSpawnQueue(
-                    p_Player, 
-                    self.m_Match:GetRandomSpawnpoint(p_Player), 
-                    CharacterPoseType.CharacterPoseType_Stand, 
-                    l_SoldierBlueprint, 
-                    false,
-                    self.m_LoadoutManager:GetPlayerLoadout(p_Player)
-                )
-            end
-        else
-            if p_Player.soldier == nil or not p_Player.alive then
-                print("info: player " .. p_Player.name .. " has selected " .. p_Team .." team")
-                p_Player.teamId = p_Team;
-            end
-        end
-    elseif kPMConfig.GameType == GameTypes.Comp then
-        if self.m_GameState == GameStates.None or 
-            self.m_GameState == GameStates.Warmup
-        then
-            print("info: player " .. p_Player.name .. " has selected " .. p_Team .." team")
-            p_Player.teamId = p_Team;
-
-            if p_Player.soldier ~= nil then
-                self.m_Match:KillPlayer(p_Player, false)
-
-                self.m_Match:AddPlayerToSpawnQueue(
-                    p_Player, 
-                    self.m_Match:GetRandomSpawnpoint(p_Player), 
-                    CharacterPoseType.CharacterPoseType_Stand, 
-                    l_SoldierBlueprint, 
-                    false,
-                    self.m_LoadoutManager:GetPlayerLoadout(p_Player)
-                )
-            end
-        end
+        self.m_Match:AddPlayerToSpawnQueue(
+            p_Player, 
+            self.m_Match:GetRandomSpawnpoint(p_Player), 
+            CharacterPoseType.CharacterPoseType_Stand, 
+            l_SoldierBlueprint, 
+            false,
+            self.m_LoadoutManager:GetPlayerLoadout(p_Player)
+        )
     end
 end
 
@@ -287,6 +257,7 @@ end
 
 function kPMServer:OnPlayerFindBestSquad(p_Hook, p_Player)
     -- TODO: Force squad
+    p_Player.teamId = 3
 end
 
 function kPMServer:OnPlayerSelectTeam(p_Hook, p_Player, p_Team)
@@ -467,26 +438,27 @@ function kPMServer:SetupVariables()
     local s_VariablePair = {
         ["vars.friendlyFire"] = "true",
         ["vars.soldierHealth"] = "100",
-        ["vars.regenerateHealth"] = "false",
+        ["vars.regenerateHealth"] = "true",
         ["vars.onlySquadLeaderSpawn"] = "false",
         ["vars.3dSpotting"] = "false",
         ["vars.miniMap"] = "true",
         ["vars.autoBalance"] = "false",
-        ["vars.teamKillCountForKick"] = "20",
-        ["vars.teamKillValueForKick"] = "10",
-        ["vars.teamKillValueIncrease"] = "1",
+        ["vars.teamKillCountForKick"] = "99999",
+        ["vars.teamKillValueForKick"] = "99999",
+        ["vars.teamKillValueIncrease"] = "0",
         ["vars.teamKillValueDecreasePerSecond"] = "1",
         ["vars.idleTimeout"] = "300",
         ["vars.3pCam"] = "false",
         ["vars.killCam"] = "false",
         ["vars.roundStartPlayerCount"] = "0",
         ["vars.roundRestartPlayerCount"] = "0",
-        ["vars.hud"] = "true",
+        ["vars.hud"] = "false",
         ["vu.SquadSize"] = tostring(kPMConfig.SquadSize),
         ["vu.ColorCorrectionEnabled"] = "false",
         ["vu.SunFlareEnabled"] = "false",
         ["vu.SuppressionMultiplier"] = "0",
         ["vu.DestructionEnabled"] = "false",
+        ["vars.gameModeCounter"] = "99999",
     }
 
     -- Iterate through all of the commands and set their values via rcon

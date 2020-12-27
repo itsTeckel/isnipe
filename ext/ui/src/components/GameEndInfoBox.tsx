@@ -1,43 +1,40 @@
 import React, { useEffect } from "react";
+import ScoreboardTeam from "../components/ScoreboardTeam";
+import { GameStates } from "../helpers/GameStates";
+import { Players, Player } from "../helpers/Player";
+import { RoundInfo } from "../helpers/RoundInfo";
 import { Teams } from "../helpers/Teams";
+import winner from '../assets/img/winner.png';
 
 interface Props {
-    gameWon: boolean|null;
-    winningTeam: Teams|null;
-    afterInterval: () => void;
+    showScoreboard: boolean;
+    teamAttackersScore: number;
+    teamDefendersScore: number;
+    players: Players;
+    clientPlayer: Player;
+    gameState: GameStates;
+    round: number;
+    maxRounds: number;
+    roundsList: RoundInfo[];
 }
 
-const GameEndInfoBox: React.FC<Props> = ({ gameWon, winningTeam, afterInterval }) => {
-    useEffect(() => {
-        const interval = setInterval(() => {
-            afterInterval();
-        }, 10000);
-        return () => {
-            clearInterval(interval);
-        }
-    }, []);
-
+const GameEndInfoBox: React.FC<Props> = ({ showScoreboard, teamAttackersScore, teamDefendersScore, players, clientPlayer, gameState, round, maxRounds, roundsList }) => {
     return (
         <>
-            <div className={"roundEndInfoBox gameEndInfoBox fadeInTop " + ((winningTeam !== null ? ((winningTeam === Teams.Attackers) ?  'defenders' : 'attackers') : ''))}>
-                {winningTeam !== null
-                ?
-                    <>
-                        <h1>Your team {gameWon ? 'won' : 'lost'}</h1>
-                    </>
-                :
-                    <>
-                        <h1>Draw</h1>
-                    </>
-                }
-            </div>
+            {showScoreboard &&
+                <div>
+                    <div id="inGameScoreboard" className="fadeInBottom">
+                        <ScoreboardTeam team={Teams.All} score={teamAttackersScore} players={players[Teams.All]} clientPlayer={clientPlayer} gameState={gameState} />
+                    </div>
+                    <img src={winner} />
+                </div>
+            }
         </>
     );
 };
 
 GameEndInfoBox.defaultProps = {
-    gameWon: false,
-    winningTeam: null,
+    showScoreboard: false,
 };
 
 export default GameEndInfoBox;

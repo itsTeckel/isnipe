@@ -15,7 +15,6 @@ function Match:__init(p_Server, p_TeamAttackers, p_TeamDefenders, p_RoundCount, 
         print("Only public gametype is supported as of now.")
         return
     end
-
     -- Save server reference
     self.m_Server = p_Server
 
@@ -76,7 +75,7 @@ function Match:OnUpdateManagerUpdate(p_DeltaTime, p_UpdatePass)
 
         if self.m_RestartQueue then
             self:RestartMatch()
-            RCON:SendCommand('mapList.runNextRound')
+            RCON:SendCommand('mapList.restartRound')
             self.m_RestartQueue = false
         end
     end
@@ -117,81 +116,17 @@ function Match:OnWarmup(p_DeltaTime)
     -- Check to see if the current time is greater or equal than our max
     if self.m_UpdateTicks[GameStates.Warmup] >= kPMConfig.MaxRupTick then
         self.m_UpdateTicks[GameStates.Warmup] = 0.0
+        -- First change the game state so we have no logic running
+        self.m_Server:ChangeGameState(GameStates.None)
+        --ChatManager:Yell("All players have readied up, starting knife round...", 2.0)
 
-        -- Check if all players are readied up
-        if self:IsAllPlayersRup() then
-            -- First change the game state so we have no logic running
-            self.m_Server:ChangeGameState(GameStates.None)
-            --ChatManager:Yell("All players have readied up, starting knife round...", 2.0)
-
-            -- Handle resetting all players or spawning them
-            self.m_Server:ChangeGameState(GameStates.Playing)
-        end
-
-        -- Update status to all players
-        local s_Players = PlayerManager:GetPlayers()
-        for l_Index, l_Player in ipairs(s_Players) do
-            -- Check if this specific player is readied up
-            local l_PlayerRup = self:IsPlayerRup(l_Player.id)
-            
-            -- Send to client to update WebUI
-            NetEvents:SendTo("kPM:RupStateChanged", l_Player, self:GetPlayerNotRupCount(), l_PlayerRup)
-        end
+        -- Handle resetting all players or spawning them
+        self.m_Server:ChangeGameState(GameStates.Playing)
     end
 
     -- Add the delta time to our rup timer
     self.m_UpdateTicks[GameStates.Warmup] = self.m_UpdateTicks[GameStates.Warmup] + p_DeltaTime
 end
-
-function Match:GetPlayerCounts()
-    local s_AttackerAliveCount = 0
-    local s_DefenderAliveCount = 0
-
-    local s_AttackerTotalCount = 0
-    local s_DefenderTotalCount = 0
-
-    local s_AttackerDeadCount = 0
-    local s_DefenderDeadCount = 0
-
-    -- Get the attacker and defender team ids
-    local s_AttackerId = self.m_Attackers:GetTeamId()
-    local s_DefenderId = self.m_Defenders:GetTeamId()
-
-    -- Iterate and check alive status
-    local s_Players = PlayerManager:GetPlayers()
-    for l_Index, l_Player in ipairs(s_Players) do
-        -- Validate player
-        if l_Player == nil then
-            goto _on_knife_round_continue_
-        end
-
-        local s_Team = l_Player.teamId
-
-        if not l_Player.alive then
-            if s_Team == s_AttackerId then
-                s_AttackerDeadCount = s_AttackerDeadCount + 1
-            elseif s_Team == s_DefenderId then
-                s_DefenderDeadCount = s_DefenderDeadCount + 1
-            end
-        else
-            if s_Team == s_AttackerId then
-                s_AttackerAliveCount = s_AttackerAliveCount + 1
-            elseif s_Team == s_DefenderId then
-                s_DefenderAliveCount = s_DefenderAliveCount + 1
-            end
-        end
-
-        if s_Team == s_AttackerId then
-            s_AttackerTotalCount = s_AttackerTotalCount + 1
-        elseif s_Team == s_DefenderId then
-            s_DefenderTotalCount = s_DefenderTotalCount + 1
-        end
-        ::_on_knife_round_continue_::
-    end
-
-    return s_AttackerAliveCount, s_AttackerDeadCount, s_AttackerTotalCount, s_DefenderAliveCount, s_DefenderDeadCount, s_DefenderTotalCount
-end
-
 
 function Match:OnPlaying(p_DeltaTime)
     if self.m_UpdateTicks[GameStates.Playing] == 0.0 then
@@ -199,8 +134,13 @@ function Match:OnPlaying(p_DeltaTime)
     end
 
     if self.m_UpdateTicks[GameStates.Playing] >= kPMConfig.MaxRoundTime then
-        self:KillAllPlayers(false)
         self.m_Server:ChangeGameState(GameStates.EndGame)
+    end
+
+    if self.m_UpdateTicks[GameStates.Warmup] >= kPMConfig.MaxRupTick then
+        self.m_UpdateTicks[GameStates.Warmup] = 0.0
+        TicketManager:SetTicketCount(self.m_Attackers:GetTeamId(), 0)
+        TicketManager:SetTicketCount(self.m_Defenders:GetTeamId(), 0)
     end
 
     self.m_UpdateTicks[GameStates.Playing] = self.m_UpdateTicks[GameStates.Playing] + p_DeltaTime
@@ -210,19 +150,7 @@ end
 function Match:OnEndGame(p_DeltaTime)
     if self.m_UpdateTicks[GameStates.EndGame] == 0.0 then
         self:DisablePlayerInputs()
-        if self.m_Attackers:CountRoundWon() == self.m_Defenders:CountRoundWon() then
-            print('Game end: Draw')
-            self.m_Server:SetGameEnd(nil)
-        else
-            if self.m_Attackers:CountRoundWon() > self.m_Defenders:CountRoundWon() then
-                print('Game end: Attackers win')
-                self.m_Server:SetGameEnd(self.m_Attackers:GetTeamId())
-            else
-                print('Game end: Defenders win')
-                self.m_Server:SetGameEnd(self.m_Defenders:GetTeamId())
-            end
-        end
-
+        self.m_Server:SetGameEnd(nil)
         self.m_Server:SetClientTimer(kPMConfig.MaxEndgameTime)
     end
 

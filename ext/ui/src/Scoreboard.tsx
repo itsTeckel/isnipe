@@ -20,8 +20,6 @@ interface Props {
 }
 
 const Scoreboard: React.FC<Props> = ({ showScoreboard, teamAttackersScore, teamDefendersScore, players, clientPlayer, gameState, round, maxRounds, roundsList }) => {
-    const rounds = [];
-
     return (
         <>
             {showScoreboard &&

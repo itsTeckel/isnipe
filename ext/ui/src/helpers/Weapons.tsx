@@ -496,6 +496,11 @@ export let Weapons = {
                     Name: "Rifle Scope (8x)",
                     Vext: "Weapons/Model98B/U_M98B_Rifle_Scope",
                 },
+                U_L96_ACOG: {
+                    Key: "U_L96_ACOG",
+                    Name: "ACOG (4x)",
+                    Vext: "Weapons/Model98B/U_M98B_Acog",
+                },
             },
             Primary: {
                 default: {
@@ -524,6 +529,11 @@ export let Weapons = {
                     Key: "U_L96_Rifle_Scope",
                     Name: "Rifle Scope (8x)",
                     Vext: "Weapons/XP1_L96/U_L96_Rifle_Scope",
+                },
+                U_L96_ACOG: {
+                    Key: "U_L96_ACOG",
+                    Name: "ACOG (4x)",
+                    Vext: "Weapons/XP1_L96/U_L96_ACOG",
                 },
             },
             Primary: {

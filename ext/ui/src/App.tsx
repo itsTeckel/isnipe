@@ -3,8 +3,6 @@ import React, { useState } from "react";
 import Header from "./Header";
 import Scoreboard from "./Scoreboard";
 
-import RoundEndInfoBox from "./components/RoundEndInfoBox";
-
 import TeamsScene from "./scenes/TeamsScene";
 import WarmupScene from "./scenes/WarmupScene";
 import EndgameScene from "./scenes/EndgameScene";
@@ -174,15 +172,7 @@ const App: React.FC = () => {
     const [gameWinningTeam, setGameWinningTeam] = useState<Teams|null>(null);
     window.SetGameEnd = function (p_GameWon: boolean, p_WinningTeam: string) {
         setGameWon(p_GameWon);
-        
-        if(p_WinningTeam === 'attackers') {
-            setGameWinningTeam(Teams.Attackers);
-        } else if(p_WinningTeam === 'defenders') {
-            setGameWinningTeam(Teams.Defenders);
-        } else {
-            setGameWinningTeam(null);
-        }
-
+        setGameWinningTeam(null);
         setShowRoundEndInfoBox(false);
     }
 
@@ -280,14 +270,12 @@ const App: React.FC = () => {
         setShowLoadoutPage(false);
         setShowRoundEndInfoBox(false);
 
-        // setGameWon
-        // setGameWinningTeam
-
         setBombPlanted(null);
 
         setRupProgress(0);
         setPlantProgress(0);
         setPlantOrDefuse("plant");
+        setGameWon(null);
     }
 
     window.stringifyNumber = function(i) {
@@ -329,6 +317,9 @@ const App: React.FC = () => {
             case GameStates.Warmup:
                 return <WarmupScene rupProgress={rupProgress} players={players} clientPlayer={clientPlayer} />;
 
+            case GameStates.Playing:
+                return <WarmupScene rupProgress={rupProgress} players={players} clientPlayer={clientPlayer} />;
+
             case GameStates.EndGame:
                 return <EndgameScene
                     roundWon={roundWon}
@@ -367,8 +358,6 @@ const App: React.FC = () => {
                 <button onClick={() => setGameWinningTeam(Teams.Attackers)}>Attackers won the game</button>
                 <button onClick={() => setBombPlantedOn("B")}>Set bomb planted</button>
                 <br />
-                <button onClick={() => setRoundWon(true)}>Win</button>
-                <button onClick={() => setRoundWon(false)}>Lose</button>
                 <button onClick={() => setWinningTeam(Teams.Attackers)}>Attackers Win</button>
                 <button onClick={() => setWinningTeam(Teams.Defenders)}>Defenders Win</button>
                 <button onClick={() => setTeamAttackersScore(prevState => prevState + 1)}>Attackers +1</button>
@@ -415,27 +404,18 @@ const App: React.FC = () => {
                     <BombPlantInfoBox bombSite={bombPlanted} afterInterval={() => setBombPlanted(null)} />
                 }
 
-                {gameWon !== null 
-                ?
+                {gameWon !== null &&
                     <GameEndInfoBox
-                        gameWon={gameWon}
-                        winningTeam={gameWinningTeam}
-                        afterInterval={() => {
-                            setShowRoundEndInfoBox(false);
-                            setGameWon(null);
-                            setGameWinningTeam(null);
-                        }}
+                        showScoreboard={showHud}
+                        teamAttackersScore={teamAttackersScore}
+                        teamDefendersScore={teamDefendersScore}
+                        players={players}
+                        clientPlayer={clientPlayer}
+                        gameState={scene}
+                        round={round}
+                        maxRounds={maxRounds}
+                        roundsList={roundsList}
                         />
-                :
-                    <>
-                        {showRoundEndInfoBox &&
-                            <RoundEndInfoBox 
-                                roundWon={roundWon}
-                                winningTeam={winningTeam}
-                                afterDisaper={() => setShowRoundEndInfoBox(false)}
-                                />
-                        }
-                    </>
                 }
             </div>
         </div>
