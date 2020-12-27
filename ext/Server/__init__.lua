@@ -191,7 +191,7 @@ function kPMServer:OnPlayerConnected(p_Player)
     -- Send out the teams if he connects or reconnects
     NetEvents:SendTo("kPM:UpdateTeams", p_Player, self.m_Attackers:GetTeamId(), self.m_Defenders:GetTeamId())
 
-    p_Player.teamId = 3
+    p_Player.teamId = 1
 end
 
 function kPMServer:OnPlayerLeft(p_Player)
@@ -206,7 +206,7 @@ function kPMServer:OnPlayerSetSelectedTeam(p_Player, p_Team)
     
     local l_SoldierBlueprint = ResourceManager:SearchForDataContainer('Characters/Soldiers/MpSoldier')
 
-    p_Player.teamId = 3
+    p_Player.teamId = 1
 
     if p_Player.soldier ~= nil then
         self.m_Match:KillPlayer(p_Player, false)
@@ -257,12 +257,13 @@ end
 
 function kPMServer:OnPlayerFindBestSquad(p_Hook, p_Player)
     -- TODO: Force squad
-    p_Player.teamId = 3
+    p_Player.teamId = 1
 end
 
 function kPMServer:OnPlayerSelectTeam(p_Hook, p_Player, p_Team)
     -- p_Team is R/W
     -- p_Player is RO
+    p_Player.teamId = 1
 end
 
 function kPMServer:OnPartitionLoaded(p_Partition)
