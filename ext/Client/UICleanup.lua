@@ -40,6 +40,7 @@ function UICleanup:__init()
 
     Events:Subscribe('Partition:Loaded', function(partition)
         for _, instance in pairs(partition.instances) do
+            --print(instance)
             if instance.instanceGuid == Guid('85453C26-DAB8-41F9-9ADF-515716041FB7') or 
                 instance.instanceGuid == Guid('D4298FB7-2E41-4616-B713-A8BBCB211A53') or
                 instance.instanceGuid == Guid('A3C5D8A5-1563-4F43-8FF4-034A8FF2DA90')
@@ -58,6 +59,15 @@ function UICleanup:__init()
                 s_Instance.brightness = Vec3(1, 1, 1)
                 s_Instance.contrast = Vec3(1, 1, 1)
                 s_Instance.saturation = Vec3(1, 1, 1)
+            end
+            if instance:Is('UI3dIconCompData') then
+                local s_Instance = UI3dIconCompData(instance)
+                s_Instance:MakeWritable()
+                s_Instance.enable = false
+                s_Instance.blurAdd = 0.0
+                s_Instance.scale = 0.0
+                s_Instance.diffusionDofEnable = false
+                s_Instance.excluded = true
             end
             if instance:Is('VignetteComponentData') then -- menu UI/Assets/MenuVisualEnvironment
                 local s_Instance = VignetteComponentData(instance)

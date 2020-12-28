@@ -52,11 +52,7 @@ function kPMServer:RegisterEvents()
     -- Engine tick
     self.m_EngineUpdateEvent = Events:Subscribe("Engine:Update", self, self.OnEngineUpdate)
 
-    -- Player join/leave
-    --self.m_PlayerRequestJoinHook = Hooks:Install("Player:RequestJoin", 1, self, self.OnPlayerRequestJoin)
-
     self.m_PlayerJoiningEvent = Events:Subscribe("Player:Joining", self, self.OnPlayerJoining)
-    self.m_PlayerKilledEvent = Events:Subscribe("Player:Killed", self, self.OnPlayerKilled)
     self.m_PlayerLeaveEvent = Events:Subscribe("Player:Left", self, self.OnPlayerLeft)
 
     -- Team management
@@ -137,41 +133,9 @@ function kPMServer:OnEngineUpdate(p_DeltaTime, p_SimulationDeltaTime)
     self.m_NameTick = self.m_NameTick + p_DeltaTime
 end
 
-function kPMServer:OnPlayerRequestJoin(p_Hook, p_JoinMode, p_AccountGuid, p_PlayerGuid, p_PlayerName)
-    -- Ensure that spectators can join the server at will
-    if p_JoinMode ~= "player" then
-        p_Hook:Return(true)
-        return
-    end
-
-    -- Handle player joining
-    p_Hook:Return(true)
-end
-
 function kPMServer:OnPlayerJoining(p_Name, p_Guid, p_IpAddress, p_AccountGuid)
     -- Here we can send the event to whichever state we are running in
     print("info: player " .. p_Name .. " is joining the server")
-end
-
-function kPMServer:OnPlayerKilled(p_Player, p_inflictor, position, weapon, isRoadKill, isHeadShot, wasVictimInReviveState, info)
-    if p_Player == nil then
-        print("Player is nil. Could not spawn")
-        return
-    end
-    local l_SoldierBlueprint = ResourceManager:SearchForDataContainer('Characters/Soldiers/MpSoldier')
-    if p_Player == nil then
-        print("l_SoldierBlueprint is nil")
-        return
-    end
-
-    self.m_Match:AddPlayerToSpawnQueue(
-        p_Player, 
-        self.m_Match:GetRandomSpawnpoint(p_Player), 
-        CharacterPoseType.CharacterPoseType_Stand, 
-        l_SoldierBlueprint, 
-        false,
-        self.m_LoadoutManager:GetPlayerLoadout(p_Player)
-    )
 end
 
 function kPMServer:OnPlayerConnected(p_Player)
@@ -189,6 +153,8 @@ function kPMServer:OnPlayerConnected(p_Player)
     NetEvents:SendTo("kPM:GameTypeChanged", p_Player, kPMConfig.GameType)
 
     -- Send out the teams if he connects or reconnects
+    NetEvents:SendTo("kPM:UpdateTeams", p_Player, self.m_Attackers:GetTeamId(), self.m_Defenders:GetTeamId())
+
     NetEvents:SendTo("kPM:UpdateTeams", p_Player, self.m_Attackers:GetTeamId(), self.m_Defenders:GetTeamId())
 
     p_Player.teamId = 1
@@ -210,15 +176,6 @@ function kPMServer:OnPlayerSetSelectedTeam(p_Player, p_Team)
 
     if p_Player.soldier ~= nil then
         self.m_Match:KillPlayer(p_Player, false)
-
-        self.m_Match:AddPlayerToSpawnQueue(
-            p_Player, 
-            self.m_Match:GetRandomSpawnpoint(p_Player), 
-            CharacterPoseType.CharacterPoseType_Stand, 
-            l_SoldierBlueprint, 
-            false,
-            self.m_LoadoutManager:GetPlayerLoadout(p_Player)
-        )
     end
 end
 
@@ -243,15 +200,6 @@ function kPMServer:OnPlayerSetSelectedKit(p_Player, p_Data)
         if p_Player.soldier ~= nil then
             self.m_Match:KillPlayer(p_Player, false)
         end
-
-        self.m_Match:AddPlayerToSpawnQueue(
-            p_Player, 
-            self.m_Match:GetRandomSpawnpoint(p_Player), 
-            CharacterPoseType.CharacterPoseType_Stand, 
-            l_SoldierBlueprint, 
-            false,
-            self.m_LoadoutManager:GetPlayerLoadout(p_Player)
-        )
     --end
 end
 
@@ -274,6 +222,7 @@ function kPMServer:OnPartitionLoaded(p_Partition)
 
     -- Send event to the loadout manager
     self.m_LoadoutManager:OnPartitionLoaded(p_Partition)
+    self.m_Match:OnPartitionLoaded(p_Partition)
 end
 
 function kPMServer:OnSoldierDamage(p_Hook, p_Soldier, p_Info, p_GiverInfo)

@@ -53,14 +53,12 @@ function Match:__init(p_Server, p_TeamAttackers, p_TeamDefenders, p_RoundCount, 
     self.m_KillQueue = { }
     self.m_SpawnQueue = { }
     self.m_UpdateManagerUpdateEvent = Events:Subscribe("UpdateManager:Update", self, self.OnUpdateManagerUpdate)
+    self.m_SetSpawnEvent = NetEvents:Subscribe("kPM:SetSpawn", self, self.OnSetSpawn)
 
     self.m_RestartQueue = false
 
     self.m_GameType = p_GameType
-
-    self.m_BombSite = nil
-    self.m_BombLocation = nil
-    self.m_BombTime = nil
+    self.m_defaultSpawn = nil
 end
 
 function Match:OnUpdateManagerUpdate(p_DeltaTime, p_UpdatePass)
@@ -75,7 +73,7 @@ function Match:OnUpdateManagerUpdate(p_DeltaTime, p_UpdatePass)
 
         if self.m_RestartQueue then
             self:RestartMatch()
-            RCON:SendCommand('mapList.restartRound')
+            RCON:SendCommand('mapList.runNextRound')
             self.m_RestartQueue = false
         end
     end
@@ -168,6 +166,24 @@ function Match:ForceUpdateHeader(p_Player)
     end
 
     NetEvents:SendTo("kPM:UpdateHeader", p_Player, self.m_Attackers:CountRoundWon(), self.m_Defenders:CountRoundWon(), self.m_CurrentRound)
+end
+
+function Match:OnPartitionLoaded(p_Partition)
+    if p_Partition == nil then
+        return
+    end
+
+    --if self.m_defaultSpawn == nil then
+        -- for _, l_Instance in pairs(p_Partition.instances) do
+        --     if l_Instance:Is("CameraEntityData") then
+        --         local cameraEntityData = CameraEntityData(l_Instance)
+        --         print("found it")
+        --         print(cameraEntityData.transform)
+        --         self.m_defaultSpawn = cameraEntityData.transform
+        --     end
+        -- end
+    --end
+
 end
 
 function Match:DisablePlayerInputs()
@@ -362,59 +378,76 @@ end
 function Match:SpawnQueuedPlayers()
     for l_Index, l_Spawn in ipairs(self.m_SpawnQueue) do
         if not TableHelper:contains(self.m_KillQueue, l_Spawn["p_Player"].name) then
+            local p_SelectedKit = self.m_LoadoutManager:GetPlayerLoadout(l_Spawn["p_Player"])
             print('SpawnQueuedPlayer: ' .. l_Spawn["p_Player"].name)
-            self:SpawnPlayer(
-                l_Spawn["p_Player"],
-                l_Spawn["p_Transform"],
-                l_Spawn["p_Pose"],
-                l_Spawn["p_SoldierBp"],
-                l_Spawn["p_KnifeOnly"],
-                l_Spawn["p_SelectedKit"]
-            )
+            if p_SelectedKit ~= nil then
+                self:SpawnPlayer(
+                    l_Spawn["p_Player"],
+                    l_Spawn["p_Transform"],
+                    l_Spawn["p_Pose"],
+                    l_Spawn["p_SoldierBp"],
+                    l_Spawn["p_KnifeOnly"],
+                    p_SelectedKit
+                )
+            end
             table.remove(self.m_SpawnQueue, l_Index)
         end
     end
 end
 
-function Match:SpawnAllPlayers(p_KnifeOnly)
-    if p_KnifeOnly == nil then
-        p_KnifeOnly = false
+function Match:OnSetSpawn(p_player, p_Data)
+    local l_Data = json.decode(p_Data)
+
+    if p_player == nil then
+        print("p_Player is nil")
+        return
     end
 
-    self:Cleanup();
-
-    local s_SoldierBlueprint = ResourceManager:SearchForDataContainer('Characters/Soldiers/MpSoldier')
-
-    local s_Players = PlayerManager:GetPlayers()
-    for l_Index, l_Player in ipairs(s_Players) do
-        -- Validate our player
-        if l_Player == nil then
-            goto _knife_continue_
-        end
-
-        self:AddPlayerToSpawnQueue(
-            l_Player, 
-            self:GetRandomSpawnpoint(l_Player), 
-            CharacterPoseType.CharacterPoseType_Stand, 
-            s_SoldierBlueprint, 
-            p_KnifeOnly,
-            self.m_LoadoutManager:GetPlayerLoadout(l_Player)
-        )
-
-        ::_knife_continue_::
+    local p_SelectedKit = self.m_LoadoutManager:GetPlayerLoadout(p_player)
+    if p_SelectedKit == nil then
+        return
     end
+    
+    local l_SoldierBlueprint = ResourceManager:SearchForDataContainer('Characters/Soldiers/MpSoldier')
+    self:KillPlayer(p_Player, false)
+
+    if l_Data[1] == 0 then
+        --debug. Press f10 to get new coordinates.
+        --if self.m_defaultSpawn ~= nil then
+            -- self:AddPlayerToSpawnQueue(
+            --    p_player, 
+            --    LinearTransform(Vec3(0.19240729510784, 0.016226250678301, -0.981181204319), Vec3(-0.23643299937248, 0.97117531299591, -0.03030313923955), Vec3(0.9524068236351, 0.23781399428844, 0.19069750607014), Vec3(101.55596160889, 7.7835311889648, -69.27197265625)),
+            --    CharacterPoseType.CharacterPoseType_Stand, 
+            --    l_SoldierBlueprint, 
+            --    false
+            -- )
+        --end
+        return
+    end
+    
+    local p_Transform = LinearTransform(Vec3(l_Data[2][1][1], l_Data[2][1][2], l_Data[2][1][3]), Vec3(l_Data[2][2][1], l_Data[2][2][2], l_Data[2][2][3]), Vec3(l_Data[2][3][1], l_Data[2][3][2], l_Data[2][3][3]), Vec3(l_Data[2][4][1], l_Data[2][4][2], l_Data[2][4][3]))
+
+    self:AddPlayerToSpawnQueue(
+        p_player, 
+        p_Transform,
+        CharacterPoseType.CharacterPoseType_Stand, 
+        l_SoldierBlueprint, 
+        false
+    )
 end
 
-function Match:AddPlayerToSpawnQueue(p_Player, p_Transform, p_Pose, p_SoldierBp, p_KnifeOnly, p_SelectedKit)
-    print('AddPlayerToSpawnQueue: ' .. p_Player.name)
-    table.insert(self.m_SpawnQueue, {
-        ["p_Player"] = p_Player,
-        ["p_Transform"] = p_Transform,
-        ["p_Pose"] = p_Pose,
-        ["p_SoldierBp"] = p_SoldierBp,
-        ["p_KnifeOnly"] = p_KnifeOnly,
-        ["p_SelectedKit"] = p_SelectedKit,
-    })
+function Match:AddPlayerToSpawnQueue(p_Player, p_Transform, p_Pose, p_SoldierBp, p_KnifeOnly)
+    if not TableHelper:contains(self.m_SpawnQueue, p_Player.name) then
+        print('AddPlayerToSpawnQueue: ' .. p_Player.name)
+        table.insert(self.m_SpawnQueue, {
+            ["p_Player"] = p_Player,
+            ["p_Transform"] = p_Transform,
+            ["p_Player"] = p_Player,
+            ["p_Pose"] = p_Pose,
+            ["p_SoldierBp"] = p_SoldierBp,
+            ["p_KnifeOnly"] = p_KnifeOnly,
+        })
+    end
 end
 
 function Match:AddPlayerToKillQueue(p_PlayerName)
@@ -424,14 +457,17 @@ end
 
 function Match:SpawnPlayer(p_Player, p_Transform, p_Pose, p_SoldierBp, p_KnifeOnly, p_SelectedKit)
     if p_Player == nil then
+        print("p_Player is nil")
         return
     end
 
     if p_Player.alive then
+        print("p_Player is alive")
         return
     end
 
     if p_SelectedKit == nil then
+        print("p_SelectedKit is nil")
         return
     end
 

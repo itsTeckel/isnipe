@@ -13,6 +13,7 @@ import { GameStates } from './helpers/GameStates';
 import { GameTypes } from './helpers/GameTypes';
 import { Teams } from "./helpers/Teams";
 import { Player, Players } from "./helpers/Player";
+import { GetSpawn, CalculateSpawn } from './helpers/GetSpawn';
 
 import GameEndInfoBox from "./components/GameEndInfoBox";
 import BombPlantInfoBox from "./components/BombPlantInfoBox";
@@ -94,6 +95,14 @@ const App: React.FC = () => {
     
     window.RoundCount = function (p_Count: number) {
         setMaxRounds(p_Count);
+    }
+
+    window.CalculateSpawn = function (points: Array<number[]>, spawns: any): [number, number[]] {
+        return CalculateSpawn(points, spawns);
+    }
+
+    window.GetSpawn = function (points: Array<number[]>, map: string): [number, number[]] {
+        return GetSpawn(points, map);
     }
 
     const [showTeamsPage, setShowTeamsPage] = useState<boolean>(false);
@@ -447,5 +456,7 @@ declare global {
         //Spectator
         SpectatorTarget: (p_TargetName: string) => void;
         SpectatorEnabled: (p_Enabled: boolean) => void;
+        GetSpawn: (points: Array<number[]>, map: string) => [number, number[]];
+        CalculateSpawn: (points: Array<number[]>, spawns: any) => [number, number[]];
     }
 }

@@ -40,6 +40,7 @@ function kPMClient:__init()
 
     -- Tab / Scoreboard Inputs
     self.m_TabHeldTime = 0.0
+    self.m_spawnCheckTime = 0.0
     self.m_ScoreboardActive = false
     
     -- The current gamestate, this is read-only and should only be changed by the SERVER
@@ -139,6 +140,7 @@ function kPMClient:RegisterEvents()
     -- WebUI
     self.m_SetSelectedTeamEvent = Events:Subscribe("WebUISetSelectedTeam", self, self.OnSetSelectedTeam)
     self.m_SetSelectedLoadoutEvent = Events:Subscribe("WebUISetSelectedLoadout", self, self.OnSetSelectedLoadout)
+    self.m_WebUICalculatedSpawnEvent = Events:Subscribe("WebUICalculatedSpawn", self, self.OnCalculatedSpawn)
     
     self.m_StartWebUITimerEvent = NetEvents:Subscribe("kPM:StartWebUITimer", self, self.OnStartWebUITimer)
     self.m_UpdateHeaderEvent = NetEvents:Subscribe("kPM:UpdateHeader", self, self.OnUpdateHeader)
@@ -162,7 +164,7 @@ function kPMClient:RegisterEvents()
 end
 
 function kPMClient:OnPartitionLoaded(p_Partition)
-    
+
 end
 
 function kPMClient:UnregisterEvents()
@@ -223,10 +225,6 @@ function kPMClient:OnSetSelectedLoadout(p_Data)
     end
 
     NetEvents:Send("kPM:PlayerSetSelectedKit", p_Data)
-
-    -- Ready up when we've selected a load out
-    NetEvents:Send("kPM:ToggleRup")
-    print("Readying")
 end
 
 -- ==========
@@ -296,19 +294,6 @@ function kPMClient:OnLevelLoadResources()
 end
 
 function kPMClient:OnUpdateInput(p_DeltaTime)
-    -- Update the freecam
-    --[[if self.m_SpecCam ~= nil then
-        self.m_SpecCam:OnUpdateInput(p_DeltaTime)
-    end]]
-
-    -- Open Team menu
-    --if InputManager:WentKeyDown(InputDeviceKeys.IDK_F9) then
-        -- If the player never spawned we should force him to pick a team and a loadout first
-    --    if self.m_FirstSpawn then
-    --        WebUI:ExecuteJS("OpenCloseTeamMenu();")
-    --    end
-    --end
-
     if InputManager:WentKeyDown(InputDeviceKeys.IDK_F9) then
         local localPlayer = PlayerManager:GetLocalPlayer()
         if localPlayer == nil then
@@ -332,11 +317,16 @@ function kPMClient:OnUpdateInput(p_DeltaTime)
         -- Get the position vector
 
         -- Return the formatted string (x, y, z)
-        print("coordinate: Vec3(" .. soldierLinearTransform.left.x .. ", " .. soldierLinearTransform.left.y .. ", " .. soldierLinearTransform.left.z .. "), Vec3(" .. soldierLinearTransform.up.x .. ", " .. soldierLinearTransform.up.y .. ", " .. soldierLinearTransform.up.z .. "), Vec3(" .. soldierLinearTransform.forward.x .. ", " .. soldierLinearTransform.forward.y .. ", " .. soldierLinearTransform.forward.z .. "), Vec3(" .. soldierLinearTransform.trans.x .. ", " .. soldierLinearTransform.trans.y .. ", " .. soldierLinearTransform.trans.z .. ")")
+        print("coordinate: [[" .. soldierLinearTransform.left.x .. ", " .. soldierLinearTransform.left.y .. ", " .. soldierLinearTransform.left.z .. "], [" .. soldierLinearTransform.up.x .. ", " .. soldierLinearTransform.up.y .. ", " .. soldierLinearTransform.up.z .. "], [" .. soldierLinearTransform.forward.x .. ", " .. soldierLinearTransform.forward.y .. ", " .. soldierLinearTransform.forward.z .. "], [" .. soldierLinearTransform.trans.x .. ", " .. soldierLinearTransform.trans.y .. ", " .. soldierLinearTransform.trans.z .. "]]")
     end
 
     -- Open Loadout menu
     if InputManager:WentKeyDown(InputDeviceKeys.IDK_F10) then
+        --current camera position
+        local soldierLinearTransform = ClientUtils:GetCameraTransform()
+        print("coordinate: Vec3(" .. soldierLinearTransform.left.x .. ", " .. soldierLinearTransform.left.y .. ", " .. soldierLinearTransform.left.z .. "), Vec3(" .. soldierLinearTransform.up.x .. ", " .. soldierLinearTransform.up.y .. ", " .. soldierLinearTransform.up.z .. "), Vec3(" .. soldierLinearTransform.forward.x .. ", " .. soldierLinearTransform.forward.y .. ", " .. soldierLinearTransform.forward.z .. "), Vec3(" .. soldierLinearTransform.trans.x .. ", " .. soldierLinearTransform.trans.y .. ", " .. soldierLinearTransform.trans.z .. ")")
+
+
         -- If the player never spawned we should force him to pick a team and a loadout first
         if self.m_FirstSpawn then
             WebUI:ExecuteJS("OpenCloseLoadoutMenu();")
@@ -421,7 +411,13 @@ function kPMClient:OnEngineUpdate(p_DeltaTime, p_SimulationDeltaTime)
         self.m_TabHeldTime = 0.0
     end
 
+    if self.m_spawnCheckTime >= 3.0 and self.m_FirstSpawn then
+        self:GetSpawn()
+        self.m_spawnCheckTime = 0.0
+    end
+
     self.m_TabHeldTime = self.m_TabHeldTime + p_DeltaTime
+    self.m_spawnCheckTime = self.m_spawnCheckTime + p_DeltaTime
 end
 
 function kPMClient:OnRupStateChanged(p_WaitingOnPlayers, p_LocalRupStatus)
@@ -567,6 +563,44 @@ function kPMClient:OnUpdateScoreboard()
     WebUI:ExecuteJS(string.format("UpdatePlayers(%s, %s);", json.encode(l_PlayersObject), json.encode(l_PlayerClient)))
 end
 
+--request, called every 3 ticks
+function kPMClient:GetSpawn() 
+    local s_Player = PlayerManager:GetLocalPlayer()
+    if s_Player ~= nil then
+        if s_Player.alive then
+            return
+        end
+    end
+
+    local l_PlayerList = PlayerManager:GetPlayers()
+    local players = {}
+    for index, l_Player in pairs(l_PlayerList) do
+        -- Get the local soldier instance
+        local soldier = l_Player.soldier
+        if soldier ~= nil then
+            -- Get the soldier LinearTransform
+            local soldierLinearTransform = soldier.worldTransform
+            local coordinates = {}
+            table.insert(coordinates, soldierLinearTransform.trans.x)
+            table.insert(coordinates, soldierLinearTransform.trans.y)
+            table.insert(players, coordinates)
+        end
+    end
+    print(string.format("GetSpawn(%s, \"%s\");", json.encode(players), LevelNameHelper:GetLevelName()))
+    WebUI:ExecuteJS(string.format("GetSpawn(%s, \"%s\");", json.encode(players), LevelNameHelper:GetLevelName()))
+end
+
+-- response back from JS
+function kPMClient:OnCalculatedSpawn(p_Data)
+    if p_Data == nil then
+        return
+    end
+    --print("OnCalculatedSpawn")
+    print(p_Data)
+    --Send it to server
+    NetEvents:Send("kPM:SetSpawn", p_Data)
+end
+
 function kPMClient:OnStartWebUITimer(p_Time)
     WebUI:ExecuteJS(string.format("SetTimer(%s);", p_Time))
 end
@@ -647,7 +681,6 @@ function kPMClient:OnBombDefused()
     self.m_BombSite = nil
     self.m_BombLocation = nil
     self:DestroyLaptop()
-    --WebUI:ExecuteJS('BombDefused();')
 end
 
 function kPMClient:OnBombKaboom()
@@ -876,6 +909,7 @@ function kPMClient:OnPlayerKilled(p_Player)
 
         IngameSpectator:enable()
     end
+    self:GetSpawn()
 end
 
 function kPMClient:OnSoldierHealthAction(p_Soldier, p_Action)
