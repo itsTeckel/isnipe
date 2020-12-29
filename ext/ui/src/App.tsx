@@ -84,14 +84,14 @@ const App: React.FC = () => {
 
     const headshotAudio = new Audio(headshotSound);
     window.OnHeadShot = function () {
-        headshotAudio.volume = 0.4;
+        headshotAudio.volume = 1;
         headshotAudio.loop = false;
         headshotAudio.play();
     }
 
     const killAudio = new Audio(killSound);
     window.OnKill = function () {
-        killAudio.volume = 0.4;
+        //killAudio.volume = 0.4;
         killAudio.loop = false;
         killAudio.play();
     }

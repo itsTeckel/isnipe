@@ -738,10 +738,12 @@ function kPMClient:OnPlayAudio(track)
 		return
     end
     if track == "headshot" then
+        print("headshot")
         WebUI:ExecuteJS("OnHeadShot();")
         return
     end
     if track == "kill" then
+        print("Kill")
         WebUI:ExecuteJS("OnKill();")
         return
     end

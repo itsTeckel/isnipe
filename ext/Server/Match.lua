@@ -69,21 +69,23 @@ function Match:OnUpdateManagerUpdate(p_DeltaTime, p_UpdatePass)
         self.m_UpdateTicks["spawns"] = 0
     end
 
-    if p_UpdatePass == UpdatePass.UpdatePass_PreSim then
-        if not TableHelper:empty(self.m_KillQueue) then
-            self:KillQueuedPlayers()
-        end
-        
-        if not TableHelper:empty(self.m_SpawnQueue) then
-            self:SpawnQueuedPlayers()
-        end
+    if self.m_CurrentState ~= GameStates.EndGame then
+        if p_UpdatePass == UpdatePass.UpdatePass_PreSim then
+            if not TableHelper:empty(self.m_KillQueue) then
+                self:KillQueuedPlayers()
+            end
+            
+            if not TableHelper:empty(self.m_SpawnQueue) then
+                self:SpawnQueuedPlayers()
+            end
 
-        if self.m_RestartQueue then
-            self:RestartMatch()
-            RCON:SendCommand('mapList.runNextRound')
-            self.m_RestartQueue = false
+            if self.m_RestartQueue then
+                self:RestartMatch()
+                RCON:SendCommand('mapList.runNextRound')
+                self.m_RestartQueue = false
+            end
+            self.m_UpdateTicks["spawns"] = self.m_UpdateTicks["spawns"] + p_DeltaTime
         end
-        self.m_UpdateTicks["spawns"] = self.m_UpdateTicks["spawns"] + p_DeltaTime
     end
 end
 
@@ -639,6 +641,10 @@ function Match:CleanupSpecificEntity(p_EntityType)
             l_Entity:Destroy()
         end
     end
+end
+
+function Match:OnLevelDestroyed()
+    self.m_CurrentState = GameStates.EndGame
 end
 
 function Match:FireEventForSpecificEntity(p_EntityType, p_EventString)

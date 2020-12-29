@@ -379,6 +379,7 @@ end
 function kPMServer:OnLevelDestroyed()
     -- Forward event to loadout mananager
     self.m_LoadoutManager:OnLevelDestroyed()
+    self.m_Match:OnLevelDestroyed()
 end
 
 function kPMServer:OnLevelLoaded(p_LevelName, p_GameMode, p_Round, p_RoundsPerMap)
@@ -408,7 +409,6 @@ function kPMServer:SetClientTimer(p_Time, p_Player)
         return
     end
 
-    NetEvents:Broadcast("kPM:StartWebUITimer", p_Time)
     if p_Player ~= nil then
         NetEvents:SendTo("kPM:StartWebUITimer", p_Player, p_Time)
     else
