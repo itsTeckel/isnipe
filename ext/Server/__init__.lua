@@ -184,7 +184,7 @@ function kPMServer:SetTeam(p_Player)
             teamId = possibleTeamId
         end
     end
-    p_Player.teamId = 16
+    p_Player.teamId = teamId
 
     print(teamId .. "for " .. p_Player.name)
 end
