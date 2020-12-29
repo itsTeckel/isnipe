@@ -6,7 +6,6 @@ function UICleanup:__init()
     Hooks:Install('UI:PushScreen', 999, function(hook, screen, graphPriority, parentGraph)
         local screen = UIGraphAsset(screen)
         
-        print(screen.name)
         if screen.name == 'UI/Flow/Screen/SpawnScreenPC' or
             screen.name == 'UI/Flow/Screen/SpawnScreenTicketCounterTDMScreen' or
             --screen.name == 'UI/Flow/Screen/Scoreboards/ScoreboardTwoTeamsScreen' or
@@ -14,10 +13,13 @@ function UICleanup:__init()
             screen.name == 'UI/Flow/Screen/Scoreboards/ScoreboardTwoTeamsHUD16Screen' or
             screen.name == 'UI/Flow/Screen/Scoreboards/ScoreboardTwoTeamsHUD64Screen' or
             screen.name == 'UI/Flow/Screen/KillScreen' or
+            --screen.name == 'UI/Flow/Screen/HudSDMScreen' or
             screen.name == 'UI/Flow/Screen/SpawnButtonScreen' then
             hook:Return(nil)
             return
         end
+
+        print(screen.name)
         
 	    if 	screen.name == 'UI/Flow/Screen/HudTDMScreen' then
             local clone = screen:Clone(screen.instanceGuid)
@@ -59,15 +61,6 @@ function UICleanup:__init()
                 s_Instance.brightness = Vec3(1, 1, 1)
                 s_Instance.contrast = Vec3(1, 1, 1)
                 s_Instance.saturation = Vec3(1, 1, 1)
-            end
-            if instance:Is('UI3dIconCompData') then
-                local s_Instance = UI3dIconCompData(instance)
-                s_Instance:MakeWritable()
-                s_Instance.enable = false
-                s_Instance.blurAdd = 0.0
-                s_Instance.scale = 0.0
-                s_Instance.diffusionDofEnable = false
-                s_Instance.excluded = true
             end
             if instance:Is('VignetteComponentData') then -- menu UI/Assets/MenuVisualEnvironment
                 local s_Instance = VignetteComponentData(instance)

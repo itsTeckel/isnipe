@@ -157,7 +157,36 @@ function kPMServer:OnPlayerConnected(p_Player)
 
     NetEvents:SendTo("kPM:UpdateTeams", p_Player, self.m_Attackers:GetTeamId(), self.m_Defenders:GetTeamId())
 
-    p_Player.teamId = 1
+    self:SetTeam(p_Player)
+end
+
+function kPMServer:SetTeam(p_Player)
+    local teamId = 1
+
+    local s_Players = PlayerManager:GetPlayers()
+    local teams = {}
+    for l_Index, l_Player in ipairs(s_Players) do
+        if teams[l_Player.teamId] == nil then
+            teams[l_Player.teamId] = 0
+        end
+        teams[l_Player.teamId] = teams[l_Player.teamId] + 1
+    end
+
+    local lowest = 999
+    for possibleTeamId = 16,1,-1 
+    do 
+        if teams[possibleTeamId] ~= nil and teams[possibleTeamId] < lowest then
+            lowest = teams[possibleTeamId]
+            teamId = possibleTeamId
+        end
+        if teams[possibleTeamId] == nil then
+            lowest = 0
+            teamId = possibleTeamId
+        end
+    end
+    p_Player.teamId = 16
+
+    print(teamId .. "for " .. p_Player.name)
 end
 
 function kPMServer:OnPlayerLeft(p_Player)
@@ -172,7 +201,7 @@ function kPMServer:OnPlayerSetSelectedTeam(p_Player, p_Team)
     
     local l_SoldierBlueprint = ResourceManager:SearchForDataContainer('Characters/Soldiers/MpSoldier')
 
-    p_Player.teamId = 1
+    self:SetTeam(p_Player)
 
     if p_Player.soldier ~= nil then
         self.m_Match:KillPlayer(p_Player, false)
@@ -205,13 +234,13 @@ end
 
 function kPMServer:OnPlayerFindBestSquad(p_Hook, p_Player)
     -- TODO: Force squad
-    p_Player.teamId = 1
+    self:SetTeam(p_Player)
 end
 
 function kPMServer:OnPlayerSelectTeam(p_Hook, p_Player, p_Team)
     -- p_Team is R/W
     -- p_Player is RO
-    p_Player.teamId = 1
+    self:SetTeam(p_Player)
 end
 
 function kPMServer:OnPartitionLoaded(p_Partition)
@@ -222,7 +251,7 @@ function kPMServer:OnPartitionLoaded(p_Partition)
 
     -- Send event to the loadout manager
     self.m_LoadoutManager:OnPartitionLoaded(p_Partition)
-    self.m_Match:OnPartitionLoaded(p_Partition)
+    --self.m_Match:OnPartitionLoaded(p_Partition)
 end
 
 function kPMServer:OnSoldierDamage(p_Hook, p_Soldier, p_Info, p_GiverInfo)
@@ -386,7 +415,6 @@ end
 function kPMServer:SetupVariables()
     -- Hold a dictionary of all of the variables we want to change
     local s_VariablePair = {
-        ["vars.friendlyFire"] = "true",
         ["vars.soldierHealth"] = "100",
         ["vars.regenerateHealth"] = "true",
         ["vars.onlySquadLeaderSpawn"] = "false",

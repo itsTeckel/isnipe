@@ -47,6 +47,7 @@ function Match:__init(p_Server, p_TeamAttackers, p_TeamDefenders, p_RoundCount, 
     self.m_UpdateTicks[GameStates.Warmup] = 0.0
     self.m_UpdateTicks[GameStates.Playing] = 0.0
     self.m_UpdateTicks[GameStates.EndGame] = 0.0
+    self.m_UpdateTicks["spawns"] = 0.0
 
     self.m_LoadoutManager = p_LoadoutManager
 
@@ -59,9 +60,15 @@ function Match:__init(p_Server, p_TeamAttackers, p_TeamDefenders, p_RoundCount, 
 
     self.m_GameType = p_GameType
     self.m_defaultSpawn = nil
+    self.spawns = {}
 end
 
 function Match:OnUpdateManagerUpdate(p_DeltaTime, p_UpdatePass)
+    if self.m_UpdateTicks["spawns"] == nil or self.m_UpdateTicks["spawns"] >= 5 then
+        self.spawns = {}
+        self.m_UpdateTicks["spawns"] = 0
+    end
+
     if p_UpdatePass == UpdatePass.UpdatePass_PreSim then
         if not TableHelper:empty(self.m_KillQueue) then
             self:KillQueuedPlayers()
@@ -76,6 +83,7 @@ function Match:OnUpdateManagerUpdate(p_DeltaTime, p_UpdatePass)
             RCON:SendCommand('mapList.runNextRound')
             self.m_RestartQueue = false
         end
+        self.m_UpdateTicks["spawns"] = self.m_UpdateTicks["spawns"] + p_DeltaTime
     end
 end
 
@@ -377,10 +385,11 @@ end
 
 function Match:SpawnQueuedPlayers()
     for l_Index, l_Spawn in ipairs(self.m_SpawnQueue) do
-        if not TableHelper:contains(self.m_KillQueue, l_Spawn["p_Player"].name) then
-            local p_SelectedKit = self.m_LoadoutManager:GetPlayerLoadout(l_Spawn["p_Player"])
-            print('SpawnQueuedPlayer: ' .. l_Spawn["p_Player"].name)
-            if p_SelectedKit ~= nil then
+        local p_SelectedKit = self.m_LoadoutManager:GetPlayerLoadout(l_Spawn["p_Player"])
+        local key = l_Spawn["p_Transform"].trans.x .. l_Spawn["p_Transform"].trans.y
+        if not TableHelper:contains(self.m_KillQueue, l_Spawn["p_Player"].name) and p_SelectedKit ~= nil then
+            if not TableHelper:contains(self.spawns, key) then
+                print('SpawnQueuedPlayer: ' .. l_Spawn["p_Player"].name)
                 self:SpawnPlayer(
                     l_Spawn["p_Player"],
                     l_Spawn["p_Transform"],
@@ -389,14 +398,22 @@ function Match:SpawnQueuedPlayers()
                     l_Spawn["p_KnifeOnly"],
                     p_SelectedKit
                 )
+                table.insert(self.spawns, key)
             end
-            table.remove(self.m_SpawnQueue, l_Index)
         end
+        table.remove(self.m_SpawnQueue, l_Index)
     end
 end
 
 function Match:OnSetSpawn(p_player, p_Data)
     local l_Data = json.decode(p_Data)
+
+    if l_Data == nil or l_Data[1] == nil or l_Data[2] == nil or l_Data[2][1] == nil or l_Data[2][1][1] == nil then
+        print("Invalid data received")
+        print(p_Data)
+        return
+    end
+
 
     if p_player == nil then
         print("p_Player is nil")
@@ -423,6 +440,10 @@ function Match:OnSetSpawn(p_player, p_Data)
             -- )
         --end
         return
+    end
+
+    if l_Data[1] <= 15 then
+        print(l_Data[1] .. "is too close " .. p_player.name)
     end
     
     local p_Transform = LinearTransform(Vec3(l_Data[2][1][1], l_Data[2][1][2], l_Data[2][1][3]), Vec3(l_Data[2][2][1], l_Data[2][2][2], l_Data[2][2][3]), Vec3(l_Data[2][3][1], l_Data[2][3][2], l_Data[2][3][3]), Vec3(l_Data[2][4][1], l_Data[2][4][2], l_Data[2][4][3]))

@@ -1,6 +1,5 @@
 import Delaunator from 'delaunator';
 const FAR_DISTANCE = 40;//If we found a spawn further than this. Exit early
-const MIN_DISTANCE = 10;//Minimal distance
 
 export function GetSpawn(points: Array<number[]>, map: string): [number, any] {
   var spawnPoints = Spawns[map];
@@ -9,10 +8,10 @@ export function GetSpawn(points: Array<number[]>, map: string): [number, any] {
     return [0, null];
   }
   //If points is empty or invalid. Pick a random spawn point.
-  if (!(points instanceof Array) || !points.length) {
+  if (points == null || points[0] == null || points.length == 0) {
     let keys = Object.keys(spawnPoints);
     let spawnPoint = spawnPoints[keys[Math.floor(Math.random() * keys.length)]];
-    let result: [number, any] = [1, spawnPoint];
+    let result: [number, any] = [1337, spawnPoint];
     dispatchVenice(result);
     return result;
   }
@@ -59,17 +58,31 @@ export function CalculateSpawn(points: Array<number[]>, spawns: any): [number, a
 
      //If we found a triangle that is just spawn points. Then that means no players, go for it!
      if(point1IsSpawn && point2IsSpawn && point3IsSpawn) {
-      return spawns[point1Index];
+        var spawnPoint1 = spawnDistance(points, spawns[point1Index], spawns);
+        if(spawnPoint1[0] > best[0]){
+          console.log('a', spawnPoint1[0], best[0]);
+          best = spawnPoint1;
+        }
+        var spawnPoint2 = spawnDistance(points, spawns[point2Index], spawns);
+        if(spawnPoint2[0] > best[0]){
+          console.log('b', spawnPoint2[0], best[0]);
+          best = spawnPoint2;
+        }
+        var spawnPoint3 = spawnDistance(points, spawns[point3Index], spawns);
+        if(spawnPoint3[0] > best[0]){
+          console.log('c', spawnPoint3[0], best[0]);
+          best = spawnPoint3;
+        }
      }
 
-     if(!point1IsSpawn && !point2IsSpawn  && !point3IsSpawn) {
+     if(!point1IsSpawn && !point2IsSpawn && !point3IsSpawn) {
       continue;
      }
 
      var point1To2 = distance(point1, point1IsSpawn, spawns[point1Index], point2, point2IsSpawn, spawns[point2Index]);
      var point2To3 = distance(point2, point2IsSpawn, spawns[point2Index], point3, point3IsSpawn, spawns[point3Index]);
      var point3To1 = distance(point3, point3IsSpawn, spawns[point3Index], point1, point1IsSpawn, spawns[point1Index]);
-
+     //console.log('a');
      /*
      console.log(
         set,
@@ -83,14 +96,17 @@ export function CalculateSpawn(points: Array<number[]>, spawns: any): [number, a
     //console.log('point2To3', point2To3);
     //console.log('point3To1', point3To1);
     
+    //console.log('d', point1To2[0], best[0]);
     if(point1To2[0] > best[0]){
       best = point1To2;
     }
     
+    //console.log('e', point2To3[0], best[0]);
     if(point2To3[0] > best[0]){
       best = point2To3;
     }
     
+    //console.log('f', point3To1[0], best[0]);
     if(point3To1[0] > best[0]){
       best = point3To1;
     }
@@ -102,10 +118,74 @@ export function CalculateSpawn(points: Array<number[]>, spawns: any): [number, a
 
     set++;
   }
-  if(best[0] <= MIN_DISTANCE){
+
+  if(best[1] != null && best[1][3] != null && best[1][3][0] != null) {
+    let distance = closestDistance(points, [best[1][3][0], best[1][3][1]], spawns);
+    if(distance < 10) {
+      return [0, null];
+    }
+  }
+
+  return best;
+}
+
+function spawnDistance(points: Array<number[]>, spawn: any, spawns: any): [number, any] {
+  if(spawn != null && spawn[3] != null && spawn[3][0] != null) {
+    let spawnPoint = spawn[3];
+
+    let distance = closestDistance(points, [spawnPoint[0], spawnPoint[1]], spawns);
+    return [distance, spawn];
+  }
+  return [0, null];
+}
+
+function closestDistance(points: Array<number[]>, comparePoint: number[], spawns: any): number {
+  var result = 9999;
+  for (let i = 0; i < points.length; i += 3) {
+    let point = points[i];
+    //Only compare the distance if this point is not a spawnPoint
+    if(spawns[i] != null) {
+      continue;
+    }
+    let distance = mathDist(point[0]!, point[1]!, comparePoint[0]!, comparePoint[1]!);
+    if(distance < result) {
+      result = distance;
+    }
+  }
+  return result;
+}
+
+function distance(point1: number[], point1IsSpawn: boolean, point1Value: any, point2: number[], point2IsSpawn: boolean, point2Value: any): [number, any] {
+  if( ( point1IsSpawn && point2IsSpawn ) || ( !point1IsSpawn && !point2IsSpawn ) ) {
     return [0, null];
   }
-  return best;
+  var distance = mathDist(point1[0]!, point1[1]!, point2[0]!, point2[1]!);
+  if(point1IsSpawn) {
+    return [distance, point1Value];
+  }
+  return [distance, point2Value];
+}
+
+function mathDist(x1:number,y1:number,x2:number,y2:number): number{ 
+  if(!x2) x2=0; 
+  if(!y2) y2=0;
+  return Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)); 
+}
+
+
+function test() {
+  var a = [4, 3];
+  var b = [2, 1];
+  var c = [0, 0];
+  var d = [1, 3];
+
+  var points = [a, b, c, d];
+  var spawns = {
+     1: {"interesting": 121},
+     2: {"interesting": 13}
+  }
+  console.log(CalculateSpawn(points, spawns));
+  //CalculateSpawn([[4, 3], [2, 1], [0, 0], [1, 3]], {1: 123, 2: 111})
 }
 
 var Spawns: any = {
@@ -157,54 +237,27 @@ var Spawns: any = {
     ],
     //Seine
     "MP_011": [
-      [[0.51517027616501, 0.0, 0.85708785057068], [0.0, 1.0, 0.0], [-0.85708785057068, 0.0, 0.51517027616501], [155.375, 10.259572982788, -113.6953125]],
-      [[0.76554328203201, 0.0, -0.64338439702988], [0.0, 1.0, 0.0], [0.64338439702988, 0.0, 0.76554328203201], [138.8515625, 10.261523246765, -106.6494140625]],
-      [[-0.40400922298431, 0.0, -0.91475492715836], [0.0, 1.0, 0.0], [0.91475492715836, 0.0, -0.40400922298431], [140.4560546875, 5.1218748092651, -73.1826171875]],
-      [[0.042080860584974, 0.0, -0.99911421537399], [0.0, 1.0, 0.0], [0.99911421537399, 0.0, 0.042080860584974], [115.8251953125, 1.2800781726837, -64.974609375]],
-      [[-0.75136119127274, 0.0, -0.65989112854004], [0.0, 1.0, 0.0], [0.65989112854004, 0.0, -0.75136119127274], [84.5673828125, 5.2800779342651, -115.66015625]],
-      [[0.66257286071777, 0.0, 0.74899744987488], [0.0, 1.0, 0.0], [-0.74899744987488, 0.0, 0.66257286071777], [79.1884765625, 3.5193684101105, -116.3310546875]],
-      [[0.94169467687607, 0.0, 0.33646863698959], [0.0, 1.0, 0.0], [-0.33646863698959, 0.0, 0.94169467687607], [55.478515625, 6.4187917709351, -94.6435546875]],
-      [[-0.021903658285737, 0.0, -0.99976009130478], [0.0, 1.0, 0.0], [0.99976009130478, 0.0, -0.021903658285737], [48.4267578125, 6.4207029342651, -78.3876953125]],
-      [[-0.8921805024147, 0.0, 0.45167908072472], [0.0, 1.0, 0.0], [-0.45167908072472, 0.0, -0.8921805024147], [22.289009094238, 1.2810547351837, -76.5576171875]],
-      [[-0.97037822008133, 0.0, -0.24159073829651], [0.0, 1.0, 0.0], [0.24159073829651, 0.0, -0.97037822008133], [5.8389372825623, 6.4226560592651, -86.462120056152]],
-      [[-0.16821473836899, 0.0, 0.98575037717819], [0.0, 1.0, 0.0], [-0.98575037717819, 0.0, -0.16821473836899], [13.072265625, 6.4294919967651, -77.3193359375]],
-      [[-0.12085261940956, 0.0, 0.99267047643661], [0.0, 1.0, 0.0], [-0.99267047643661, 0.0, -0.12085261940956], [53.802734375, 1.2800781726837, -35.9619140625]],
-      [[0.022504348307848, 0.0, -0.99974673986435], [0.0, 1.0, 0.0], [0.99974673986435, 0.0, 0.022504348307848], [27.904296875, -5.2822976112366, -0.978515625]],
-      [[0.98823684453964, 0.0, 0.15293122828007], [0.0, 1.0, 0.0], [-0.15293122828007, 0.0, 0.98823684453964], [45.1328125, -6.4103364944458, -3.7174646854401]],
-      [[-0.67440128326416, 0.0, -0.73836499452591], [0.0, 1.0, 0.0], [0.73836499452591, 0.0, -0.67440128326416], [87.91796875, 1.2927734851837, -28.185546875]]
+      [[0.87258917093277, 0.0, 0.48845484852791], [0.0, 1.0, 0.0], [-0.48845484852791, 0.0, 0.87258917093277], [-69.055694580078, 1.2429687976837, 63.549835205078]],
+      [[0.4574456512928, 0.0, -0.88923758268356], [0.0, 1.0, 0.0], [0.88923758268356, 0.0, 0.4574456512928], [-99.833984375, 1.2810547351837, 58.1982421875]],
+      [[-0.92395204305649, 0.0, -0.38250830769539], [0.0, 1.0, 0.0], [0.38250830769539, 0.0, -0.92395204305649], [-14.564453125, -6.4093751907349, 46.6767578125]],
+      [[-0.62932825088501, 0.0, 0.77713960409164], [0.0, 1.0, 0.0], [-0.77713960409164, 0.0, -0.62932825088501], [34.400390625, 1.3484375476837, 70.302734375]],
+      [[-0.7307755947113, 0.0, 0.68261778354645], [0.0, 1.0, 0.0], [-0.68261778354645, 0.0, -0.7307755947113], [65.615234375, 1.2800781726837, 61.57421875]],
+      [[0.89034533500671, 0.0, -0.45528587698936], [0.0, 1.0, 0.0], [0.45528587698936, 0.0, 0.89034533500671], [67.3076171875, 1.4373368024826, 85.7724609375]],
+      [[-0.64422154426575, 0.0, -0.7648389339447], [0.0, 1.0, 0.0], [0.7648389339447, 0.0, -0.64422154426575], [63.9619140625, 3.5203125476837, 119.8427734375]],
+      [[0.52052044868469, 0.0, 0.85384917259216], [0.0, 1.0, 0.0], [-0.85384917259216, 0.0, 0.52052044868469], [74.8837890625, 10.403124809265, 137.7177734375]],
+      [[0.96356296539307, 0.0, 0.26748168468475], [0.0, 1.0, 0.0], [-0.26748168468475, 0.0, 0.96356296539307], [56.2060546875, 15.381640434265, 147.1962890625]],
+      [[0.9482125043869, 0.0, 0.31763672828674], [0.0, 1.0, 0.0], [-0.31763672828674, 0.0, 0.9482125043869], [56.0537109375, 19.200977325439, 147.5]],
+      [[0.23395593464375, 0.0, -0.97224718332291], [0.0, 1.0, 0.0], [0.97224718332291, 0.0, 0.23395593464375], [49.35546875, 15.380663871765, 137.814453125]],
+      [[0.20052416622639, 0.0, 0.97968876361847], [0.0, 1.0, 0.0], [-0.97968876361847, 0.0, 0.20052416622639], [42.83670425415, 6.478343963623, 129.11039733887]],
+      [[0.50875425338745, 0.0, -0.86091178655624], [0.0, 1.0, 0.0], [0.86091178655624, 0.0, 0.50875425338745], [11.904296875, 6.4001951217651, 117.0361328125]],
+      [[0.87790411710739, 0.0, 0.47883641719818], [0.0, 1.0, 0.0], [-0.47883641719818, 0.0, 0.87790411710739], [22.1328125, 9.2820310592651, 140.396484375]],
+      [[0.60144609212875, 0.0, 0.79891341924667], [0.0, 1.0, 0.0], [-0.79891341924667, 0.0, 0.60144609212875], [16.419921875, 13.140429496765, 131.8388671875]],
+      [[-0.92916226387024, 0.0, 0.36967206001282], [0.0, 1.0, 0.0], [-0.36967206001282, 0.0, -0.92916226387024], [21.9853515625, 16.970508575439, 148.138671875]],
+      [[-0.70263749361038, 0.0, 0.71154797077179], [0.0, 1.0, 0.0], [-0.71154797077179, 0.0, -0.70263749361038], [-1.4638671875, 8.6414060592651, 182.2666015625]],
+      [[-0.81352573633194, 0.0, -0.58152890205383], [0.0, 1.0, 0.0], [0.58152890205383, 0.0, -0.81352573633194], [-25.541015625, 9.9226560592651, 175.0458984375]],
+      [[0.85704052448273, 0.0, -0.5152490735054], [0.0, 1.0, 0.0], [0.5152490735054, 0.0, 0.85704052448273], [-25.96875, 13.777300834656, 167.091796875]],
+      [[-0.84256792068481, 0.0, 0.53859013319016], [0.0, 1.0, 0.0], [-0.53859013319016, 0.0, -0.84256792068481], [-40.128929138184, 1.2280070781708, 121.07224273682]],
+      [[-0.90100461244583, 0.0, 0.43380948901176], [0.0, 1.0, 0.0], [-0.43380948901176, 0.0, -0.90100461244583], [-59.3876953125, 1.4363766908646, 121.814453125]],
+      [[-0.28482136130333, 0.0, 0.95858061313629], [0.0, 1.0, 0.0], [-0.95858061313629, 0.0, -0.28482136130333], [-71.3740234375, 1.2429687976837, 94.7705078125]]
     ]
 };
-
-function distance(point1: number[], point1IsSpawn: boolean, point1Value: any, point2: number[], point2IsSpawn: boolean, point2Value: any): [number, any] {
-  if( ( point1IsSpawn && point2IsSpawn ) || ( !point1IsSpawn && !point2IsSpawn ) ) {
-    return [0, null];
-  }
-  var distance = mathDist(point1[0]!, point1[1]!, point2[0]!, point2[1]!);
-  if(point1IsSpawn) {
-    return [distance, point1Value];
-  }
-  return [distance, point2Value];
-}
-
-function mathDist(x1:number,y1:number,x2:number,y2:number): number{ 
-  if(!x2) x2=0; 
-  if(!y2) y2=0;
-  return Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)); 
-}
-
-
-function test() {
-  var a = [4, 3];
-  var b = [2, 1];
-  var c = [0, 0];
-  var d = [1, 3];
-
-  var points = [a, b, c, d];
-  var spawns = {
-     1: {"interesting": 121},
-     2: {"interesting": 13}
-  }
-  console.log(CalculateSpawn(points, spawns));
-  //CalculateSpawn([[4, 3], [2, 1], [0, 0], [1, 3]], {1: 123, 2: 111})
-}
-
