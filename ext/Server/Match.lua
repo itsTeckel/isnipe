@@ -147,6 +147,7 @@ function Match:OnPlaying(p_DeltaTime)
         self.m_UpdateTicks[GameStates.Warmup] = 0.0
         TicketManager:SetTicketCount(self.m_Attackers:GetTeamId(), 0)
         TicketManager:SetTicketCount(self.m_Defenders:GetTeamId(), 0)
+        self.m_Server:SetClientTimer(self.m_UpdateTicks[GameStates.Playing] - kPMConfig.MaxRoundTime)
     end
 
     self.m_UpdateTicks[GameStates.Playing] = self.m_UpdateTicks[GameStates.Playing] + p_DeltaTime
@@ -408,12 +409,11 @@ end
 function Match:OnSetSpawn(p_player, p_Data)
     local l_Data = json.decode(p_Data)
 
-    if l_Data == nil or l_Data[1] == nil or l_Data[2] == nil or l_Data[2][1] == nil or l_Data[2][1][1] == nil then
+    if l_Data == nil or l_Data[1] == nil then
         print("Invalid data received")
         print(p_Data)
         return
     end
-
 
     if p_player == nil then
         print("p_Player is nil")
@@ -433,12 +433,18 @@ function Match:OnSetSpawn(p_player, p_Data)
         --if self.m_defaultSpawn ~= nil then
             -- self:AddPlayerToSpawnQueue(
             --    p_player, 
-            --    LinearTransform(Vec3(0.19240729510784, 0.016226250678301, -0.981181204319), Vec3(-0.23643299937248, 0.97117531299591, -0.03030313923955), Vec3(0.9524068236351, 0.23781399428844, 0.19069750607014), Vec3(101.55596160889, 7.7835311889648, -69.27197265625)),
+            --    LinearTransform(Vec3(-0.54228591918945, 4.193862146451e-09, -0.84019422531128), Vec3(-0.15022599697113, 0.9838855266571, 0.096960246562958), Vec3(0.82665491104126, 0.17879919707775, -0.53354722261429), Vec3(195.79644775391, 96.914398193359, -105.33582305908)),
             --    CharacterPoseType.CharacterPoseType_Stand, 
             --    l_SoldierBlueprint, 
             --    false
             -- )
         --end
+        return
+    end
+
+    if l_Data[2] == nil or l_Data[2][1] == nil or l_Data[2][1][1] == nil then
+        print("Invalid data received")
+        print(p_Data)
         return
     end
 

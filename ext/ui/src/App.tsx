@@ -23,6 +23,8 @@ import './Animations.scss';
 import './Global.scss';
 import Spectator from "./components/Spectator";
 import { RoundInfo } from "./helpers/RoundInfo";
+import headshotSound from './assets/audio/headshot.mp3';
+import killSound from './assets/audio/kill.mp3';
 
 const App: React.FC = () => {
     /*
@@ -78,6 +80,21 @@ const App: React.FC = () => {
     const [teamAttackersScore, setTeamAttackersScore] = useState<number>(0);
     const [teamDefendersScore, setTeamDefendersScore] = useState<number>(0);
     const [bombPlantedOn, setBombPlantedOn] = useState<string|null>(null);
+
+
+    const headshotAudio = new Audio(headshotSound);
+    window.OnHeadShot = function () {
+        headshotAudio.volume = 0.4;
+        headshotAudio.loop = false;
+        headshotAudio.play();
+    }
+
+    const killAudio = new Audio(killSound);
+    window.OnKill = function () {
+        killAudio.volume = 0.4;
+        killAudio.loop = false;
+        killAudio.play();
+    }
 
     window.UpdateHeader = function (p_AttackerPoints: number, p_DefenderPoints: number, p_Rounds: number, p_BombSite?: string) {
         setTeamAttackersScore(p_AttackerPoints);
@@ -458,5 +475,9 @@ declare global {
         SpectatorEnabled: (p_Enabled: boolean) => void;
         GetSpawn: (points: Array<number[]>, map: string) => [number, number[]];
         CalculateSpawn: (points: Array<number[]>, spawns: any) => [number, number[]];
+
+        //Audio
+        OnHeadShot: () => void;
+        OnKill: () => void;
     }
 }

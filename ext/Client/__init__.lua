@@ -152,7 +152,7 @@ function kPMClient:RegisterEvents()
     self.m_BombDefusedEvent = NetEvents:Subscribe("kPM:BombDefused", self, self.OnBombDefused)
     self.m_BombKaboomEvent = NetEvents:Subscribe("kPM:BombKaboom", self, self.OnBombKaboom)
 
-    self.m_PlaySoundPlantingEvent = NetEvents:Subscribe("kPM:PlaySoundPlanting", self, self.OnPlaySoundPlanting)
+    self.m_PlaySoundPlantingEvent = NetEvents:Subscribe("kPM:PlayAudio", self, self.OnPlayAudio)
 
     self.m_UpdateTeamsEvent = NetEvents:Subscribe("kPM:UpdateTeams", self, self.OnUpdateTeams)
 
@@ -733,30 +733,19 @@ function kPMClient:GetExplosionEntityData()
 	return self.m_ExplosionEntityData
 end
 
-function kPMClient:OnPlaySoundPlanting(p_Trans)
-    if p_Trans == nil then
-		print('No plant location')
+function kPMClient:OnPlayAudio(track)
+    if track == nil then
 		return
     end
-
-    local s_Data = self:GetPlantSoundEntityData()
-
-	if s_Data == nil then
-		print('Could not get sound data')
-		return
+    if track == "headshot" then
+        WebUI:ExecuteJS("OnHeadShot();")
+        return
     end
-    
-	local s_Transform = LinearTransform()
-	s_Transform.trans = p_Trans
-
-	local s_Entity = EntityManager:CreateEntity(s_Data, s_Transform)
-
-	if s_Entity == nil then
-		print('Could not create kaboom entity.')
-		return
+    if track == "kill" then
+        WebUI:ExecuteJS("OnKill();")
+        return
     end
-
-    s_Entity:FireEvent('Start')
+    print(track .. "is not mapped")
 end
 
 function kPMClient:GetPlantSoundEntityData()
@@ -892,6 +881,7 @@ function kPMClient:OnPlayerRespawn(p_Player)
     end
 end
 
+--XP4_FD SquadDeathMatch0 1
 function kPMClient:OnPlayerKilled(p_Player)
     -- Validate player
     if p_Player == nil then

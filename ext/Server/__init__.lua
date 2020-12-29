@@ -63,6 +63,7 @@ function kPMServer:RegisterEvents()
     
     -- Damage hooks
     self.m_SoldierDamageHook = Hooks:Install("Soldier:Damage", 1, self, self.OnSoldierDamage)
+    self.m_PlayerKilledEvent = Events:Subscribe("Player:Killed", self, self.OnPlayerKilled)
 
     self.m_PlaySoundPlantingEvent = NetEvents:Subscribe("kPM:PlaySoundPlanting", self, self.OnPlaySoundPlanting)
 
@@ -157,10 +158,32 @@ function kPMServer:OnPlayerConnected(p_Player)
 
     NetEvents:SendTo("kPM:UpdateTeams", p_Player, self.m_Attackers:GetTeamId(), self.m_Defenders:GetTeamId())
 
-    self:SetTeam(p_Player)
+    p_Player.teamId = self:GetTeam(p_Player)
 end
 
-function kPMServer:SetTeam(p_Player)
+function kPMServer:OnPlayerKilled(p_Player, p_inflictor, position, weapon, isRoadKill, isHeadShot, wasVictimInReviveState, info)
+    -- Validate player
+    if p_Player == nil or p_inflictor == nil then
+        return
+    end
+
+    --Suicide
+    if p_Player.id == p_inflictor.id then
+        return
+    end
+
+    if isHeadShot then
+        NetEvents:SendTo("kPM:PlayAudio", p_inflictor, "headshot")
+    else
+        NetEvents:SendTo("kPM:PlayAudio", p_inflictor, "kill")
+    end    
+end
+
+function kPMServer:GetTeam(p_Player)
+    if p_Player == nil then
+        return
+    end
+
     local teamId = 1
 
     local s_Players = PlayerManager:GetPlayers()
@@ -173,8 +196,9 @@ function kPMServer:SetTeam(p_Player)
     end
 
     local lowest = 999
-    for possibleTeamId = 16,1,-1 
+    for possibleTeamId = 4,1,-1 
     do 
+        print(possibleTeamId)
         if teams[possibleTeamId] ~= nil and teams[possibleTeamId] < lowest then
             lowest = teams[possibleTeamId]
             teamId = possibleTeamId
@@ -184,9 +208,8 @@ function kPMServer:SetTeam(p_Player)
             teamId = possibleTeamId
         end
     end
-    p_Player.teamId = teamId
-
     print(teamId .. "for " .. p_Player.name)
+    return teamId
 end
 
 function kPMServer:OnPlayerLeft(p_Player)
@@ -198,10 +221,9 @@ function kPMServer:OnPlayerSetSelectedTeam(p_Player, p_Team)
         print("Could not spawn player")
         return
     end
-    
-    local l_SoldierBlueprint = ResourceManager:SearchForDataContainer('Characters/Soldiers/MpSoldier')
 
-    self:SetTeam(p_Player)
+    p_Player.teamId = self:GetTeam(p_Player)
+    print("set team")
 
     if p_Player.soldier ~= nil then
         self.m_Match:KillPlayer(p_Player, false)
@@ -234,13 +256,13 @@ end
 
 function kPMServer:OnPlayerFindBestSquad(p_Hook, p_Player)
     -- TODO: Force squad
-    self:SetTeam(p_Player)
+    print("OnPlayerFindBestSquad")
 end
 
 function kPMServer:OnPlayerSelectTeam(p_Hook, p_Player, p_Team)
     -- p_Team is R/W
     -- p_Player is RO
-    self:SetTeam(p_Player)
+     print("OnPlayerSelectTeam")
 end
 
 function kPMServer:OnPartitionLoaded(p_Partition)
@@ -349,13 +371,9 @@ function kPMServer:OnPlayerChat(p_Player, p_RecipientMask, p_Message)
     end
 
     -- Check for ready up state
-    if Utils.starts_with(p_Message, "!warmup") then
-        self:ChangeGameState(GameStates.Warmup)
-    end
-
-    if Utils.starts_with(p_Message, "!warmuptoknife") then
-
-    end
+    -- if Utils.starts_with(p_Message, "!warmup") then
+    --     self:ChangeGameState(GameStates.Warmup)
+    -- end
 end
 
 function kPMServer:OnLevelDestroyed()

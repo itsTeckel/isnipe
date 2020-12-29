@@ -38,6 +38,21 @@ function UICleanup:__init()
             hook:Pass(screenClone, graphPriority, parentGraph)
             return
         end
+
+        if screen.name == 'UI/Flow/Screen/HudSDMScreen' then
+            local clone = screen:Clone(screen.instanceGuid)
+            local screenClone = UIGraphAsset(clone)
+
+            for i = #screen.nodes, 1, -1 do
+                local node = screen.nodes[i]
+                if node ~= nil then
+                    print(screen.name .. "::" .. node.name)
+                end
+            end
+
+            hook:Pass(screenClone, graphPriority, parentGraph)
+            return
+        end
     end)
 
     Events:Subscribe('Partition:Loaded', function(partition)

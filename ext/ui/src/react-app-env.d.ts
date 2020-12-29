@@ -10,4 +10,10 @@ declare module '*.wav' {
     export default src;
 }
 
+declare module '*.mp3' {
+    const src: string;
+    export default src;
+}
+
+
 declare var WebUI:any;
