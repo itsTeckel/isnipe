@@ -128,7 +128,7 @@ function Match:OnWarmup(p_DeltaTime)
     if self.m_UpdateTicks[GameStates.Warmup] >= kPMConfig.MaxRupTick then
         self.m_UpdateTicks[GameStates.Warmup] = 0.0
 
-        if Match:GetPlayers() < 1 then
+        if Match:GetPlayers() < 2 then
             return
         end
 
@@ -262,15 +262,6 @@ function Match:ForceAllPlayerRup()
     end
 end
 
-function Match:GetPlayers()
-    local result = 0;
-    for l_Index, player in ipairs(PlayerManager:GetPlayers()) do
-        print(player)
-        result = result + 1
-    end
-    return result
-end
-
 function Match:KillAllPlayers(p_IsAllowedToSpawn)
     -- Kill all alive players
     local s_Players = PlayerManager:GetPlayers()
@@ -332,6 +323,19 @@ function Match:SpawnQueuedPlayers()
         end
         table.remove(self.m_SpawnQueue, l_Index)
     end
+end
+
+function Match:GetPlayers()
+    local result = 0;
+    for l_Index, player in ipairs(PlayerManager:GetPlayers()) do
+        if player ~= nil then
+            local p_SelectedKit = self.m_LoadoutManager:GetPlayerLoadout(player)
+            if p_SelectedKit ~= nil then
+                result = result + 1
+            end
+        end
+    end
+    return result
 end
 
 function Match:closestDistance(p_Player, x, y, z)
@@ -646,18 +650,19 @@ end
 function Match:RestartMatch()
     self.m_CurrentRound = 0
 
+    self.m_LoadoutManager.m_PlayerLoadouts = { }
     self.m_ReadyUpPlayers = { }
     self.m_CurrentState = GameStates.None
     self.m_LastState = GameStates.None
 
-    self.m_UpdateTicks = { }
+    self.m_UpdateTicks = {}
     self.m_UpdateTicks[GameStates.None] = 0.0
     self.m_UpdateTicks[GameStates.Warmup] = 0.0
     self.m_UpdateTicks[GameStates.Playing] = 0.0
     self.m_UpdateTicks[GameStates.EndGame] = 0.0
 
-    self.m_KillQueue = { }
-    self.m_SpawnQueue = { }
+    self.m_KillQueue = {}
+    self.m_SpawnQueue = {}
 
     self.m_RestartQueue = false
 
