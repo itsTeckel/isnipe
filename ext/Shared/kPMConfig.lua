@@ -5,7 +5,7 @@ kPMConfig =
     -- ==========
     -- Debug mode options
     -- ==========
-    DebugMode = false,
+    DebugMode = true,
 
     -- ==========
     -- Server configuration options

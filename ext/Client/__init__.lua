@@ -575,15 +575,20 @@ function kPMClient:GetSpawn()
     local l_PlayerList = PlayerManager:GetPlayers()
     local players = {}
     for index, l_Player in pairs(l_PlayerList) do
-        -- Get the local soldier instance
-        local soldier = l_Player.soldier
-        if soldier ~= nil then
-            -- Get the soldier LinearTransform
-            local soldierLinearTransform = soldier.worldTransform
-            local coordinates = {}
-            table.insert(coordinates, soldierLinearTransform.trans.x)
-            table.insert(coordinates, soldierLinearTransform.trans.y)
-            table.insert(players, coordinates)
+        if s_Player.teamId ~= l_Player.teamId then
+            if l_Player.alive then
+                -- Get the local soldier instance
+                local soldier = l_Player.soldier
+                if soldier ~= nil then
+                    -- Get the soldier LinearTransform
+                    local soldierLinearTransform = soldier.worldTransform
+                    local coordinates = {}
+                    table.insert(coordinates, soldierLinearTransform.trans.x)
+                    table.insert(coordinates, soldierLinearTransform.trans.y)
+                    table.insert(coordinates, soldierLinearTransform.trans.z)
+                    table.insert(players, coordinates)
+                end
+            end
         end
     end
     print(string.format("GetSpawn(%s, \"%s\");", json.encode(players), LevelNameHelper:GetLevelName()))

@@ -198,7 +198,6 @@ function kPMServer:GetTeam(p_Player)
     local lowest = 999
     for possibleTeamId = 4,1,-1 
     do 
-        print(possibleTeamId)
         if teams[possibleTeamId] ~= nil and teams[possibleTeamId] < lowest then
             lowest = teams[possibleTeamId]
             teamId = possibleTeamId
@@ -384,10 +383,7 @@ end
 
 function kPMServer:OnLevelLoaded(p_LevelName, p_GameMode, p_Round, p_RoundsPerMap)
     self:SetupVariables()
-
-    if self.m_GameState ~= GameStates.None then
-        self.m_Match:RestartMatch()
-    end
+    self.m_Match:RestartMatch()
 end
 
 -- Helper functions

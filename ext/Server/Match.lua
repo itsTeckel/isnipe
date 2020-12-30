@@ -64,13 +64,14 @@ function Match:__init(p_Server, p_TeamAttackers, p_TeamDefenders, p_RoundCount, 
 end
 
 function Match:OnUpdateManagerUpdate(p_DeltaTime, p_UpdatePass)
-    if self.m_UpdateTicks["spawns"] == nil or self.m_UpdateTicks["spawns"] >= 5 then
+    if self.m_UpdateTicks["spawns"] == nil or self.m_UpdateTicks["spawns"] >= 3 then
         self.spawns = {}
         self.m_UpdateTicks["spawns"] = 0
     end
 
-    if self.m_CurrentState ~= GameStates.EndGame then
-        if p_UpdatePass == UpdatePass.UpdatePass_PreSim then
+    
+    if p_UpdatePass == UpdatePass.UpdatePass_PreSim then
+        if self.m_RestartQueue == false and self.m_CurrentState ~= GameStates.EndGame then
             if not TableHelper:empty(self.m_KillQueue) then
                 self:KillQueuedPlayers()
             end
@@ -78,13 +79,12 @@ function Match:OnUpdateManagerUpdate(p_DeltaTime, p_UpdatePass)
             if not TableHelper:empty(self.m_SpawnQueue) then
                 self:SpawnQueuedPlayers()
             end
-
-            if self.m_RestartQueue then
-                self:RestartMatch()
-                RCON:SendCommand('mapList.runNextRound')
-                self.m_RestartQueue = false
-            end
-            self.m_UpdateTicks["spawns"] = self.m_UpdateTicks["spawns"] + p_DeltaTime
+        end
+        self.m_UpdateTicks["spawns"] = self.m_UpdateTicks["spawns"] + p_DeltaTime
+        if self.m_RestartQueue then
+            self.m_RestartQueue = false
+            print("runNextRound")
+            RCON:SendCommand('mapList.runNextRound')
         end
     end
 end
@@ -94,6 +94,9 @@ end
 -- ==========
 
 function Match:OnEngineUpdate(p_GameState, p_DeltaTime)
+    if self.m_RestartQueue then
+        return
+    end
     local s_Callback = self.m_UpdateStates[p_GameState]
     if s_Callback == nil then
         return
@@ -124,6 +127,11 @@ function Match:OnWarmup(p_DeltaTime)
     -- Check to see if the current time is greater or equal than our max
     if self.m_UpdateTicks[GameStates.Warmup] >= kPMConfig.MaxRupTick then
         self.m_UpdateTicks[GameStates.Warmup] = 0.0
+
+        if Match:GetPlayers() < 1 then
+            return
+        end
+
         -- First change the game state so we have no logic running
         self.m_Server:ChangeGameState(GameStates.None)
         --ChatManager:Yell("All players have readied up, starting knife round...", 2.0)
@@ -166,6 +174,7 @@ function Match:OnEndGame(p_DeltaTime)
     if self.m_UpdateTicks[GameStates.EndGame] >= kPMConfig.MaxEndgameTime then
         -- Set the restart queue so we can trigger an rcon restart or something like that
         self.m_RestartQueue = true
+        self.m_UpdateTicks[GameStates.EndGame] = 0
     end
 
     self.m_UpdateTicks[GameStates.EndGame] = self.m_UpdateTicks[GameStates.EndGame] + p_DeltaTime
@@ -253,92 +262,13 @@ function Match:ForceAllPlayerRup()
     end
 end
 
-function Match:IsAllPlayersRup()
-    -- Get the player count
-    local s_TotalPlayerCount = PlayerManager:GetPlayerCount()
-
-    -- Check to make sure that we have enough players to start
-    if s_TotalPlayerCount < kPMConfig.MinPlayerCount then
-        return false
+function Match:GetPlayers()
+    local result = 0;
+    for l_Index, player in ipairs(PlayerManager:GetPlayers()) do
+        print(player)
+        result = result + 1
     end
-
-    -- Get all players in the server
-    local s_Players = PlayerManager:GetPlayers()
-
-    local s_Rup_Player_Count = 0
-
-    -- Iterate over all players and check the rup state
-    for l_Index, l_Player in ipairs(s_Players) do
-        -- Check that the player is valid
-        if l_Player == nil then
-            print("err: invalid player in player manager.")
-            goto _rup_continue_
-        end
-
-        -- Get the player id
-        local l_PlayerId = l_Player.id
-
-        -- Check to see if this player has *any* rup state
-        if self.m_ReadyUpPlayers[l_PlayerId] == nil then
-            goto _rup_continue_
-        end
-
-        -- Is this player not readied up
-        if self.m_ReadyUpPlayers[l_PlayerId] == false then
-            goto _rup_continue_
-        end
-
-        s_Rup_Player_Count = s_Rup_Player_Count + 1
-
-        ::_rup_continue_::
-    end
-
-
-    if self.m_GameType == GameTypes.Public then
-        if s_Rup_Player_Count >= (s_TotalPlayerCount / 2) then
-            return true
-        else
-            return false
-        end
-    else
-        if s_Rup_Player_Count >= s_TotalPlayerCount then
-            return true
-        else
-            return false
-        end
-    end
-end
-
-function Match:IsPlayerRup(p_PlayerId)
-    local s_PlayerId = p_PlayerId
-
-     -- Player does not exist in our ready up state yet
-    if self.m_ReadyUpPlayers[s_PlayerId] == nil then
-        return false
-    end
-
-    -- Player has already been added, but has not readied up yet
-    return self.m_ReadyUpPlayers[s_PlayerId] == true
-end
-
-function Match:GetPlayerNotRupCount()
-    local l_Count = 0;
-    local s_Players = PlayerManager:GetPlayers()
-    for l_Index, l_Player in ipairs(s_Players) do
-        -- Check that the player is valid
-        if l_Player == nil then
-            print("err: invalid player in player manager.")
-            return 0
-        end
-
-        local l_PlayerId = l_Player.id
-
-        if self.m_ReadyUpPlayers[l_PlayerId] == nil or self.m_ReadyUpPlayers[l_PlayerId] == false then
-            l_Count = l_Count + 1
-        end
-    end
-
-    return l_Count
+    return result
 end
 
 function Match:KillAllPlayers(p_IsAllowedToSpawn)
@@ -389,23 +319,47 @@ end
 function Match:SpawnQueuedPlayers()
     for l_Index, l_Spawn in ipairs(self.m_SpawnQueue) do
         local p_SelectedKit = self.m_LoadoutManager:GetPlayerLoadout(l_Spawn["p_Player"])
-        local key = l_Spawn["p_Transform"].trans.x .. l_Spawn["p_Transform"].trans.y
         if not TableHelper:contains(self.m_KillQueue, l_Spawn["p_Player"].name) and p_SelectedKit ~= nil then
-            if not TableHelper:contains(self.spawns, key) then
-                print('SpawnQueuedPlayer: ' .. l_Spawn["p_Player"].name)
-                self:SpawnPlayer(
-                    l_Spawn["p_Player"],
-                    l_Spawn["p_Transform"],
-                    l_Spawn["p_Pose"],
-                    l_Spawn["p_SoldierBp"],
-                    l_Spawn["p_KnifeOnly"],
-                    p_SelectedKit
-                )
-                table.insert(self.spawns, key)
-            end
+            print('SpawnQueuedPlayer: ' .. l_Spawn["p_Player"].name)
+            self:SpawnPlayer(
+                l_Spawn["p_Player"],
+                l_Spawn["p_Transform"],
+                l_Spawn["p_Pose"],
+                l_Spawn["p_SoldierBp"],
+                l_Spawn["p_KnifeOnly"],
+                p_SelectedKit
+            )
         end
         table.remove(self.m_SpawnQueue, l_Index)
     end
+end
+
+function Match:closestDistance(p_Player, x, y, z)
+    local result = 9999
+    for index, player in pairs(PlayerManager:GetPlayers()) do
+        if p_Player.teamId ~= player.teamId then
+            if player.alive then
+                local soldier = player.soldier
+                if soldier ~= nil then
+                    -- Get the soldier LinearTransform
+                    local soldierLinearTransform = soldier.worldTransform
+                    local coordinates = {}
+                    local distance = self:Distance(x, y, z, soldierLinearTransform.trans.x, soldierLinearTransform.trans.y, soldierLinearTransform.trans.z)
+                    if distance < result then
+                        result = distance;
+                    end
+                    if result < 10 then
+                        return result
+                    end
+                end
+            end
+        end
+    end
+    return result
+end
+
+function Match:Distance( x1, y1, z1, x2, y2, z2 )
+    return math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)+(z2-z1)*(z2-z1))
 end
 
 function Match:OnSetSpawn(p_player, p_Data)
@@ -414,6 +368,10 @@ function Match:OnSetSpawn(p_player, p_Data)
     if l_Data == nil or l_Data[1] == nil then
         print("Invalid data received")
         print(p_Data)
+        return
+    end
+
+    if self.m_RestartQueue then
         return
     end
 
@@ -466,17 +424,33 @@ function Match:OnSetSpawn(p_player, p_Data)
 end
 
 function Match:AddPlayerToSpawnQueue(p_Player, p_Transform, p_Pose, p_SoldierBp, p_KnifeOnly)
-    if not TableHelper:contains(self.m_SpawnQueue, p_Player.name) then
-        print('AddPlayerToSpawnQueue: ' .. p_Player.name)
-        table.insert(self.m_SpawnQueue, {
-            ["p_Player"] = p_Player,
-            ["p_Transform"] = p_Transform,
-            ["p_Player"] = p_Player,
-            ["p_Pose"] = p_Pose,
-            ["p_SoldierBp"] = p_SoldierBp,
-            ["p_KnifeOnly"] = p_KnifeOnly,
-        })
+    if TableHelper:contains(self.m_SpawnQueue, p_Player.name) then
+        return
     end
+    local key = p_Transform.trans.x .. p_Transform.trans.y
+    local distance = self.spawns[key]
+    local hasSpawned = distance ~= nil
+    if distance == nil then
+        distance = Match:closestDistance(p_Player, p_Transform.trans.x, p_Transform.trans.y, p_Transform.trans.z)
+    end
+    self.spawns[key] = distance
+    if distance < 10 then
+       return
+    end
+    if hasSpawned == true then
+        print("someone else has already spawned")
+        return
+    end
+    
+    print('AddPlayerToSpawnQueue: ' .. p_Player.name)
+    table.insert(self.m_SpawnQueue, {
+        ["p_Player"] = p_Player,
+        ["p_Transform"] = p_Transform,
+        ["p_Player"] = p_Player,
+        ["p_Pose"] = p_Pose,
+        ["p_SoldierBp"] = p_SoldierBp,
+        ["p_KnifeOnly"] = p_KnifeOnly,
+    })
 end
 
 function Match:AddPlayerToKillQueue(p_PlayerName)
@@ -645,6 +619,7 @@ end
 
 function Match:OnLevelDestroyed()
     self.m_CurrentState = GameStates.EndGame
+    self:RestartMatch()
 end
 
 function Match:FireEventForSpecificEntity(p_EntityType, p_EventString)
@@ -672,8 +647,6 @@ function Match:RestartMatch()
     self.m_CurrentRound = 0
 
     self.m_ReadyUpPlayers = { }
-    NetEvents:Broadcast('Player:ReadyUpPlayers', self.m_ReadyUpPlayers)
-
     self.m_CurrentState = GameStates.None
     self.m_LastState = GameStates.None
 

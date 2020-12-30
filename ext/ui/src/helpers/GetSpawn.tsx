@@ -1,5 +1,5 @@
 import Delaunator from 'delaunator';
-const FAR_DISTANCE = 40;//If we found a spawn further than this. Exit early
+const FAR_DISTANCE = 60;//If we found a spawn further than this. Exit early
 
 export function GetSpawn(points: Array<number[]>, map: string): [number, any] {
   var spawnPoints = Spawns[map];
@@ -15,15 +15,7 @@ export function GetSpawn(points: Array<number[]>, map: string): [number, any] {
     dispatchVenice(result);
     return result;
   }
-  //Add all the spawns to the points array and add it to the spawn map.
-  var spawns: any = {};
-  for (let i = 0; i < spawnPoints.length; i++) {
-    let spawnPoint = spawnPoints[i];
-    let pair = [spawnPoint[3][0], spawnPoint[3][1]];
-    points.push(pair);//x and y from the spawn point
-    spawns[points.length-1] = spawnPoint;
-  }
-  let result = CalculateSpawn(points, spawns);
+  let result = CalculateSpawn(points, spawnPoints);
   dispatchVenice(result)
   return result;
 }
@@ -37,147 +29,64 @@ function dispatchVenice(result: any) {
 }
 
 export function CalculateSpawn(points: Array<number[]>, spawns: any): [number, any] {
-  const delaunay = Delaunator.from(points);
-  var triangles = delaunay.triangles;
-
-  var set = 0;
+  //For each spawn find the farthest point
   var best: [number, any] = [0, null];
-  console.log('triangles', triangles.length);
-  for (let i = 0; i < triangles.length; i += 3) {
-     var point1Index = triangles[i];
-     var point2Index = triangles[i + 1];
-     var point3Index = triangles[i + 2];
+  spawns = shuffle(spawns);
 
-     var point1IsSpawn = spawns[point1Index] != null;
-     var point2IsSpawn = spawns[point2Index] != null;
-     var point3IsSpawn = spawns[point3Index] != null;
+  for (let i = 0; i < spawns.length; i++) {
+    let spawn = spawns[i];
+    let result = spawnDistance(points, spawn);
 
-     var point1 = points[point1Index]!;
-     var point2 = points[point2Index]!;
-     var point3 = points[point3Index]!;
-
-     //If we found a triangle that is just spawn points. Then that means no players, go for it!
-     if(point1IsSpawn && point2IsSpawn && point3IsSpawn) {
-        var spawnPoint1 = spawnDistance(points, spawns[point1Index], spawns);
-        if(spawnPoint1[0] > best[0]){
-          console.log('a', spawnPoint1[0], best[0]);
-          best = spawnPoint1;
-        }
-        var spawnPoint2 = spawnDistance(points, spawns[point2Index], spawns);
-        if(spawnPoint2[0] > best[0]){
-          console.log('b', spawnPoint2[0], best[0]);
-          best = spawnPoint2;
-        }
-        var spawnPoint3 = spawnDistance(points, spawns[point3Index], spawns);
-        if(spawnPoint3[0] > best[0]){
-          console.log('c', spawnPoint3[0], best[0]);
-          best = spawnPoint3;
-        }
-     }
-
-     if(!point1IsSpawn && !point2IsSpawn && !point3IsSpawn) {
-      continue;
-     }
-
-     var point1To2 = distance(point1, point1IsSpawn, spawns[point1Index], point2, point2IsSpawn, spawns[point2Index]);
-     var point2To3 = distance(point2, point2IsSpawn, spawns[point2Index], point3, point3IsSpawn, spawns[point3Index]);
-     var point3To1 = distance(point3, point3IsSpawn, spawns[point3Index], point1, point1IsSpawn, spawns[point1Index]);
-     //console.log('a');
-     /*
-     console.log(
-        set,
-        point1,
-        point2,
-        point3
-    );
-    */
-    
-    //console.log('point1To2', point1To2);
-    //console.log('point2To3', point2To3);
-    //console.log('point3To1', point3To1);
-    
-    //console.log('d', point1To2[0], best[0]);
-    if(point1To2[0] > best[0]){
-      best = point1To2;
-    }
-    
-    //console.log('e', point2To3[0], best[0]);
-    if(point2To3[0] > best[0]){
-      best = point2To3;
-    }
-    
-    //console.log('f', point3To1[0], best[0]);
-    if(point3To1[0] > best[0]){
-      best = point3To1;
+    //If this result is better than what we found before, take it.
+    if(result[0] > best[0]) {
+      best = result
     }
 
     //Exit early if we found a spawnpoint that is far away.
     if(best[0] >= FAR_DISTANCE){
       break;
     }
-
-    set++;
   }
-
-  if(best[1] != null && best[1][3] != null && best[1][3][0] != null) {
-    let distance = closestDistance(points, [best[1][3][0], best[1][3][1]], spawns);
-    if(distance < 10) {
-      return [0, null];
-    }
-  }
-
   return best;
 }
 
-function spawnDistance(points: Array<number[]>, spawn: any, spawns: any): [number, any] {
+function spawnDistance(points: Array<number[]>, spawn: any): [number, any] {
   if(spawn != null && spawn[3] != null && spawn[3][0] != null) {
     let spawnPoint = spawn[3];
 
-    let distance = closestDistance(points, [spawnPoint[0], spawnPoint[1]], spawns);
+    let distance = closestDistance(points, [spawnPoint[0], spawnPoint[1]]);
     return [distance, spawn];
   }
   return [0, null];
 }
 
-function closestDistance(points: Array<number[]>, comparePoint: number[], spawns: any): number {
-  var result = 9999;
-  for (let i = 0; i < points.length; i += 3) {
+function closestDistance(points: Array<number[]>, comparePoint: number[]): number {
+  var result = -1;
+  for (let i = 0; i < points.length; i++) {
     let point = points[i];
-    //Only compare the distance if this point is not a spawnPoint
-    if(spawns[i] != null) {
-      continue;
-    }
-    let distance = mathDist(point[0]!, point[1]!, comparePoint[0]!, comparePoint[1]!);
-    if(distance < result) {
+    let distance = mathDist(point[0]!, point[1]!, point[2]!, comparePoint[0]!, comparePoint[1]!, comparePoint[2]!);
+    if(result == -1 || distance < result) {
       result = distance;
+    }
+    if(result <= 10) {
+      return result;
     }
   }
   return result;
 }
 
-function distance(point1: number[], point1IsSpawn: boolean, point1Value: any, point2: number[], point2IsSpawn: boolean, point2Value: any): [number, any] {
-  if( ( point1IsSpawn && point2IsSpawn ) || ( !point1IsSpawn && !point2IsSpawn ) ) {
-    return [0, null];
-  }
-  var distance = mathDist(point1[0]!, point1[1]!, point2[0]!, point2[1]!);
-  if(point1IsSpawn) {
-    return [distance, point1Value];
-  }
-  return [distance, point2Value];
-}
-
-function mathDist(x1:number,y1:number,x2:number,y2:number): number{ 
+function mathDist(x1:number,y1:number,z1:number,x2:number,y2:number,z2:number): number{ 
   if(!x2) x2=0; 
   if(!y2) y2=0;
-  return Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)); 
+  if(!z2) z2=0;
+  return Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)+(z2-z1)*(z2-z1)); 
 }
 
-
 function test() {
-  var a = [4, 3];
-  var b = [2, 1];
-  var c = [0, 0];
-  var d = [1, 3];
+  var a = [4, 3, 0];
+  var b = [2, 1, 0];
+  var c = [0, 0, 0];
+  var d = [1, 3, 0];
 
   var points = [a, b, c, d];
   var spawns = {
@@ -186,6 +95,25 @@ function test() {
   }
   console.log(CalculateSpawn(points, spawns));
   //CalculateSpawn([[4, 3], [2, 1], [0, 0], [1, 3]], {1: 123, 2: 111})
+  /*GetSpawn([[1.7299436330795,6.3953123092651, 0],[-9.143627166748,6.3953123092651, 0],[44.114418029785,1.9418169260025, 0],[-19.381170272827,6.3953123092651,0],[43.642139434814,2.2906849384308,0]], "XP2_Palace");
+  should output:
+0: 17.507361299547927
+1: Array(4)
+0: (3) [0.74616569280624, 0, 0.66576027870178]
+1: (3) [0, 1, 0]
+2: (3) [-0.66576027870178, 0, 0.74616569280624]
+3: (3) [19.2373046875, 6.3923826217651, 18.822265625]
+*/
+}
+
+function shuffle(input: any) {
+  for (let i = input.length - 1; i >= 0; i--) {
+    let randomIndex = Math.floor(Math.random() * (i + 1));
+    let itemAtIndex = input[randomIndex];
+    input[randomIndex] = input[i];
+    input[i] = itemAtIndex;
+  }
+  return input;
 }
 
 var Spawns: any = {
