@@ -4,13 +4,14 @@ require ("__shared/GameStates")
 require ("__shared/kPMConfig")
 require ("__shared/LevelNameHelper")
 require ("__shared/GameTypes")
+require ("__shared/TickType")
 require ("__shared/Util/TableHelper")
 
 require ("Team")
 require ("LoadoutManager")
 require ("LoadoutDefinitions")
 
-function Match:__init(p_Server, p_TeamAttackers, p_TeamDefenders, p_RoundCount, p_LoadoutManager, p_GameType)
+function Match:__init(p_Server, p_TeamAttackers, p_TeamDefenders, p_RoundCount, loadoutManager, p_GameType)
     if p_GameType ~= GameTypes.Public then
         print("Only public gametype is supported as of now.")
         return
@@ -41,15 +42,19 @@ function Match:__init(p_Server, p_TeamAttackers, p_TeamDefenders, p_RoundCount, 
     self.m_UpdateStates[GameStates.Playing] = self.OnPlaying
     self.m_UpdateStates[GameStates.EndGame] = self.OnEndGame
 
-    -- State ticks
+    -- Game state ticks
     self.m_UpdateTicks = { }
     self.m_UpdateTicks[GameStates.None] = 0.0
     self.m_UpdateTicks[GameStates.Warmup] = 0.0
     self.m_UpdateTicks[GameStates.Playing] = 0.0
     self.m_UpdateTicks[GameStates.EndGame] = 0.0
-    self.m_UpdateTicks["spawns"] = 0.0
 
-    self.m_LoadoutManager = p_LoadoutManager
+    -- Update ticks
+    self.stateTicks = {}
+    self.stateTicks[TickType.Spawns] = 0.0
+    self.stateTicks[TickType.Timer] = 0.0
+
+    self.loadoutManager = loadoutManager
 
     self.m_KillQueue = { }
     self.m_SpawnQueue = { }
@@ -64,9 +69,10 @@ function Match:__init(p_Server, p_TeamAttackers, p_TeamDefenders, p_RoundCount, 
 end
 
 function Match:OnUpdateManagerUpdate(p_DeltaTime, p_UpdatePass)
-    if self.m_UpdateTicks["spawns"] == nil or self.m_UpdateTicks["spawns"] >= 3 then
+    -- reset previously spawned players. So we don't spawn people on the same spawn
+    if self.stateTicks[TickType.Spawns] == nil or self.stateTicks[TickType.Spawns] >= 3 then
         self.spawns = {}
-        self.m_UpdateTicks["spawns"] = 0
+        self.stateTicks[TickType.Spawns] = 0
     end
 
     
@@ -80,13 +86,15 @@ function Match:OnUpdateManagerUpdate(p_DeltaTime, p_UpdatePass)
                 self:SpawnQueuedPlayers()
             end
         end
-        self.m_UpdateTicks["spawns"] = self.m_UpdateTicks["spawns"] + p_DeltaTime
+
         if self.m_RestartQueue then
             self.m_RestartQueue = false
             print("runNextRound")
             RCON:SendCommand('mapList.runNextRound')
         end
     end
+
+    self.stateTicks[TickType.Spawns] = self.stateTicks[TickType.Spawns] + p_DeltaTime 
 end
 
 -- ==========
@@ -128,7 +136,9 @@ function Match:OnWarmup(p_DeltaTime)
     if self.m_UpdateTicks[GameStates.Warmup] >= kPMConfig.MaxRupTick then
         self.m_UpdateTicks[GameStates.Warmup] = 0.0
 
-        if Match:GetPlayers() < 2 then
+        local players = Match:GetPlayers()
+        if players < kPMConfig.MinPlayers then
+            -- print("Waiting. Not enough players...." .. players)
             return
         end
 
@@ -153,14 +163,15 @@ function Match:OnPlaying(p_DeltaTime)
         self.m_Server:ChangeGameState(GameStates.EndGame)
     end
 
-    if self.m_UpdateTicks[GameStates.Warmup] >= kPMConfig.MaxRupTick then
-        self.m_UpdateTicks[GameStates.Warmup] = 0.0
+    if self.stateTicks[TickType.Timer] >= kPMConfig.TimeTick then
+        self.stateTicks[TickType.Timer] = 0.0
         TicketManager:SetTicketCount(self.m_Attackers:GetTeamId(), 0)
         TicketManager:SetTicketCount(self.m_Defenders:GetTeamId(), 0)
-        self.m_Server:SetClientTimer(self.m_UpdateTicks[GameStates.Playing] - kPMConfig.MaxRoundTime)
+        self.m_Server:SetClientTimer(kPMConfig.MaxRoundTime - self.m_UpdateTicks[GameStates.Playing])
     end
 
     self.m_UpdateTicks[GameStates.Playing] = self.m_UpdateTicks[GameStates.Playing] + p_DeltaTime
+    self.stateTicks[TickType.Timer] = self.stateTicks[TickType.Timer] + p_DeltaTime
 end
 
 
@@ -309,7 +320,8 @@ end
 
 function Match:SpawnQueuedPlayers()
     for l_Index, l_Spawn in ipairs(self.m_SpawnQueue) do
-        local p_SelectedKit = self.m_LoadoutManager:GetPlayerLoadout(l_Spawn["p_Player"])
+        table.remove(self.m_SpawnQueue, l_Index)
+        local p_SelectedKit = self.loadoutManager:GetPlayerLoadout(l_Spawn["p_Player"])
         if not TableHelper:contains(self.m_KillQueue, l_Spawn["p_Player"].name) and p_SelectedKit ~= nil then
             print('SpawnQueuedPlayer: ' .. l_Spawn["p_Player"].name)
             self:SpawnPlayer(
@@ -321,18 +333,14 @@ function Match:SpawnQueuedPlayers()
                 p_SelectedKit
             )
         end
-        table.remove(self.m_SpawnQueue, l_Index)
     end
 end
 
 function Match:GetPlayers()
-    local result = 0;
+    local result = 0
     for l_Index, player in ipairs(PlayerManager:GetPlayers()) do
-        if player ~= nil then
-            local p_SelectedKit = self.m_LoadoutManager:GetPlayerLoadout(player)
-            if p_SelectedKit ~= nil then
-                result = result + 1
-            end
+        if player ~= nil and player.alive then
+            result = result + 1
         end
     end
     return result
@@ -384,7 +392,7 @@ function Match:OnSetSpawn(p_player, p_Data)
         return
     end
 
-    local p_SelectedKit = self.m_LoadoutManager:GetPlayerLoadout(p_player)
+    local p_SelectedKit = self.loadoutManager:GetPlayerLoadout(p_player)
     if p_SelectedKit == nil then
         return
     end
@@ -650,7 +658,7 @@ end
 function Match:RestartMatch()
     self.m_CurrentRound = 0
 
-    self.m_LoadoutManager.m_PlayerLoadouts = { }
+    self.loadoutManager.m_PlayerLoadouts = {}
     self.m_ReadyUpPlayers = { }
     self.m_CurrentState = GameStates.None
     self.m_LastState = GameStates.None

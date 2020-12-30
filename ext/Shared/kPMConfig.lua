@@ -19,8 +19,13 @@ kPMConfig =
     -- Maximum Ready up time
     MaxReadyUpTime = 1.5,
 
+    MinPlayers = 1,
+
     -- When up tick rup game logic
     MaxRupTick = 1.0,
+
+    -- When we send the countdown time to all players
+    TimeTick = 5.0,
 
     -- When to tick name update logic
     MaxNameTick = 5.0,
