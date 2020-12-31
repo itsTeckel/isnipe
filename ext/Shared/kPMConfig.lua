@@ -59,7 +59,7 @@ kPMConfig =
     MaxTransititionTime = 5.0,
 
     -- Round time (default: 10 minutes)
-    MaxRoundTime = 610.0,
+    MaxRoundTime = 910.0,
 
     -- Game end time (default: 20 sec)
     MaxEndgameTime = 10.0,

@@ -411,7 +411,7 @@ function kPMClient:OnEngineUpdate(p_DeltaTime, p_SimulationDeltaTime)
         self.m_TabHeldTime = 0.0
     end
 
-    if self.m_spawnCheckTime >= 3.0 and self.m_FirstSpawn then
+    if self.m_spawnCheckTime >= 3.0 then
         self:GetSpawn()
         self.m_spawnCheckTime = 0.0
     end

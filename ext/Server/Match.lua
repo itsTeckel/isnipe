@@ -90,6 +90,7 @@ function Match:OnUpdateManagerUpdate(p_DeltaTime, p_UpdatePass)
         if self.m_RestartQueue then
             self.m_RestartQueue = false
             print("runNextRound")
+            --RCON:SendCommand('mapList.endRound 1')
             RCON:SendCommand('mapList.runNextRound')
         end
     end
@@ -439,7 +440,7 @@ function Match:AddPlayerToSpawnQueue(p_Player, p_Transform, p_Pose, p_SoldierBp,
     if TableHelper:contains(self.m_SpawnQueue, p_Player.name) then
         return
     end
-    local key = p_Transform.trans.x .. p_Transform.trans.y
+    local key = p_Transform.trans.x + p_Transform.trans.y + p_Transform.trans.z
     local distance = self.spawns[key]
     local hasSpawned = distance ~= nil
     if distance == nil then
@@ -447,10 +448,12 @@ function Match:AddPlayerToSpawnQueue(p_Player, p_Transform, p_Pose, p_SoldierBp,
     end
     self.spawns[key] = distance
     if distance < 10 then
-       return
+        print(distance .. " is too close " .. p_Player.name)
+        return
     end
     if hasSpawned == true then
         print("someone else has already spawned")
+        print(distance)
         return
     end
     
@@ -472,17 +475,17 @@ end
 
 function Match:SpawnPlayer(p_Player, p_Transform, p_Pose, p_SoldierBp, p_KnifeOnly, p_SelectedKit)
     if p_Player == nil then
-        print("p_Player is nil")
+        print("WARN: p_Player is nil")
         return
     end
 
     if p_Player.alive then
-        print("p_Player is alive")
+        print("WARN: p_Player is alive")
         return
     end
 
     if p_SelectedKit == nil then
-        print("p_SelectedKit is nil")
+        print("WARN: p_SelectedKit is nil")
         return
     end
 
@@ -499,6 +502,7 @@ function Match:SpawnPlayer(p_Player, p_Transform, p_Pose, p_SoldierBp, p_KnifeOn
     end
 
     if l_SoldierAsset == nil or l_Appearance == nil then
+        print("WARN: l_SoldierAsset or l_Appearance is nil")
         return
     end
 
@@ -563,28 +567,6 @@ function Match:SpawnPlayer(p_Player, p_Transform, p_Pose, p_SoldierBp, p_KnifeOn
 	p_Player:AttachSoldier(l_SpawnedSoldier)
 
     return l_SpawnedSoldier
-end
-
-function Match:GetRandomSpawnpoint(p_Player)
-    if p_Player == nil then
-        print("err: no player?")
-        return
-    end
-
-    local l_LevelName = LevelNameHelper:GetLevelName()
-    if l_LevelName == nil then
-        print("err: no level??")
-        return
-    end
-
-    -- TODO: Don't spawn on an already taken spawnpoint
-    l_SpawnTrans = MapsConfig[l_LevelName]["SPAWNS"][ math.random( #MapsConfig[l_LevelName]["SPAWNS"] ) ]
-
-    if l_SpawnTrans == nil then
-        return
-    end
-
-    return l_SpawnTrans
 end
 
 function Match:Cleanup()
