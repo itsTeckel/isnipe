@@ -272,6 +272,16 @@ function kPMServer:OnPartitionLoaded(p_Partition)
 
     -- Send event to the loadout manager
     self.m_LoadoutManager:OnPartitionLoaded(p_Partition)
+
+    -- for _, l_Instance in pairs(p_Partition.instances) do
+    --     local name = p_Partition.name .. l_Instance.typeInfo.name
+    --     if string.match(name, "_appearance") then
+    --         if l_Instance:Is('UnlockAsset') then
+    --             print(name)
+    --         end
+    --     end
+    -- end
+
     --self.m_Match:OnPartitionLoaded(p_Partition)
 end
 

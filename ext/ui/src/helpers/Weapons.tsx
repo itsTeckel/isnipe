@@ -27,9 +27,9 @@ export let Weapons = {
             },
             Secondary: {
                 None: {
-                    Key: "Knife",
-                    Name: "Knife",
-                    Vext: "Weapons/Knife/U_Knife",
+                    Key: "None",
+                    Name: "No Secondary",
+                    Vext: "",
                 },
                 // None: {
                 //     Key: "None",
@@ -66,9 +66,9 @@ export let Weapons = {
             },
             Secondary: {
                 None: {
-                    Key: "Knife",
-                    Name: "Knife",
-                    Vext: "Weapons/Knife/U_Knife",
+                    Key: "None",
+                    Name: "No Secondary",
+                    Vext: "",
                 },
             },
         },
@@ -95,9 +95,9 @@ export let Weapons = {
             },
             Secondary: {
                 None: {
-                    Key: "Knife",
-                    Name: "Knife",
-                    Vext: "Weapons/Knife/U_Knife",
+                    Key: "None",
+                    Name: "No Secondary",
+                    Vext: "",
                 },
             },
         },
@@ -125,9 +125,9 @@ export let Weapons = {
             },
             Secondary: {
                 None: {
-                    Key: "Knife",
-                    Name: "Knife",
-                    Vext: "Weapons/Knife/U_Knife",
+                    Key: "None",
+                    Name: "No Secondary",
+                    Vext: "",
                 },
             },
         },
@@ -155,9 +155,9 @@ export let Weapons = {
             },
             Secondary: {
                 None: {
-                    Key: "Knife",
-                    Name: "Knife",
-                    Vext: "Weapons/Knife/U_Knife",
+                    Key: "None",
+                    Name: "No Secondary",
+                    Vext: "",
                 },
             },
         },

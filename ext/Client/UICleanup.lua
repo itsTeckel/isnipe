@@ -21,7 +21,7 @@ function UICleanup:__init()
 
         print(screen.name)
         
-	    if 	screen.name == 'UI/Flow/Screen/HudTDMScreen' then
+	    if screen.name == 'UI/Flow/Screen/HudTDMScreen' then
             local clone = screen:Clone(screen.instanceGuid)
             local screenClone = UIGraphAsset(clone)
 

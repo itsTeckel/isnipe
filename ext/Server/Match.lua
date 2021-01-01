@@ -491,15 +491,8 @@ function Match:SpawnPlayer(p_Player, p_Transform, p_Pose, p_SoldierBp, p_KnifeOn
 
     local l_SoldierAsset = nil
     local l_Appearance = nil
-    if p_Player.teamId == self.m_Defenders:GetTeamId() then
-        -- US
-        l_SoldierAsset = ResourceManager:SearchForDataContainer(Kits[p_SelectedKit["Class"]]["DEFENDER"]["KIT"])
-        l_Appearance = ResourceManager:SearchForDataContainer(Kits[p_SelectedKit["Class"]]["DEFENDER"]["APPEARANCE"])
-    else
-        -- RUS
-        l_SoldierAsset = ResourceManager:SearchForDataContainer(Kits[p_SelectedKit["Class"]]["ATTACKER"]["KIT"])
-        l_Appearance = ResourceManager:SearchForDataContainer(Kits[p_SelectedKit["Class"]]["ATTACKER"]["APPEARANCE"])
-    end
+    l_SoldierAsset = ResourceManager:SearchForDataContainer("Gameplay/Kits/RURecon")
+    l_Appearance = ResourceManager:SearchForDataContainer("Persistence/Unlocks/Soldiers/Visual/MP/RU/MP_RU_Recon_Appearance_Urban")
 
     if l_SoldierAsset == nil or l_Appearance == nil then
         print("WARN: l_SoldierAsset or l_Appearance is nil")
@@ -518,6 +511,8 @@ function Match:SpawnPlayer(p_Player, p_Transform, p_Pose, p_SoldierBp, p_KnifeOn
             p_Player:SelectWeapon(WeaponSlot.WeaponSlot_5, knife, {})
             p_Player:SelectWeapon(WeaponSlot.WeaponSlot_7, knife, {})
         end
+        --local knife = ResourceManager:SearchForDataContainer('Weapons/Knife/U_Knife')
+        --p_Player:SelectWeapon(WeaponSlot.WeaponSlot_5, knife, {})
 
         local l_WeaponIndex = 0;
         local l_IsAmmoOrMedicBag = false;

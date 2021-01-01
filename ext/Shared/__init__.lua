@@ -40,7 +40,8 @@ function kPMShared:RegisterEvents()
 end
 
 function kPMShared:OnLevelLoadResources()
-    ResourceManager:MountSuperBundle('Levels/COOP_010/COOP_010')
+    -- ResourceManager:MountSuperBundle('levels/sp_paris/sp_paris')
+    -- ResourceManager:MountSuperBundle('levels/sp_finale/sp_finale')
 end
 
 function kPMShared:UnregisterEvents()
