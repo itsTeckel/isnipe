@@ -28,7 +28,7 @@ const ScoreboardTeam: React.FC<Props> = ({ team, score, players, clientPlayer, g
             <div className={"team " + ((team === Teams.Attackers) ? 'attackers' : 'defenders') + ' gameState' + gameState.toString()} >
                 <div className="headerBar">
                     <div className="teamName">
-                        Free For All
+                        Scoreboard
                         <span className="alive">{getAlivePlayersCount()} alive</span>
                     </div>
                     <div className="point"></div>

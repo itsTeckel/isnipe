@@ -71,7 +71,7 @@ const Header: React.FC<Props> = ({
                                 }
                             </span>
                             <div className="gameTypeLabel">
-                                Free for All
+                                Sniper only
                             </div>
                         </div>
                         <div id="scoreDefenders">

@@ -63,7 +63,7 @@ const App: React.FC = () => {
     /*
     * Global States 
     */
-    const [showHud, setShowHud] = useState<boolean>(false);
+    const [showHud, setShowHud] = useState<boolean>(true);//dev iain
 
     const [roundsList, setRoundsList] = useState<RoundInfo[]>([
         {
@@ -75,12 +75,9 @@ const App: React.FC = () => {
     ]);
     
     const [round, setRound] = useState<number>(0);
-    const [roundWon, setRoundWon] = useState<boolean>(false);
-    const [winningTeam, setWinningTeam] = useState<Teams>(Teams.Attackers);
     const [teamAttackersScore, setTeamAttackersScore] = useState<number>(0);
     const [teamDefendersScore, setTeamDefendersScore] = useState<number>(0);
     const [bombPlantedOn, setBombPlantedOn] = useState<string|null>(null);
-
 
     const headshotAudio = new Audio(headshotSound);
     window.OnHeadShot = function () {
@@ -185,16 +182,7 @@ const App: React.FC = () => {
         setShowRoundEndInfoBox(open);
     }
 
-    window.UpdateRoundEndInfoBox = function (p_RoundWon: boolean, p_WinningTeam: string) {
-        setRoundWon(p_RoundWon);
-        if(p_WinningTeam === 'attackers') {
-            setWinningTeam(Teams.Attackers);
-        } else {
-            setWinningTeam(Teams.Defenders);
-        }
-    }
-
-    const [gameWon, setGameWon] = useState<boolean|null>(null);
+    const [gameWon, setGameWon] = useState<boolean|null>(true);
     const [gameWinningTeam, setGameWinningTeam] = useState<Teams|null>(null);
     window.SetGameEnd = function (p_GameWon: boolean, p_WinningTeam: string) {
         setGameWon(p_GameWon);
@@ -241,7 +229,7 @@ const App: React.FC = () => {
 
     const SetDummyPlayers = () => {
         var dummyPlayers:Player[] = []
-        for (let index = 0; index < 10; index++) {
+        for (let index = 0; index < 20; index++) {
             dummyPlayers.push({
                 id: index,
                 name: 'Teszt',
@@ -282,10 +270,6 @@ const App: React.FC = () => {
     window.ResetUI = function() {
         setShowHud(false);
         setRound(0);
-        setRoundWon(false);
-        setWinningTeam(Teams.Attackers);
-        setTeamAttackersScore(0);
-        setTeamDefendersScore(0);
         setBombPlantedOn(null);
 
         // Show the select team page
@@ -345,14 +329,6 @@ const App: React.FC = () => {
 
             case GameStates.Playing:
                 return <WarmupScene rupProgress={rupProgress} players={players} clientPlayer={clientPlayer} />;
-
-            case GameStates.EndGame:
-                return <EndgameScene
-                    roundWon={roundWon}
-                    winningTeam={winningTeam}
-                    teamAttackersScore={teamAttackersScore}
-                    teamDefendersScore={teamDefendersScore}
-                />;
         }
     }
 
@@ -384,8 +360,6 @@ const App: React.FC = () => {
                 <button onClick={() => setGameWinningTeam(Teams.Attackers)}>Attackers won the game</button>
                 <button onClick={() => setBombPlantedOn("B")}>Set bomb planted</button>
                 <br />
-                <button onClick={() => setWinningTeam(Teams.Attackers)}>Attackers Win</button>
-                <button onClick={() => setWinningTeam(Teams.Defenders)}>Defenders Win</button>
                 <button onClick={() => setTeamAttackersScore(prevState => prevState + 1)}>Attackers +1</button>
                 <button onClick={() => setTeamDefendersScore(prevState => prevState + 1)}>Defenders +1</button>
             </div>
@@ -454,7 +428,6 @@ declare global {
     interface Window {
         ChangeState: (p_GameState: GameStates) => void;
         ChangeType: (p_GameType: GameTypes) => void;
-        //UpdateRoundEndStatus: (p_RoundWon: boolean, p_WinningTeam: Teams, p_Team1Score: number, p_Team2Score: number) => void;
         OpenCloseLoadoutMenu: () => void;
         OpenCloseTeamMenu: (forceOpen?: boolean) => void;
         UpdatePlayers: (p_Players: any, p_ClientPlayer: any) => void;
@@ -462,7 +435,6 @@ declare global {
         RupInteractProgress: (m_RupHeldTime: number, MaxReadyUpTime: number) => void
         UpdateHeader: (p_AttackerPoints: number, p_DefenderPoints: number, p_Rounds: number, p_BombSite?: string) => void;
         ShowHideRoundEndInfoBox: (open: boolean) => void;
-        UpdateRoundEndInfoBox: (p_RoundWon: boolean, p_WinningTeam: string) => void;
         SetGameEnd: (p_GameWon: boolean, p_WinningTeam: string) => void;
         BombPlanted: (p_BombSite: string|null) => void;
         PlantInteractProgress: (m_PlantOrDefuseHeldTime: number, PlantTime: number, plantOrDefuse: string) => void

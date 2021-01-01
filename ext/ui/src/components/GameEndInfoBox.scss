@@ -1,0 +1,16 @@
+#winner {
+    height: 100vh;
+    width: 100vw;
+}
+
+#podium {
+    position: absolute;
+    top: calc(50vh - 42.5vh);
+    left: calc(50vw - 32.5vw);
+    z-index: 999;
+    width: 65vw;
+    height: 85vh;
+    display: grid;
+    grid-template-rows: 47% 6% 47%;
+    grid-gap: 0;
+}

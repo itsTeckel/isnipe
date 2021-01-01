@@ -324,7 +324,7 @@ function kPMClient:OnUpdateInput(p_DeltaTime)
     if InputManager:WentKeyDown(InputDeviceKeys.IDK_F10) then
         --current camera position
         local soldierLinearTransform = ClientUtils:GetCameraTransform()
-        print("coordinate: Vec3(" .. soldierLinearTransform.left.x .. ", " .. soldierLinearTransform.left.y .. ", " .. soldierLinearTransform.left.z .. "), Vec3(" .. soldierLinearTransform.up.x .. ", " .. soldierLinearTransform.up.y .. ", " .. soldierLinearTransform.up.z .. "), Vec3(" .. soldierLinearTransform.forward.x .. ", " .. soldierLinearTransform.forward.y .. ", " .. soldierLinearTransform.forward.z .. "), Vec3(" .. soldierLinearTransform.trans.x .. ", " .. soldierLinearTransform.trans.y .. ", " .. soldierLinearTransform.trans.z .. ")")
+        print("coordinate: [[" .. soldierLinearTransform.left.x .. ", " .. soldierLinearTransform.left.y .. ", " .. soldierLinearTransform.left.z .. "], [" .. soldierLinearTransform.up.x .. ", " .. soldierLinearTransform.up.y .. ", " .. soldierLinearTransform.up.z .. "], [" .. soldierLinearTransform.forward.x .. ", " .. soldierLinearTransform.forward.y .. ", " .. soldierLinearTransform.forward.z .. "], [" .. soldierLinearTransform.trans.x .. ", " .. soldierLinearTransform.trans.y .. ", " .. soldierLinearTransform.trans.z .. "]]")
 
 
         -- If the player never spawned we should force him to pick a team and a loadout first
