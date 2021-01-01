@@ -63,7 +63,7 @@ const App: React.FC = () => {
     /*
     * Global States 
     */
-    const [showHud, setShowHud] = useState<boolean>(true);//dev iain
+    const [showHud, setShowHud] = useState<boolean>(false);
 
     const [roundsList, setRoundsList] = useState<RoundInfo[]>([
         {
@@ -182,7 +182,7 @@ const App: React.FC = () => {
         setShowRoundEndInfoBox(open);
     }
 
-    const [gameWon, setGameWon] = useState<boolean|null>(true);
+    const [gameWon, setGameWon] = useState<boolean|null>(null);
     const [gameWinningTeam, setGameWinningTeam] = useState<Teams|null>(null);
     window.SetGameEnd = function (p_GameWon: boolean, p_WinningTeam: string) {
         setGameWon(p_GameWon);
