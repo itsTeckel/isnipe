@@ -22,10 +22,11 @@ interface Props {
 }
 
 const GameEndInfoBox: React.FC<Props> = ({ showScoreboard, teamAttackersScore, teamDefendersScore, players, clientPlayer, gameState, round, maxRounds, roundsList }) => {
+    var iswinner = clientPlayer.index <= 3;
     if(showScoreboard) {
         let audio;
-        if (clientPlayer.index <= 3) {
-           audio = new Audio(winSound);
+        if (iswinner) {
+            audio = new Audio(winSound);
         } else {
             audio = new Audio(loseSound);
         }
@@ -33,6 +34,7 @@ const GameEndInfoBox: React.FC<Props> = ({ showScoreboard, teamAttackersScore, t
         audio.loop = false;
         audio.play();
     }
+    
     return (
         <>
             {showScoreboard &&
@@ -40,7 +42,9 @@ const GameEndInfoBox: React.FC<Props> = ({ showScoreboard, teamAttackersScore, t
                     <div id="inGameScoreboard" className="fadeInBottom">
                         <ScoreboardTeam team={Teams.All} score={teamAttackersScore} players={players[Teams.All]} clientPlayer={clientPlayer} gameState={gameState} />
                     </div>
-                    <img id="winner" src={winner} />
+                    {iswinner &&
+                    <img id="winner" src={winner}/>
+                    }
                 </div>
             }
         </>

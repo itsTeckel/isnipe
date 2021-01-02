@@ -3,11 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="b72afd5a-fb30-4a8e-898a-71130ecf67ad" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ext/Client/__init__.lua" beforeDir="false" afterPath="$PROJECT_DIR$/ext/Client/__init__.lua" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ext/ui/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/ext/ui/src/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ext/ui/src/assets/audio/alarm.wav" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/ext/ui/src/components/GameEndInfoBox.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/ext/ui/src/components/GameEndInfoBox.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ext/ui/src/scenes/LoadoutScene.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/ext/ui/src/scenes/LoadoutScene.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,6 +31,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/ext/ui/src/components" />
+    <property name="nodejs_package_manager_path" value="npm" />
     <property name="ts.external.directory.path" value="$PROJECT_DIR$/ext/ui/node_modules/typescript/lib" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
@@ -58,7 +55,7 @@
       <updated>1609366146214</updated>
       <workItem from="1609366148057" duration="54000" />
       <workItem from="1609422327027" duration="160000" />
-      <workItem from="1609429411992" duration="7537000" />
+      <workItem from="1609429411992" duration="7690000" />
     </task>
     <servers />
   </component>
