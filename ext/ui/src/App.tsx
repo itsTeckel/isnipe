@@ -26,6 +26,79 @@ import { RoundInfo } from "./helpers/RoundInfo";
 import headshotSound from './assets/audio/headshot.mp3';
 import killSound from './assets/audio/kill.mp3';
 
+import humilation from './assets/audio/humilation.mp3';
+
+import hattrick from './assets/audio/3kill/hattrick.wav';
+import multikill from './assets/audio/3kill/multikill.wav';
+import triplekill from './assets/audio/3kill/triplekill.wav';
+
+import dominating from './assets/audio/4kill/dominating.wav';
+import killingspree from './assets/audio/4kill/killingspree.wav';
+import monsterkill from './assets/audio/4kill/monsterkill.wav';
+import ultrakill from './assets/audio/4kill/ultrakill.wav';
+
+import godlike from './assets/audio/5kill/godlike.wav';
+import holyshit from './assets/audio/5kill/holyshit.wav';
+import rampage from './assets/audio/5kill/rampage.wav';
+
+import ludicrouskill from './assets/audio/6kill/ludicrouskill.wav';
+import megakill from './assets/audio/6kill/megakill.wav';
+import ownage from './assets/audio/6kill/ownage.wav';
+
+import unstoppable from './assets/audio/7kill/unstoppable.wav';
+import whickedsick from './assets/audio/7kill/whickedsick.wav';
+
+import f_holyshit from './assets/audio/8kill/holyshit.mp3';
+import wickedsick from './assets/audio/9kill/wickedsick.mp3';
+import ultra from './assets/audio/10kill/ultra.mp3';
+
+const deathStreaks = {
+    2: [humilation],
+    4: [humilation],
+    8: [humilation],
+    12: [humilation],
+    14: [humilation],
+    18: [humilation],
+    20: [humilation]
+}
+
+const killStreaks = {
+    3: [hattrick, multikill, triplekill],
+    4: [dominating, killingspree, monsterkill, ultrakill],
+    5: [godlike, holyshit, rampage],
+    6: [ludicrouskill, megakill, ownage],
+    7: [unstoppable, whickedsick],
+    8: [ultra],
+    9: [wickedsick],
+    10: [f_holyshit],
+    11: [unstoppable, ultra, wickedsick, f_holyshit],
+    12: [unstoppable, ultra, wickedsick, f_holyshit],
+    13: [unstoppable, ultra, wickedsick, f_holyshit],
+    14: [unstoppable, ultra, wickedsick, f_holyshit],
+    15: [unstoppable, ultra, wickedsick, f_holyshit],
+    16: [unstoppable, ultra, wickedsick, f_holyshit],
+    17: [unstoppable, ultra, wickedsick, f_holyshit],
+    18: [unstoppable, ultra, wickedsick, f_holyshit],
+    19: [unstoppable, ultra, wickedsick, f_holyshit],
+    20: [unstoppable, ultra, wickedsick, f_holyshit],
+    21: [unstoppable, ultra, wickedsick, f_holyshit],
+    22: [unstoppable, ultra, wickedsick, f_holyshit],
+    23: [unstoppable, ultra, wickedsick, f_holyshit],
+    24: [unstoppable, ultra, wickedsick, f_holyshit],
+    25: [unstoppable, ultra, wickedsick, f_holyshit],
+}
+
+const getSound = (list: any, streak: number) => {
+    if(list[streak] == null || list[streak].length == 0) {
+        return null;
+    }
+    if(list[streak].length == 1) {
+        return list[streak][0]
+    }
+    let index = Math.floor(Math.random() * list[streak].length);
+    return list[streak][index];
+}
+
 const App: React.FC = () => {
     /*
     * Debug
@@ -87,10 +160,34 @@ const App: React.FC = () => {
     }
 
     const killAudio = new Audio(killSound);
+
+    const [killStreak, setKillStreak] = useState<number>(0);
+    const [deathStreak, setDeathStreak] = useState<number>(0);
+
     window.OnKill = function () {
-        //killAudio.volume = 0.4;
+        setKillStreak(killStreak + 1);
+        setDeathStreak(0);
         killAudio.loop = false;
         killAudio.play();
+
+        let streakAudio = getSound(killStreaks, killStreak + 1);
+        if(streakAudio != null) {
+            const audio = new Audio(streakAudio);
+            audio.loop = false;
+            audio.play();
+        }
+    }
+
+    window.OnDeath = function () {
+        setKillStreak(0);
+        setDeathStreak(deathStreak + 1);
+
+        let streakAudio = getSound(deathStreaks, deathStreak + 1);
+        if(streakAudio != null) {
+            const audio = new Audio(streakAudio);
+            audio.loop = false;
+            audio.play();
+        }
     }
 
     window.UpdateHeader = function (p_AttackerPoints: number, p_DefenderPoints: number, p_Rounds: number, p_BombSite?: string) {
@@ -451,5 +548,6 @@ declare global {
         //Audio
         OnHeadShot: () => void;
         OnKill: () => void;
+        OnDeath: () => void;
     }
 }

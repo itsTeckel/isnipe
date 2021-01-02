@@ -6,6 +6,8 @@ import { RoundInfo } from "../helpers/RoundInfo";
 import { Teams } from "../helpers/Teams";
 import winner from '../assets/img/winner.png';
 import './GameEndInfoBox.scss';
+import winSound from '../assets/audio/win.mp3';
+import loseSound from '../assets/audio/lose.mp3';
 
 interface Props {
     showScoreboard: boolean;
@@ -20,6 +22,17 @@ interface Props {
 }
 
 const GameEndInfoBox: React.FC<Props> = ({ showScoreboard, teamAttackersScore, teamDefendersScore, players, clientPlayer, gameState, round, maxRounds, roundsList }) => {
+    if(showScoreboard) {
+        let audio;
+        if (clientPlayer.index <= 3) {
+           audio = new Audio(winSound);
+        } else {
+            audio = new Audio(loseSound);
+        }
+        audio.volume = 1;
+        audio.loop = false;
+        audio.play();
+    }
     return (
         <>
             {showScoreboard &&

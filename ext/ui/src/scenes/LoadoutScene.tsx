@@ -4,6 +4,9 @@ import Title from "../components/Title";
 import { Kits } from "../helpers/Kits";
 
 import './LoadoutScene.scss';
+import prepare1 from "../assets/audio/prepare/prepare.wav";
+import prepare2 from "../assets/audio/prepare/prepare2.wav";
+import prepare3 from "../assets/audio/prepare/prepare3.wav";
 
 interface Loadout {
     class: string|null;
@@ -130,6 +133,27 @@ const LoadoutScene: React.FC<Props> = ({ show, setShowLoadoutPage }) => {
         }
     }
 
+    const playPrepare = () => {
+        let audio;
+        switch(Math.floor(Math.random() * 2)) {
+            case 0:
+                audio = new Audio(prepare1);
+                break
+            case 1:
+                audio = new Audio(prepare2);
+                break
+            case 2:
+                audio = new Audio(prepare3);
+                break
+            default:
+                audio = new Audio(prepare3);
+                break
+        }
+        audio.volume = 1;
+        audio.loop = false;
+        audio.play();
+    }
+
     const doneLoadout = () => {
         if (navigator.userAgent.includes('VeniceUnleashed')) {
             WebUI.Call('DispatchEventLocal', 'WebUISetSelectedLoadout', JSON.stringify(currentLoadout));
@@ -137,6 +161,7 @@ const LoadoutScene: React.FC<Props> = ({ show, setShowLoadoutPage }) => {
             WebUI.Call('ResetMouse');
         }
         setShowLoadoutPage(false);
+        playPrepare();
     }
 
     const getWeaponSlot = (name: string, weapons: any, defaultIndex: string) => {
