@@ -213,6 +213,7 @@ end
 
 function kPMServer:OnPlayerLeft(p_Player)
     print("info: player " .. p_Player.name .. " has left the server")
+    self.m_LoadoutManager:DeletePlayerLoadout(p_Player)
 end
 
 function kPMServer:OnPlayerSetSelectedTeam(p_Player, p_Team)

@@ -74,6 +74,10 @@ function LoadoutManager:SetPlayerLoadout(p_Player, p_Data)
     print("info: loadout saved for player: " .. p_Player.name)
 end
 
+function LoadoutManager:DeletePlayerLoadout(p_Player)
+    self.m_PlayerLoadouts[p_Player.id] = nil
+end
+
 function LoadoutManager:GetPlayerLoadout(p_Player)
     if p_Player == nil then
         return nil
