@@ -591,7 +591,7 @@ function kPMClient:GetSpawn()
             end
         end
     end
-    print(string.format("GetSpawn(%s, \"%s\");", json.encode(players), LevelNameHelper:GetLevelName()))
+    --print(string.format("GetSpawn(%s, \"%s\");", json.encode(players), LevelNameHelper:GetLevelName()))
     WebUI:ExecuteJS(string.format("GetSpawn(%s, \"%s\");", json.encode(players), LevelNameHelper:GetLevelName()))
 end
 
@@ -601,7 +601,7 @@ function kPMClient:OnCalculatedSpawn(p_Data)
         return
     end
     --print("OnCalculatedSpawn")
-    print(p_Data)
+    --print(p_Data)
     --Send it to server
     NetEvents:Send("kPM:SetSpawn", p_Data)
 end
