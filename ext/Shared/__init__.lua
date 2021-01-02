@@ -37,11 +37,30 @@ function kPMShared:RegisterEvents()
     self.m_LevelLoadedEvent = Events:Subscribe("Level:Loaded", self, self.OnLevelLoaded)
     self.m_PartitionLoadedEvent = Events:Subscribe("Partition:Loaded", self, self.OnPartitionLoaded)
     self.m_LevelLoadResourcesEvent = Events:Subscribe("Level:LoadResources", self, self.OnLevelLoadResources)
+    -- Hooks:Install('ResourceManager:LoadBundles', 100, function(hook, bundles, compartment)
+    --     if #bundles == 1 and bundles[1] == SharedUtils:GetLevelName() then
+    --         print('Injecting bundles.')
+
+    --         bundles = {
+    --             'levels/sp_paris/sp_paris',
+    --             'levels/sp_paris/parkingdeck',
+    --             'levels/xp5_002/xp5_002',
+    --             'levels/xp5_002/cql',
+    --             bundles[1],
+    --         }
+
+    --         hook:Pass(bundles, compartment)
+    --     end
+    -- end)
 end
 
 function kPMShared:OnLevelLoadResources()
+    -- -- bicycle bundles
+    -- ResourceManager:MountSuperBundle('spchunks')
     -- ResourceManager:MountSuperBundle('levels/sp_paris/sp_paris')
-    -- ResourceManager:MountSuperBundle('levels/sp_finale/sp_finale')
+    -- -- dirtbike bundles
+    -- ResourceManager:MountSuperBundle('xp5chunks')
+    -- ResourceManager:MountSuperBundle('levels/xp5_002/xp5_002')
 end
 
 function kPMShared:UnregisterEvents()

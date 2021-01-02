@@ -872,8 +872,6 @@ function kPMClient:OnPlayerRespawn(p_Player)
         return
     end
 
-    WebUI:ExecuteJS("OnDeath();")
-
     local s_Player = PlayerManager:GetLocalPlayer()
     -- Validate local player
     if s_Player == nil then
@@ -907,6 +905,7 @@ function kPMClient:OnPlayerKilled(p_Player)
         self:EnablePlayerInputs()
 
         IngameSpectator:enable()
+        WebUI:ExecuteJS("OnDeath();")
     end
     self:GetSpawn()
 end

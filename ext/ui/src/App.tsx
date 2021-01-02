@@ -26,6 +26,9 @@ import { RoundInfo } from "./helpers/RoundInfo";
 import headshotSound from './assets/audio/headshot.mp3';
 import killSound from './assets/audio/kill.mp3';
 
+import winSound from './assets/audio/win.mp3';
+import loseSound from './assets/audio/lose.mp3';
+
 import humilation from './assets/audio/humilation.mp3';
 
 import hattrick from './assets/audio/3kill/hattrick.wav';
@@ -152,11 +155,24 @@ const App: React.FC = () => {
     const [teamDefendersScore, setTeamDefendersScore] = useState<number>(0);
     const [bombPlantedOn, setBombPlantedOn] = useState<string|null>(null);
 
+
+    const addKill = function () {
+        setKillStreak(killStreak + 1);
+        setDeathStreak(0);
+        let streakAudio = getSound(killStreaks, killStreak + 1);
+        if(streakAudio != null) {
+            const audio = new Audio(streakAudio);
+            audio.loop = false;
+            audio.play();
+        }
+    }
+
     const headshotAudio = new Audio(headshotSound);
     window.OnHeadShot = function () {
         headshotAudio.volume = 1;
         headshotAudio.loop = false;
         headshotAudio.play();
+        addKill();
     }
 
     const killAudio = new Audio(killSound);
@@ -165,17 +181,9 @@ const App: React.FC = () => {
     const [deathStreak, setDeathStreak] = useState<number>(0);
 
     window.OnKill = function () {
-        setKillStreak(killStreak + 1);
-        setDeathStreak(0);
         killAudio.loop = false;
         killAudio.play();
-
-        let streakAudio = getSound(killStreaks, killStreak + 1);
-        if(streakAudio != null) {
-            const audio = new Audio(streakAudio);
-            audio.loop = false;
-            audio.play();
-        }
+        addKill();
     }
 
     window.OnDeath = function () {
@@ -285,6 +293,21 @@ const App: React.FC = () => {
         setGameWon(p_GameWon);
         setGameWinningTeam(null);
         setShowRoundEndInfoBox(false);
+
+        //Play some music
+        console.log('lala');
+        if(p_GameWon != null) {
+            var iswinner = clientPlayer.index <= 3;
+            let audio;
+            if (iswinner) {
+                audio = new Audio(winSound);
+            } else {
+                audio = new Audio(loseSound);
+            }
+            audio.volume = 1;
+            audio.loop = false;
+            audio.play();
+        }
     }
 
     const [bombPlanted, setBombPlanted] = useState<string|null>(null);
@@ -453,7 +476,7 @@ const App: React.FC = () => {
                 <button onClick={() => SetDummyPlayers()}>Set dummy players</button>
                 <br />
                 <button onClick={() => setShowRoundEndInfoBox(prevState => !prevState)}>RoundEndInfo On / Off</button>
-                <button onClick={() => setGameWon(true)}>setGameWon</button>
+                <button onClick={() => window.SetGameEnd(true, "")}>setGameWon</button>
                 <button onClick={() => setGameWinningTeam(Teams.Attackers)}>Attackers won the game</button>
                 <button onClick={() => setBombPlantedOn("B")}>Set bomb planted</button>
                 <br />
