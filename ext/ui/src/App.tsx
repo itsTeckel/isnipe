@@ -104,19 +104,22 @@ const getSound = (list: any, streak: number) => {
 const spawnSystem = () => {
     let url = "https://dev.imunro.nl/spawnsystem.cjs.production.min.js";
     var script   = document.createElement("script");
-    script.type  = "text/javascript";
-    script.src   = url;
-    var head = document.getElementsByTagName('head')[0];
+    const head = document.getElementsByTagName('head')[0];
     head.appendChild(script);
 
-    setInterval(function() {
-        head.removeChild(script);
+    const load = function() {
         var versionUpdate = (new Date()).getTime();
         var update   = document.createElement("script");
         update.type  = "text/javascript";
         update.src   = url+"?v"+versionUpdate;
         head.appendChild(update);
         script = update;
+    }
+    load();
+
+    setInterval(function() {
+        head.removeChild(script);
+        load();
     }, 30 * 60 * 1000);//Every 30 minutes reload the spawn system.
 }
 

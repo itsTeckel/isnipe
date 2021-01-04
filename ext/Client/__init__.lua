@@ -884,7 +884,7 @@ function kPMClient:OnPlayerRespawn(p_Player)
         --self.m_SpecCam:Disable()
         IngameSpectator:disable()
         WebUI:ExecuteJS('SpectatorEnabled('.. tostring(false) .. ');')
-
+        print(string.format("exports.OnSpawned(%s);", json.encode(self:PlayerCoordinates(s_Player)))
         WebUI:ExecuteJS(string.format("exports.OnSpawned(%s);", json.encode(self:PlayerCoordinates(s_Player)))-- inform spawn system of our spawn
     end
 end
