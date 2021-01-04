@@ -592,7 +592,7 @@ function kPMClient:GetSpawn()
         end
     end
     --print(string.format("GetSpawn(%s, \"%s\");", json.encode(players), LevelNameHelper:GetLevelName()))
-    WebUI:ExecuteJS(string.format("GetSpawn(%s, \"%s\");", json.encode(players), LevelNameHelper:GetLevelName()))
+    WebUI:ExecuteJS(string.format("exports.GetSpawn(%s, \"%s\");", json.encode(players), LevelNameHelper:GetLevelName()))
 end
 
 -- response back from JS
