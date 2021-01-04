@@ -4,9 +4,6 @@
     <list default="true" id="b72afd5a-fb30-4a8e-898a-71130ecf67ad" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ext/Client/__init__.lua" beforeDir="false" afterPath="$PROJECT_DIR$/ext/Client/__init__.lua" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ext/ui/public/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/ext/ui/public/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ext/ui/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/ext/ui/src/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ext/ui/src/helpers/GetSpawn.tsx" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,7 +56,7 @@
       <workItem from="1609366148057" duration="54000" />
       <workItem from="1609422327027" duration="160000" />
       <workItem from="1609429411992" duration="7690000" />
-      <workItem from="1609721357663" duration="2204000" />
+      <workItem from="1609721357663" duration="2765000" />
     </task>
     <servers />
   </component>

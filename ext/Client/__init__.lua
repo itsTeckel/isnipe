@@ -883,9 +883,29 @@ function kPMClient:OnPlayerRespawn(p_Player)
     if p_Player.name == s_Player.name then
         --self.m_SpecCam:Disable()
         IngameSpectator:disable()
-
         WebUI:ExecuteJS('SpectatorEnabled('.. tostring(false) .. ');')
+
+        WebUI:ExecuteJS(string.format("exports.OnSpawned(%s);", json.encode(self:PlayerCoordinates(s_Player)))-- inform spawn system of our spawn
     end
+end
+
+function kPMClient:PlayerCoordinates(player)
+    if player == nil then
+        return nil
+    end
+
+    local soldier = player.soldier
+    if soldier == nil then
+        return nil
+    end
+
+    -- Get the soldier LinearTransform
+    local soldierLinearTransform = soldier.worldTransform
+    local result = {}
+    table.insert(result, soldierLinearTransform.trans.x)
+    table.insert(result, soldierLinearTransform.trans.y)
+    table.insert(result, soldierLinearTransform.trans.z)
+    return result
 end
 
 --XP4_FD SquadDeathMatch0 1
@@ -906,6 +926,7 @@ function kPMClient:OnPlayerKilled(p_Player)
 
         IngameSpectator:enable()
         WebUI:ExecuteJS("OnDeath();")
+        WebUI:ExecuteJS(string.format("exports.OnDeath(%s);", json.encode(self:PlayerCoordinates(s_Player)))-- inform spawn system of our death
     end
     self:GetSpawn()
 end
