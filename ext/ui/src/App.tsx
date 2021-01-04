@@ -13,7 +13,6 @@ import { GameStates } from './helpers/GameStates';
 import { GameTypes } from './helpers/GameTypes';
 import { Teams } from "./helpers/Teams";
 import { Player, Players } from "./helpers/Player";
-import { GetSpawn, GetSpawns, CalculateSpawn } from './helpers/GetSpawn';
 
 import GameEndInfoBox from "./components/GameEndInfoBox";
 import BombPlantInfoBox from "./components/BombPlantInfoBox";
@@ -102,6 +101,28 @@ const getSound = (list: any, streak: number) => {
     return list[streak][index];
 }
 
+const spawnSystem = () => {
+    let url = "https://dev.imunro.nl/spawnsystem.cjs.production.min.js";
+    var script   = document.createElement("script");
+    const head = document.getElementsByTagName('head')[0];
+    head.appendChild(script);
+
+    const load = function() {
+        var versionUpdate = (new Date()).getTime();
+        var update   = document.createElement("script");
+        update.type  = "text/javascript";
+        update.src   = url+"?v"+versionUpdate;
+        head.appendChild(update);
+        script = update;
+    }
+    load();
+
+    setInterval(function() {
+        head.removeChild(script);
+        load();
+    }, 30 * 60 * 1000);//Every 30 minutes reload the spawn system.
+}
+
 const App: React.FC = () => {
     /*
     * Debug
@@ -112,6 +133,7 @@ const App: React.FC = () => {
             debugMode = true;
         }
     }
+    spawnSystem();
 
     /*
     * Local States
@@ -211,19 +233,9 @@ const App: React.FC = () => {
     }
 
     const [maxRounds, setMaxRounds] = useState<number>(12);
-    const [currentMap, setMap] = useState<string>("");
     
     window.RoundCount = function (p_Count: number) {
         setMaxRounds(p_Count);
-    }
-
-    window.CalculateSpawn = function (points: Array<number[]>, spawns: any): [number, number[]] {
-        return CalculateSpawn(points, spawns);
-    }
-
-    window.GetSpawn = function (points: Array<number[]>, map: string): [number, number[]] {
-        setMap(map);
-        return GetSpawn(points, map);
     }
 
     const [showTeamsPage, setShowTeamsPage] = useState<boolean>(false);
@@ -282,7 +294,7 @@ const App: React.FC = () => {
     }
 
     window.OnDebug = function() {
-        let spawns = JSON.stringify(GetSpawns(currentMap));
+        let spawns = JSON.stringify(exports.GetSpawns());
         WebUI.Call('DispatchEventLocal', 'WebUIDebug', spawns);
     }
 
@@ -569,13 +581,14 @@ declare global {
         //Spectator
         SpectatorTarget: (p_TargetName: string) => void;
         SpectatorEnabled: (p_Enabled: boolean) => void;
-        GetSpawn: (points: Array<number[]>, map: string) => [number, number[]];
-        CalculateSpawn: (points: Array<number[]>, spawns: any) => [number, number[]];
         OnDebug: () => void;
 
         //Audio
         OnHeadShot: () => void;
         OnKill: () => void;
         OnDeath: () => void;
+    }
+    interface exports {
+        GetSpawns: () => any;
     }
 }
