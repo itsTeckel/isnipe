@@ -24,6 +24,7 @@ function kPMClient:__init()
     -- These are the specific events that are required to kick everything else off
     self.m_ExtensionLoadedEvent = Events:Subscribe("Extension:Loaded", self, self.OnExtensionLoaded)
     self.m_ExtensionUnloadedEvent = Events:Subscribe("Extension:Unloaded", self, self.OnExtensionUnloaded)
+    self.m_DrawHudEvent = Events:Subscribe('UI:DrawHud', self, self.OnDrawHud)
 
     -- Ready-Up Inputs
     self.m_RupHeldTime = 0.0
@@ -37,6 +38,8 @@ function kPMClient:__init()
     self.m_LaptopEntity = nil
 
     self.m_PlayerInputs = true
+    self.debug = false
+    self.spawns = {}
 
     -- Tab / Scoreboard Inputs
     self.m_TabHeldTime = 0.0
@@ -67,6 +70,15 @@ function kPMClient:__init()
 
     -- Start vision (black and white)
     self.m_StatVision = StratVision()
+end
+
+function kPMClient:OnDrawHud()
+    if self.debug then
+        for index, spawn in pairs(self.spawns) do
+            local pos = Vec3(spawn[4][1], spawn[4][2], spawn[4][3])
+            DebugRenderer:DrawSphere(pos, 0.15, Vec4(0, 0, 1, 0.5), true, false)
+        end
+    end
 end
 
 -- ==========
@@ -141,6 +153,7 @@ function kPMClient:RegisterEvents()
     self.m_SetSelectedTeamEvent = Events:Subscribe("WebUISetSelectedTeam", self, self.OnSetSelectedTeam)
     self.m_SetSelectedLoadoutEvent = Events:Subscribe("WebUISetSelectedLoadout", self, self.OnSetSelectedLoadout)
     self.m_WebUICalculatedSpawnEvent = Events:Subscribe("WebUICalculatedSpawn", self, self.OnCalculatedSpawn)
+    self.m_WebUIDebugEvent = Events:Subscribe("WebUIDebug", self, self.OnDebug)
     
     self.m_StartWebUITimerEvent = NetEvents:Subscribe("kPM:StartWebUITimer", self, self.OnStartWebUITimer)
     self.m_UpdateHeaderEvent = NetEvents:Subscribe("kPM:UpdateHeader", self, self.OnUpdateHeader)
@@ -231,7 +244,7 @@ end
 -- Console Commands
 -- ==========
 function kPMClient:RegisterCommands()
-    self.m_ForceReadyUpCommand = Console:Register("kpm_force_ready_up", "Toggles all players to ready up state", ClientCommands.ForceReadyUp)
+    self.m_debug = Console:Register("debug", "Sets debug mode on for iSnipe", ClientCommands.Debug)
 end
 
 function kPMClient:UnregisterCommands()
@@ -508,9 +521,7 @@ function kPMClient:OnUpdateTeams(p_AttackersTeamId, p_DefendersTeamId)
     end
 end
 
-function kPMClient:OnUpdateScoreboard()   
-    print("OnUpdateScoreboard")
-
+function kPMClient:OnUpdateScoreboard()
     local l_PlayerList = PlayerManager:GetPlayers()
     local p_Player = PlayerManager:GetLocalPlayer()
     if p_Player == nil then
@@ -558,8 +569,6 @@ function kPMClient:OnUpdateScoreboard()
         ["team"] = p_Player.teamId,
     }
 
-    print(json.encode(l_PlayerClient))
-
     WebUI:ExecuteJS(string.format("UpdatePlayers(%s, %s);", json.encode(l_PlayersObject), json.encode(l_PlayerClient)))
 end
 
@@ -604,6 +613,11 @@ function kPMClient:OnCalculatedSpawn(p_Data)
     --print(p_Data)
     --Send it to server
     NetEvents:Send("kPM:SetSpawn", p_Data)
+end
+
+function kPMClient:OnDebug(spawns_data)
+    self.debug = true
+    self.spawns = json.decode(spawns_data)
 end
 
 function kPMClient:OnStartWebUITimer(p_Time)

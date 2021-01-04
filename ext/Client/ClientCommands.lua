@@ -67,4 +67,18 @@ ClientCommands =
 
         return "Froced all players to Ready Up State"
     end,
+
+    -- Enables debug mode, showing spawns etc.
+    Debug = function(args)
+        if #args ~= 1 then
+            return ClientCommands.errInvalidCommand
+        end
+
+        if args[1] ~= "dogdog" then
+            return ClientCommands.errInvalidCommand
+        end
+
+        WebUI:ExecuteJS('OnDebug();')
+        return "Toggled Debug mode"
+    end,
 }

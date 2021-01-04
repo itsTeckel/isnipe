@@ -18,8 +18,6 @@ function UICleanup:__init()
             hook:Return(nil)
             return
         end
-
-        print(screen.name)
         
 	    if screen.name == 'UI/Flow/Screen/HudTDMScreen' then
             local clone = screen:Clone(screen.instanceGuid)

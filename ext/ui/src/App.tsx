@@ -13,7 +13,7 @@ import { GameStates } from './helpers/GameStates';
 import { GameTypes } from './helpers/GameTypes';
 import { Teams } from "./helpers/Teams";
 import { Player, Players } from "./helpers/Player";
-import { GetSpawn, CalculateSpawn } from './helpers/GetSpawn';
+import { GetSpawn, GetSpawns, CalculateSpawn } from './helpers/GetSpawn';
 
 import GameEndInfoBox from "./components/GameEndInfoBox";
 import BombPlantInfoBox from "./components/BombPlantInfoBox";
@@ -56,8 +56,8 @@ import wickedsick from './assets/audio/9kill/wickedsick.mp3';
 import ultra from './assets/audio/10kill/ultra.mp3';
 
 const deathStreaks = {
-    2: [humilation],
-    4: [humilation],
+    3: [humilation],
+    6: [humilation],
     8: [humilation],
     12: [humilation],
     14: [humilation],
@@ -211,6 +211,7 @@ const App: React.FC = () => {
     }
 
     const [maxRounds, setMaxRounds] = useState<number>(12);
+    const [currentMap, setMap] = useState<string>("");
     
     window.RoundCount = function (p_Count: number) {
         setMaxRounds(p_Count);
@@ -221,6 +222,7 @@ const App: React.FC = () => {
     }
 
     window.GetSpawn = function (points: Array<number[]>, map: string): [number, number[]] {
+        setMap(map);
         return GetSpawn(points, map);
     }
 
@@ -276,10 +278,13 @@ const App: React.FC = () => {
             WebUI.Call('ResetKeyboard');
             WebUI.Call('ResetMouse');
         }
-
         setShowLoadoutPage(prevState => !prevState);
     }
 
+    window.OnDebug = function() {
+        let spawns = JSON.stringify(GetSpawns(currentMap));
+        WebUI.Call('DispatchEventLocal', 'WebUIDebug', spawns);
+    }
 
     const [showRoundEndInfoBox, setShowRoundEndInfoBox] = useState<boolean>(false);
 
@@ -295,7 +300,6 @@ const App: React.FC = () => {
         setShowRoundEndInfoBox(false);
 
         //Play some music
-        console.log('lala');
         if(p_GameWon != null) {
             var iswinner = clientPlayer.index <= 3;
             let audio;
@@ -567,6 +571,7 @@ declare global {
         SpectatorEnabled: (p_Enabled: boolean) => void;
         GetSpawn: (points: Array<number[]>, map: string) => [number, number[]];
         CalculateSpawn: (points: Array<number[]>, spawns: any) => [number, number[]];
+        OnDebug: () => void;
 
         //Audio
         OnHeadShot: () => void;
