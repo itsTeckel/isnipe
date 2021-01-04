@@ -294,7 +294,7 @@ const App: React.FC = () => {
     }
 
     window.OnDebug = function() {
-        let spawns = JSON.stringify(exports.GetSpawns());
+        let spawns = JSON.stringify(exports.SS_GetSpawns());
         WebUI.Call('DispatchEventLocal', 'WebUIDebug', spawns);
     }
 
@@ -589,6 +589,6 @@ declare global {
         OnDeath: () => void;
     }
     interface exports {
-        GetSpawns: () => any;
+        SS_GetSpawns: () => any;
     }
 }
