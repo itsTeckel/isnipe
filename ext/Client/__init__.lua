@@ -238,6 +238,12 @@ function kPMClient:OnSetSelectedLoadout(p_Data)
     end
 
     NetEvents:Send("kPM:PlayerSetSelectedKit", p_Data)
+
+    local localPlayer = PlayerManager:GetLocalPlayer()
+    if localPlayer ~= nil then
+        WebUI:ExecuteJS(string.format("exports.SS_SetDetails(\"%s\");", localPlayer.name))
+        return
+    end
 end
 
 -- ==========
@@ -253,7 +259,8 @@ end
 
 function kPMClient:OnLevelDestroyed()
     print('OnLevelDestroyed')
-
+    WebUI:ExecuteJS("OnDeath();")
+    
     self.m_PingTable = {}
     self.m_PlayerReadyUpPlayersTable = {}
     self.m_RupHeldTime = 0.0
@@ -600,8 +607,10 @@ function kPMClient:GetSpawn()
             end
         end
     end
-    --print(string.format("GetSpawn(%s, \"%s\");", json.encode(players), LevelNameHelper:GetLevelName()))
-    WebUI:ExecuteJS(string.format("exports.GetSpawn(%s, \"%s\");", json.encode(players), LevelNameHelper:GetLevelName()))
+    if self.debug then
+        print(string.format("exports.SS_GetSpawn(%s, \"%s\");", json.encode(players), LevelNameHelper:GetLevelName()))
+    end
+    WebUI:ExecuteJS(string.format("exports.SS_GetSpawn(%s, \"%s\");", json.encode(players), LevelNameHelper:GetLevelName()))
 end
 
 -- response back from JS
@@ -609,8 +618,10 @@ function kPMClient:OnCalculatedSpawn(p_Data)
     if p_Data == nil then
         return
     end
-    --print("OnCalculatedSpawn")
-    --print(p_Data)
+    if self.debug then
+        print("OnCalculatedSpawn")
+        print(p_Data)
+    end
     --Send it to server
     NetEvents:Send("kPM:SetSpawn", p_Data)
 end
@@ -759,11 +770,13 @@ function kPMClient:OnPlayAudio(track)
     if track == "headshot" then
         print("headshot")
         WebUI:ExecuteJS("OnHeadShot();")
+        WebUI:ExecuteJS("exports.SS_OnKill();") -- inform spawn system of a kill
         return
     end
     if track == "kill" then
         print("Kill")
         WebUI:ExecuteJS("OnKill();")
+        WebUI:ExecuteJS("exports.SS_OnKill();") -- inform spawn system of a kill
         return
     end
     print(track .. "is not mapped")
@@ -898,8 +911,10 @@ function kPMClient:OnPlayerRespawn(p_Player)
         --self.m_SpecCam:Disable()
         IngameSpectator:disable()
         WebUI:ExecuteJS('SpectatorEnabled('.. tostring(false) .. ');')
-        print(string.format("exports.OnSpawned(%s);", json.encode(self:PlayerCoordinates(s_Player)))
-        WebUI:ExecuteJS(string.format("exports.OnSpawned(%s);", json.encode(self:PlayerCoordinates(s_Player)))-- inform spawn system of our spawn
+        if self.debug then
+            print(string.format("exports.SS_OnSpawned(%s);", json.encode(self:PlayerCoordinates(s_Player))))
+        end
+        WebUI:ExecuteJS(string.format("exports.SS_OnSpawned(%s);", json.encode(self:PlayerCoordinates(s_Player))))-- inform spawn system of our spawn
     end
 end
 
@@ -939,8 +954,13 @@ function kPMClient:OnPlayerKilled(p_Player)
         self:EnablePlayerInputs()
 
         IngameSpectator:enable()
-        WebUI:ExecuteJS("OnDeath();")
-        WebUI:ExecuteJS(string.format("exports.OnDeath(%s);", json.encode(self:PlayerCoordinates(s_Player)))-- inform spawn system of our death
+        WebUI:ExecuteJS("OnDeath();")--deathstreak
+
+        -- inform spawn system of our death
+        if self.debug then
+            print(string.format("exports.SS_OnDeath(%s);", json.encode(self:PlayerCoordinates(s_Player))))
+        end
+        WebUI:ExecuteJS(string.format("exports.SS_OnDeath(%s);", json.encode(self:PlayerCoordinates(s_Player))))
     end
     self:GetSpawn()
 end
