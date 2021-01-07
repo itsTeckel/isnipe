@@ -161,7 +161,7 @@ const App: React.FC = () => {
     /*
     * Global States 
     */
-    const [showHud, setShowHud] = useState<boolean>(false);
+    const [showHud, setShowHud] = useState<boolean>(true);//dev iain
 
     const [roundsList, setRoundsList] = useState<RoundInfo[]>([
         {
@@ -240,7 +240,7 @@ const App: React.FC = () => {
 
     const [showTeamsPage, setShowTeamsPage] = useState<boolean>(false);
     const [selectedTeam, setSelectedTeam] = useState<Teams>(Teams.None);
-    const [showScoreboard, setShowScoreboard] = useState<boolean>(false);
+    const [showScoreboard, setShowScoreboard] = useState<boolean>(true); //dev iain
 
     const setTeam = (team: Teams) => {
         setShowTeamsPage(false);
@@ -368,7 +368,7 @@ const App: React.FC = () => {
         for (let index = 0; index < 20; index++) {
             dummyPlayers.push({
                 id: index,
-                name: 'Teszt',
+                name: 'ItsTeckel',
                 ping: 0,
                 kill: 18,
                 death: 5,
