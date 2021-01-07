@@ -161,7 +161,7 @@ const App: React.FC = () => {
     /*
     * Global States 
     */
-    const [showHud, setShowHud] = useState<boolean>(true);//dev iain
+    const [showHud, setShowHud] = useState<boolean>(false);
 
     const [roundsList, setRoundsList] = useState<RoundInfo[]>([
         {
@@ -240,7 +240,7 @@ const App: React.FC = () => {
 
     const [showTeamsPage, setShowTeamsPage] = useState<boolean>(false);
     const [selectedTeam, setSelectedTeam] = useState<Teams>(Teams.None);
-    const [showScoreboard, setShowScoreboard] = useState<boolean>(true); //dev iain
+    const [showScoreboard, setShowScoreboard] = useState<boolean>(false);
 
     const setTeam = (team: Teams) => {
         setShowTeamsPage(false);
