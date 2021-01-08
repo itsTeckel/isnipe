@@ -87,11 +87,12 @@ function kPMShared:OnPartitionLoaded(p_Partition)
             if l_Instance.instanceGuid == Guid("A7A90928-FA6A-4013-96BA-AE559BA8B74F") then
                 local soldier = UnlockAsset(l_Instance)
                 soldier:MakeWritable()
-                soldier.linkedTo = {
-                    UnlockAsset(Guid("99F5558D-325A-47AA-9B43-709DBCA7A841")),
-                    UnlockAsset(Guid("43A153C0-23DD-4224-B15E-706E53626841")),
-                    UnlockAsset(Guid("0F643EB9-1C73-4161-95E3-43F97ED30F6F"))
+                local linkedTo = {
+                     UnlockAsset(Guid("99F5558D-325A-47AA-9B43-709DBCA7A841")),
+                     UnlockAsset(Guid("43A153C0-23DD-4224-B15E-706E53626841")),
+                     UnlockAsset(Guid("0F643EB9-1C73-4161-95E3-43F97ED30F6F"))
                 }
+                soldier.linkedTo = linkedTo
                 print("Abu patched")
             end
         end
