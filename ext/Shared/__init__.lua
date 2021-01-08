@@ -82,21 +82,6 @@ function kPMShared:OnPartitionLoaded(p_Partition)
         self.m_LevelName = LevelNameHelper:GetLevelName()
     end
 
-    if p_Partition.guid == Guid("92002FDC-62A7-41A7-A95C-15AC0DE28F3A") then
-        for _, l_Instance in pairs(p_Partition.instances) do
-            if l_Instance.instanceGuid == Guid("A7A90928-FA6A-4013-96BA-AE559BA8B74F") then
-                local soldier = UnlockAsset(l_Instance)
-                soldier:MakeWritable()
-                local a = UnlockAsset(Guid("54FBFD32-5EF4-4E77-AD9F-146FEE0B80DE"))
-                soldier.linkedTo.clear()
-                soldier.linkedTo.add(UnlockAsset(Guid("FE8E28B6-ED7E-436A-85BB-05BF7F36D568")))
-                soldier.linkedTo.add(UnlockAsset(Guid("5652EDE2-057D-4A97-A3A5-95FCAC23CE25")))
-                soldier.linkedTo.add(UnlockAsset(Guid("AA45CCE2-738A-47BC-B9A5-5A6C00C7A66D")))
-                print("Abu patched")
-            end
-        end
-    end
-
 end
 
 -- ==========
