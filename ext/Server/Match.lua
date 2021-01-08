@@ -499,6 +499,11 @@ function Match:SpawnPlayer(p_Player, p_Transform, p_Pose, p_SoldierBp, p_KnifeOn
     l_Appearance.linkedTo.add(UnlockAsset(Guid("5652EDE2-057D-4A97-A3A5-95FCAC23CE25")))
     l_Appearance.linkedTo.add(UnlockAsset(Guid("AA45CCE2-738A-47BC-B9A5-5A6C00C7A66D")))
 
+    local abu = ResourceManager:SearchForDataContainer("Characters/Soldiers/Customizations/PLR_AlBazir")
+    if abu == nil then
+        print("abu is er niet... :(")
+    end
+
     if l_SoldierAsset == nil or l_Appearance == nil then
         print("WARN: l_SoldierAsset or l_Appearance is nil")
         return
