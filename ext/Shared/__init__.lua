@@ -37,30 +37,30 @@ function kPMShared:RegisterEvents()
     self.m_LevelLoadedEvent = Events:Subscribe("Level:Loaded", self, self.OnLevelLoaded)
     self.m_PartitionLoadedEvent = Events:Subscribe("Partition:Loaded", self, self.OnPartitionLoaded)
     self.m_LevelLoadResourcesEvent = Events:Subscribe("Level:LoadResources", self, self.OnLevelLoadResources)
-    -- Hooks:Install('ResourceManager:LoadBundles', 100, function(hook, bundles, compartment)
-    --     if #bundles == 1 and bundles[1] == SharedUtils:GetLevelName() then
-    --         print('Injecting bundles.')
+    Hooks:Install('ResourceManager:LoadBundles', 100, function(hook, bundles, compartment)
+        if #bundles == 1 and bundles[1] == SharedUtils:GetLevelName() then
+            print('Injecting bundles.')
 
-    --         bundles = {
-    --             'levels/sp_paris/sp_paris',
-    --             'levels/sp_paris/parkingdeck',
-    --             'levels/xp5_002/xp5_002',
-    --             'levels/xp5_002/cql',
-    --             bundles[1],
-    --         }
+            bundles = {
+                'levels/sp_paris/sp_paris',
+                'levels/sp_paris/parkingdeck',
+                'levels/xp5_002/xp5_002',
+                'levels/xp5_002/cql',
+                bundles[1],
+            }
 
-    --         hook:Pass(bundles, compartment)
-    --     end
-    -- end)
+            hook:Pass(bundles, compartment)
+        end
+    end)
 end
 
 function kPMShared:OnLevelLoadResources()
-    -- -- bicycle bundles
-    -- ResourceManager:MountSuperBundle('spchunks')
-    -- ResourceManager:MountSuperBundle('levels/sp_paris/sp_paris')
-    -- -- dirtbike bundles
-    -- ResourceManager:MountSuperBundle('xp5chunks')
-    -- ResourceManager:MountSuperBundle('levels/xp5_002/xp5_002')
+    -- bicycle bundles
+    ResourceManager:MountSuperBundle('spchunks')
+    ResourceManager:MountSuperBundle('levels/sp_paris/sp_paris')
+    -- dirtbike bundles
+    ResourceManager:MountSuperBundle('xp5chunks')
+    ResourceManager:MountSuperBundle('levels/xp5_002/xp5_002')
 end
 
 function kPMShared:UnregisterEvents()
@@ -81,6 +81,23 @@ function kPMShared:OnPartitionLoaded(p_Partition)
     if self.m_LevelName == nil then
         self.m_LevelName = LevelNameHelper:GetLevelName()
     end
+
+    if p_Partition.guid == Guid("92002FDC-62A7-41A7-A95C-15AC0DE28F3A") then
+        for _, l_Instance in pairs(p_Partition.instances) do
+            if l_Instance.instanceGuid == Guid("A7A90928-FA6A-4013-96BA-AE559BA8B74F") then
+                local abu = ResourceManager:SearchForDataContainer("Characters/Soldiers/Customizations/PLR_AlBazir")
+                if abu ~= nil then
+                    local soldier = UnlockAsset(l_Instance)
+                    soldier:MakeWritable()
+                    soldier.linkedTo = abu.linkedTo
+                    print("Abu patched")
+                else
+                    print("Abu is er niet :(")
+                end
+            end
+        end
+    end
+
 end
 
 -- ==========

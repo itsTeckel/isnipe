@@ -492,7 +492,7 @@ function Match:SpawnPlayer(p_Player, p_Transform, p_Pose, p_SoldierBp, p_KnifeOn
     local l_SoldierAsset = nil
     local l_Appearance = nil
     l_SoldierAsset = ResourceManager:SearchForDataContainer("Gameplay/Kits/RURecon")
-    l_Appearance = ResourceManager:SearchForDataContainer("Persistence/Unlocks/Soldiers/Visual/MP/RU/MP_RU_Recon_Appearance_Urban")
+    l_Appearance = ResourceManager:SearchForDataContainer("Persistence/Unlocks/Soldiers/Visual/MP/RU/MP_RU_Assault_Appearance01")
 
     if l_SoldierAsset == nil or l_Appearance == nil then
         print("WARN: l_SoldierAsset or l_Appearance is nil")
