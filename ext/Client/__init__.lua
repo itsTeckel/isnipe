@@ -769,14 +769,14 @@ function kPMClient:OnPlayAudio(track)
     end
     if track == "headshot" then
         print("headshot")
-        WebUI:ExecuteJS("OnHeadShot();")
         WebUI:ExecuteJS("exports.SS_OnKill();") -- inform spawn system of a kill
+        WebUI:ExecuteJS("OnHeadShot();")
         return
     end
     if track == "kill" then
         print("Kill")
-        WebUI:ExecuteJS("OnKill();")
         WebUI:ExecuteJS("exports.SS_OnKill();") -- inform spawn system of a kill
+        WebUI:ExecuteJS("OnKill();")
         return
     end
     print(track .. "is not mapped")
