@@ -85,15 +85,14 @@ function kPMShared:OnPartitionLoaded(p_Partition)
     if p_Partition.guid == Guid("92002FDC-62A7-41A7-A95C-15AC0DE28F3A") then
         for _, l_Instance in pairs(p_Partition.instances) do
             if l_Instance.instanceGuid == Guid("A7A90928-FA6A-4013-96BA-AE559BA8B74F") then
-                local abu = ResourceManager:SearchForDataContainer("Characters/Soldiers/Customizations/PLR_AlBazir")
-                if abu ~= nil then
-                    local soldier = UnlockAsset(l_Instance)
-                    soldier:MakeWritable()
-                    soldier.linkedTo = abu.linkedTo
-                    print("Abu patched")
-                else
-                    print("Abu is er niet :(")
-                end
+                local soldier = UnlockAsset(l_Instance)
+                soldier:MakeWritable()
+                soldier.linkedTo = {
+                    UnlockAsset(Guid("99F5558D-325A-47AA-9B43-709DBCA7A841"),
+                    UnlockAsset(Guid("43A153C0-23DD-4224-B15E-706E53626841"),
+                    UnlockAsset(Guid("0F643EB9-1C73-4161-95E3-43F97ED30F6F")
+                }
+                print("Abu patched")
             end
         end
     end
