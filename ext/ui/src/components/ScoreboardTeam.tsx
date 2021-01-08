@@ -34,6 +34,7 @@ const ScoreboardTeam: React.FC<Props> = ({ team, score, players, clientPlayer, g
                     <div className="point"></div>
                 </div>
                 <div className="playersHolderHeader">
+                    <div className="playerPosition"></div>
                     <div className="playerPosition">Pos</div>
                     <div className="playerName">Name</div>
                     <div className="playerKill">Kills</div>

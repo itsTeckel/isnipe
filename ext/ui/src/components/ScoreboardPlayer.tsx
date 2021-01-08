@@ -16,6 +16,7 @@ const ScoreboardPlayer: React.FC<Props> = ({ player, clientPlayer, place, gameSt
         <>
             {player.name &&
                 <div className={"playerHolder " + curPlayer + (player.isDead ? 'isDead ' : 'isAlive ') + 'pos'+place}>
+                    <div className="playerAvatar"><img width="32px" src={"https://discord.imunro.nl/avatar?username="+player.name}/> </div>
                     <div className="playerPosition">{position}</div>
                     <div className="playerName">{player.name??' - '}</div>
                     <div className="playerKill">{player.kill??' - '}</div>

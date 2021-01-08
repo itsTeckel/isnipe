@@ -368,7 +368,7 @@ const App: React.FC = () => {
         for (let index = 0; index < 20; index++) {
             dummyPlayers.push({
                 id: index,
-                name: 'Teszt',
+                name: 'ItsTeckel',
                 ping: 0,
                 kill: 18,
                 death: 5,
