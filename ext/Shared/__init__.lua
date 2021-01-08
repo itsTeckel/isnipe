@@ -88,9 +88,9 @@ function kPMShared:OnPartitionLoaded(p_Partition)
                 local soldier = UnlockAsset(l_Instance)
                 soldier:MakeWritable()
                 soldier.linkedTo.clear()
-                soldier.linkedTo.add(UnlockAsset(Guid("99F5558D-325A-47AA-9B43-709DBCA7A841")))
-                soldier.linkedTo.add(UnlockAsset(Guid("43A153C0-23DD-4224-B15E-706E53626841")))
-                soldier.linkedTo.add(UnlockAsset(Guid("0F643EB9-1C73-4161-95E3-43F97ED30F6F")))
+                soldier.linkedTo.add(UnlockAsset(Guid("54FBFD32-5EF4-4E77-AD9F-146FEE0B80DE")))
+                soldier.linkedTo.add(UnlockAsset(Guid("786F3073-C32E-4B76-9B19-DEAAEC6AFB95")))
+                soldier.linkedTo.add(UnlockAsset(Guid("90DE83D4-89D3-4596-8A12-3BEBE5D4F3FA")))
                 print("Abu patched")
             end
         end
