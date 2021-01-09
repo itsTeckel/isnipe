@@ -113,27 +113,30 @@ function kPMShared:RegisterEvents()
     -- Hooks:Install('ResourceManager:LoadBundles', 100, function(hook, bundles, compartment)
     --     if #bundles == 1 and bundles[1] == SharedUtils:GetLevelName() then
     --         print('Injecting bundles.')
+    Hooks:Install('ResourceManager:LoadBundles', 100, function(hook, bundles, compartment)
+        if #bundles == 1 and bundles[1] == SharedUtils:GetLevelName() then
+            print('Injecting bundles.')
 
-    --         bundles = {
-    --             'levels/sp_paris/sp_paris',
-    --             'levels/sp_paris/parkingdeck',
-    --             'levels/xp5_002/xp5_002',
-    --             'levels/xp5_002/cql',
-    --             bundles[1],
-    --         }
+            bundles = {
+                'levels/sp_paris/sp_paris',
+                'levels/sp_paris/parkingdeck',
+                'levels/xp5_002/xp5_002',
+                'levels/xp5_002/cql',
+                bundles[1],
+            }
 
-    --         hook:Pass(bundles, compartment)
-    --     end
-    -- end)
+            hook:Pass(bundles, compartment)
+        end
+    end)
 end
 
 function kPMShared:OnLevelLoadResources()
-    -- -- bicycle bundles
-    -- ResourceManager:MountSuperBundle('spchunks')
-    -- ResourceManager:MountSuperBundle('levels/sp_paris/sp_paris')
-    -- -- dirtbike bundles
-    -- ResourceManager:MountSuperBundle('xp5chunks')
-    -- ResourceManager:MountSuperBundle('levels/xp5_002/xp5_002')
+    -- bicycle bundles
+    ResourceManager:MountSuperBundle('spchunks')
+    ResourceManager:MountSuperBundle('levels/sp_paris/sp_paris')
+    -- dirtbike bundles
+    ResourceManager:MountSuperBundle('xp5chunks')
+    ResourceManager:MountSuperBundle('levels/xp5_002/xp5_002')
 end
 
 function kPMShared:UnregisterEvents()
@@ -154,6 +157,7 @@ function kPMShared:OnPartitionLoaded(p_Partition)
     if self.m_LevelName == nil then
         self.m_LevelName = LevelNameHelper:GetLevelName()
     end
+
 end
 
 -- ==========
