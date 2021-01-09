@@ -492,11 +492,11 @@ function Match:SpawnPlayer(p_Player, p_Transform, p_Pose, p_SoldierBp, p_KnifeOn
     local l_SoldierAsset = nil
     local l_Appearance = nil
     l_SoldierAsset = ResourceManager:SearchForDataContainer("Gameplay/Kits/RURecon")
-    l_Appearance = UnlockAsset()
-    l_Appearance.linkedTo.clear()
-    l_Appearance.linkedTo.add(UnlockAsset(Guid("FE8E28B6-ED7E-436A-85BB-05BF7F36D568")))
-    l_Appearance.linkedTo.add(UnlockAsset(Guid("5652EDE2-057D-4A97-A3A5-95FCAC23CE25")))
-    l_Appearance.linkedTo.add(UnlockAsset(Guid("AA45CCE2-738A-47BC-B9A5-5A6C00C7A66D")))
+--     l_Appearance = UnlockAsset()
+--     l_Appearance.linkedTo.clear()
+--     l_Appearance.linkedTo.add(UnlockAsset(Guid("FE8E28B6-ED7E-436A-85BB-05BF7F36D568")))
+--     l_Appearance.linkedTo.add(UnlockAsset(Guid("5652EDE2-057D-4A97-A3A5-95FCAC23CE25")))
+--     l_Appearance.linkedTo.add(UnlockAsset(Guid("AA45CCE2-738A-47BC-B9A5-5A6C00C7A66D")))
 
     local abu = ResourceManager:SearchForDataContainer("Characters/Soldiers/Customizations/PLR_AlBazir")
     if abu == nil then
