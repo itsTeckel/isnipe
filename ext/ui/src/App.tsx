@@ -485,7 +485,7 @@ const App: React.FC = () => {
             }
             
             <div id="debug" className="global">
-                <button onClick={() => setScene(GameStates.Warmup)}>Warmup</button>
+                <button onClick={() => setShowLoadoutPage(true)}>Loadout</button>
                 <button onClick={() => setScene(GameStates.EndGame)}>EndGame</button>
                 <button onClick={() => setShowHud(prevState => !prevState)}>ShowHeader On / Off</button>
                 <button onClick={() => setShowScoreboard(prevState => !prevState)}>Scoreboard On / Off</button>

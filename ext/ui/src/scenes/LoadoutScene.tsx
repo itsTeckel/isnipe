@@ -35,6 +35,11 @@ const LoadoutScene: React.FC<Props> = ({ show, setShowLoadoutPage }) => {
     const [openClassWindow, setOpenClassWindow] = useState<boolean>(false);
     const [selectedClass, setSelectedClass] = useState<number|null>(null);
 
+    const discordSelect = (event: any) => {
+        event.target.select();
+        document.execCommand("copy");
+    }
+
     const onClickSelectedClass = (key: number) => {
         setSelectedClass(key);
         setOpenClassWindow(true);
@@ -294,6 +299,11 @@ const LoadoutScene: React.FC<Props> = ({ show, setShowLoadoutPage }) => {
                             </>
                         }
                     </div>
+                    {/*href="https://discord.gg/YDXDA6QBkf"*/}
+                    <a id="discord-join" title="Join us on Discord">
+                        <img src="https://discordapp.com/api/guilds/796833114319618099/embed.png?style=banner4" />
+                        <input onClick={discordSelect} value="https://discord.gg/YDXDA6QBkf" />
+                    </a>
                     <Title text="F10 - To close Loadouts window" bottom={true} />
                 </div>
             }
