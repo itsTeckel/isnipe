@@ -44,7 +44,7 @@ function UICleanup:__init()
             for i = #screen.nodes, 1, -1 do
                 local node = screen.nodes[i]
                 if node ~= nil then
-                    print(screen.name .. "::" .. node.name)
+                    --print(screen.name .. "::" .. node.name)
                 end
             end
 

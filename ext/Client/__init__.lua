@@ -302,6 +302,7 @@ function kPMClient:OnLevelLoaded()
     NetEvents:Send("kPM:PlayerConnected")
     WebUI:ExecuteJS("OpenCloseTeamMenu(true);")
     WebUI:ExecuteJS("RoundCount(" .. kPMConfig.MatchDefaultRounds .. ");")
+    WebUI:ExecuteJS("ChangeState(" .. self.m_GameState .. ");")
 end
 
 function kPMClient:OnLevelLoadResources()
@@ -434,6 +435,7 @@ function kPMClient:OnEngineUpdate(p_DeltaTime, p_SimulationDeltaTime)
     if self.m_spawnCheckTime >= 3.0 then
         self:GetSpawn()
         self.m_spawnCheckTime = 0.0
+        WebUI:ExecuteJS("ChangeState(" .. self.m_GameState .. ");")
     end
 
     self.m_TabHeldTime = self.m_TabHeldTime + p_DeltaTime
