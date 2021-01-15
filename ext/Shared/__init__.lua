@@ -84,7 +84,7 @@ function kPMShared:RegisterEvents()
    --    out of bounds for noshar
       local cqLogicPartitionGuid = Guid('A7946CAA-746F-4164-9DFB-9843A5CC0E1E')
       local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('ad37fe92-0d8d-4ed2-b71c-198e2f69e7b4'), function(instance)
-      print("dikke rat")
+      print("patched red zone")
       	instance = VolumeVectorShapeData(instance)
       	instance:MakeWritable()
       	instance.points:clear()
@@ -113,30 +113,30 @@ function kPMShared:RegisterEvents()
     -- Hooks:Install('ResourceManager:LoadBundles', 100, function(hook, bundles, compartment)
     --     if #bundles == 1 and bundles[1] == SharedUtils:GetLevelName() then
     --         print('Injecting bundles.')
-    Hooks:Install('ResourceManager:LoadBundles', 100, function(hook, bundles, compartment)
-        if #bundles == 1 and bundles[1] == SharedUtils:GetLevelName() then
-            print('Injecting bundles.')
-
-            bundles = {
-                'levels/sp_paris/sp_paris',
-                'levels/sp_paris/parkingdeck',
-                'levels/xp5_002/xp5_002',
-                'levels/xp5_002/cql',
-                bundles[1],
-            }
-
-            hook:Pass(bundles, compartment)
-        end
-    end)
+    --Hooks:Install('ResourceManager:LoadBundles', 100, function(hook, bundles, compartment)
+    --    if #bundles == 1 and bundles[1] == SharedUtils:GetLevelName() then
+    --        print('Injecting bundles.')
+    --
+    --        bundles = {
+    --            'levels/sp_paris/sp_paris',
+    --            'levels/sp_paris/parkingdeck',
+    --            'levels/xp5_002/xp5_002',
+    --            'levels/xp5_002/cql',
+    --            bundles[1],
+    --        }
+    --
+    --        hook:Pass(bundles, compartment)
+    --    end
+    --end)
 end
 
 function kPMShared:OnLevelLoadResources()
-    -- bicycle bundles
-    ResourceManager:MountSuperBundle('spchunks')
-    ResourceManager:MountSuperBundle('levels/sp_paris/sp_paris')
-    -- dirtbike bundles
-    ResourceManager:MountSuperBundle('xp5chunks')
-    ResourceManager:MountSuperBundle('levels/xp5_002/xp5_002')
+    ---- bicycle bundles
+    --ResourceManager:MountSuperBundle('spchunks')
+    --ResourceManager:MountSuperBundle('levels/sp_paris/sp_paris')
+    ---- dirtbike bundles
+    --ResourceManager:MountSuperBundle('xp5chunks')
+    --ResourceManager:MountSuperBundle('levels/xp5_002/xp5_002')
 end
 
 function kPMShared:UnregisterEvents()
