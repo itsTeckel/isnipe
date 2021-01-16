@@ -38,6 +38,42 @@ function kPMShared:RegisterEvents()
     self.m_PartitionLoadedEvent = Events:Subscribe("Partition:Loaded", self, self.OnPartitionLoaded)
     self.m_LevelLoadResourcesEvent = Events:Subscribe("Level:LoadResources", self, self.OnLevelLoadResources)
 
+--    out of bounds for talah market
+    local cqLogicPartitionGuid = Guid('71C3D342-5E82-47F4-A4E9-26D436884494')
+    local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('6e1a052d-0c31-413b-8b9b-39037f218d0c'), function(instance)
+        print("patched red zone")
+        instance = VolumeVectorShapeData(instance)
+        instance:MakeWritable()
+        instance.points:clear()
+        local points = {
+            Vec3(101.960320, 75.398651, 5.610607),
+            Vec3(100.094688, 72.641167, 16.422693),
+            Vec3(85.371178, 70.681267, 22.708332),
+            Vec3(82.214584, 70.620598, 25.985714),
+            Vec3(69.771690, 70.057343, 41.860531),
+            Vec3(67.664749, 69.322319, 44.511108),
+            Vec3(42.990353, 66.860542, 42.608849),
+            Vec3(35.205639, 65.718872, 22.711123),
+            Vec3(33.681835, 67.265968, 12.650743),
+            Vec3(33.006851, 67.675064, 3.309906),
+            Vec3(32.424755, 67.900078, -6.504072),
+            Vec3(32.977818, 65.723656, -22.813391),
+            Vec3(47.892406, 67.324158, -28.833387),
+            Vec3(61.463093, 69.743774, -40.740135),
+            Vec3(66.135139, 69.248871, -46.829292),
+            Vec3(81.587029, 69.361938, -45.324787),
+            Vec3(97.504768, 72.376007, -21.240591),
+            Vec3(102.766167, 75.232719, -4.726771),
+            Vec3(119.384232, 77.560440, -5.562759),
+            Vec3(119.707085, 77.594429, 6.080595)
+        }
+
+        for _,point in pairs(points) do
+            instance.points:add(point)
+        end
+    end)
+
+
 --    out of bounds for damavand peak
    local cqLogicPartitionGuid = Guid('75BE465D-33C4-4F3E-859F-7006515E8530')
    local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('640f05bf-d964-4a08-ba62-a018037b5ad2'), function(instance)

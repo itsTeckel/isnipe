@@ -436,7 +436,7 @@ function kPMClient:OnEngineUpdate(p_DeltaTime, p_SimulationDeltaTime)
         self:GetSpawn()
         self.m_spawnCheckTime = 0.0
         WebUI:ExecuteJS("ChangeState(" .. self.m_GameState .. ");")
-        print("SpawnChecktime over 3 seconds")
+        --print("SpawnChecktime over 3 seconds")
     end
 
     self.m_TabHeldTime = self.m_TabHeldTime + p_DeltaTime
