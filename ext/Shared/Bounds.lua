@@ -135,7 +135,7 @@ function Bounds()
 
 end
 
-function azadi(instance) -- ASDASD ID OF ReferenceObjectData
+function azadi(instance) --azadi has multiple VolumeVectorShapeData s
     print("patched red zone")
     instance = VolumeVectorShapeData(instance)
     instance:MakeWritable()

@@ -72,13 +72,39 @@ function kPMClient:__init()
     self.m_StatVision = StratVision()
 end
 
-function kPMClient:OnDrawHud()
+function kPMClient:OnDrawHud() ---dikke ratten debug penis
     if self.debug then
         for index, spawn in pairs(self.spawns) do
             local pos = Vec3(spawn[4][1], spawn[4][2], spawn[4][3])
+
+
+
+            local localPlayer = PlayerManager:GetLocalPlayer()
+            if localPlayer == nil then
+                return
+            end
+
+            local localSoldier = localPlayer.soldier
+            if localSoldier == nil then
+                return
+            end
+            --player coordinates
+            local soldierLinearTransform = localSoldier.worldTransform
+            --player distance to spawnpoints
+            local distance = self:Distance(spawn[4][1], spawn[4][2], spawn[4][3], soldierLinearTransform.trans.x, soldierLinearTransform.trans.y, soldierLinearTransform.trans.z)
+
+            if distance < 5 then
+                DebugRenderer:DrawText2D(1080, 200, spawn[5][1], Vec4(0, 0, 1, 0.5), 5)
+            end
+
+
             DebugRenderer:DrawSphere(pos, 0.15, Vec4(0, 0, 1, 0.5), true, false)
         end
     end
+end
+
+function kPMClient:Distance( x1, y1, z1, x2, y2, z2 )
+    return math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)+(z2-z1)*(z2-z1))
 end
 
 -- ==========
