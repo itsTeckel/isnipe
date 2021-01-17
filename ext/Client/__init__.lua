@@ -300,11 +300,11 @@ function kPMClient:OnLevelDestroyed()
 end
 
 function kPMClient:OnLevelLoaded()
+    self.levelLoaded = true
     NetEvents:Send("kPM:PlayerConnected")
     WebUI:ExecuteJS("OpenCloseTeamMenu(true);")
     WebUI:ExecuteJS("RoundCount(" .. kPMConfig.MatchDefaultRounds .. ");")
     WebUI:ExecuteJS("ChangeState(" .. self.m_GameState .. ");")
-    self.levelLoaded = true
 end
 
 function kPMClient:OnLevelLoadResources()
@@ -638,7 +638,11 @@ function kPMClient:OnCalculatedSpawn(p_Data)
 end
 
 function kPMClient:OnDebug(spawns_data)
-    self.debug = true
+    if self.debug then
+        self.debug = false
+    else
+        self.debug = true
+    end
     self.spawns = json.decode(spawns_data)
 end
 

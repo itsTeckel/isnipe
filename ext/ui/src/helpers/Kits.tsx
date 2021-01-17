@@ -2,7 +2,7 @@ import { Weapons } from './Weapons';
 
 export var Kits: any = [
     {
-        Name: "Sniper",
+        Name: "Edit loadout",
         Weapons: {
             Primary: {
                 U_SV98: Weapons.U_SV98,
@@ -26,4 +26,8 @@ export var Kits: any = [
             defaultLethal: Weapons.None.Key,
         },
     },
+    {
+        Name: "Settings",
+        Settings: {},
+    }
 ];

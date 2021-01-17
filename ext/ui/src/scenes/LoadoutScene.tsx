@@ -7,6 +7,7 @@ import './LoadoutScene.scss';
 import prepare1 from "../assets/audio/prepare/prepare.wav";
 import prepare2 from "../assets/audio/prepare/prepare2.wav";
 import prepare3 from "../assets/audio/prepare/prepare3.wav";
+import {Settings} from "../helpers/Settings";
 
 interface Loadout {
     class: string|null;
@@ -20,9 +21,11 @@ interface Loadout {
 interface Props {
     show: boolean;
     setShowLoadoutPage: (show: boolean) => void;
+    settings: Settings;
+    setSettings: (settings: Settings) => void;
 }
 
-const LoadoutScene: React.FC<Props> = ({ show, setShowLoadoutPage }) => {
+const LoadoutScene: React.FC<Props> = ({ show, setShowLoadoutPage, settings, setSettings }) => {
     const [currentLoadout, setCurrentLoadout] = useState<Loadout>({
         class: null,
         primary: null,
@@ -45,18 +48,20 @@ const LoadoutScene: React.FC<Props> = ({ show, setShowLoadoutPage }) => {
         setOpenClassWindow(true);
 
         let weapons = Kits[key]["Weapons"];
-        setCurrentLoadout({
-            class: Kits[key].Name,
-            primary: weapons.Primary[weapons.defaultPrimary],
-            secondary: weapons.Secondary[weapons.defaultSecondary],
-            tactical: weapons.Tactical[weapons.defaultTactical],
-            lethal: weapons.Lethal[weapons.defaultLethal],
-            primaryAttachments: {
-                Sights: weapons.Primary[weapons.defaultPrimary].Attachments.Sights.default,
-                Primary: weapons.Primary[weapons.defaultPrimary].Attachments.Primary.default,
-                Secondary: weapons.Primary[weapons.defaultPrimary].Attachments.Secondary.None,
-            },
-        });
+        if(weapons != null) {
+            setCurrentLoadout({
+                class: Kits[key].Name,
+                primary: weapons.Primary[weapons.defaultPrimary],
+                secondary: weapons.Secondary[weapons.defaultSecondary],
+                tactical: weapons.Tactical[weapons.defaultTactical],
+                lethal: weapons.Lethal[weapons.defaultLethal],
+                primaryAttachments: {
+                    Sights: weapons.Primary[weapons.defaultPrimary].Attachments.Sights.default,
+                    Primary: weapons.Primary[weapons.defaultPrimary].Attachments.Primary.default,
+                    Secondary: weapons.Primary[weapons.defaultPrimary].Attachments.Secondary.None,
+                },
+            });
+        }
     }
 
     const onSelectedWeaponChange = (slot: string, weapon: string) => {
@@ -255,6 +260,14 @@ const LoadoutScene: React.FC<Props> = ({ show, setShowLoadoutPage }) => {
             </div>
         )
     }
+
+    const onSettingChange = (key: String) => {
+        // @ts-ignore
+        settings[key] = !settings[key];
+        console.log(key);
+        console.log(settings);
+    }
+
     if(selectedClass === null) {
         onClickSelectedClass(0);
     }
@@ -262,7 +275,7 @@ const LoadoutScene: React.FC<Props> = ({ show, setShowLoadoutPage }) => {
         <>
             {show &&
                 <div id="pageLoadout" className="page">
-                    <Title text="Edit Loadouts" />
+                    <Title text="Select" />
                     <div>
                         <div className="classesList">
                             {Object.keys(Kits).map((val: string, key: number) =>
@@ -275,9 +288,9 @@ const LoadoutScene: React.FC<Props> = ({ show, setShowLoadoutPage }) => {
                         {openClassWindow &&
                             <>
                                 <div className="loadoutList">
-                                    {Object.keys(Kits).map((value: string, key: number) => 
+                                    {Object.keys(Kits).map((value: string, key: number) =>
                                         <div key={key}>
-                                            {selectedClass === key &&
+                                            {selectedClass === key && Kits[key]["Weapons"] &&
                                                 <>
                                                     {getWeaponSlot("Primary Weapon", Kits[key]["Weapons"].Primary, Kits[key]["Weapons"].defaultPrimary)}
 
@@ -287,14 +300,19 @@ const LoadoutScene: React.FC<Props> = ({ show, setShowLoadoutPage }) => {
                                                         {getWeaponAttachmentSlot("Secondary")}
                                                     </div>
 
-
+                                                    <button className="btn border-btn primary" onClick={doneLoadout}>
+                                                        Start
+                                                    </button>
                                                 </>
+                                            }
+
+                                            {selectedClass === key && Kits[key]["Settings"] &&
+                                            <>
+                                                <a>Killstreak sounds</a> <input type="checkbox" defaultChecked={settings["killStreakSound"]} onChange={() => {onSettingChange("killStreakSound")}} />
+                                            </>
                                             }
                                         </div>
                                     )}
-                                    <button className="btn border-btn primary" onClick={doneLoadout}>
-                                        Start
-                                    </button>
                                 </div>
                             </>
                         }
