@@ -290,6 +290,7 @@ function kPMClient:OnLevelDestroyed()
 
     self.m_FirstSpawn = false
     self.m_ExplosionEntityData = nil
+    self.levelLoaded = false
 
     self.m_PlantSoundEntityData = nil
     self.m_PlantedSoundEntityData = nil
@@ -303,6 +304,7 @@ function kPMClient:OnLevelLoaded()
     WebUI:ExecuteJS("OpenCloseTeamMenu(true);")
     WebUI:ExecuteJS("RoundCount(" .. kPMConfig.MatchDefaultRounds .. ");")
     WebUI:ExecuteJS("ChangeState(" .. self.m_GameState .. ");")
+    self.levelLoaded = true
 end
 
 function kPMClient:OnLevelLoadResources()
@@ -312,6 +314,7 @@ function kPMClient:OnLevelLoadResources()
     self.m_PlantSoundEntityData = nil
     self.m_PlantedSoundEntityData = nil
     self.m_AlarmEntity = nil
+    self.levelLoaded = false
 end
 
 function kPMClient:OnUpdateInput(p_DeltaTime)
@@ -425,6 +428,10 @@ function kPMClient:OnInputPreUpdate(p_Hook, p_Cache, p_DeltaTime)
 end
 
 function kPMClient:OnEngineUpdate(p_DeltaTime, p_SimulationDeltaTime)
+    if self.levelLoaded == false then
+        return
+    end
+
     if self.m_TabHeldTime >= 3.0 then
         if self.m_ScoreboardActive then
             self:OnUpdateScoreboard()
@@ -495,7 +502,9 @@ function kPMClient:OnGameStateChanged(p_OldGameState, p_GameState)
     end
 
     -- Update the WebUI
-    WebUI:ExecuteJS("ChangeState(" .. self.m_GameState .. ");")
+    if self.levelLoaded then
+        WebUI:ExecuteJS("ChangeState(" .. self.m_GameState .. ");")
+    end
 end
 
 function kPMClient:OnGameTypeChanged(p_GameType)
