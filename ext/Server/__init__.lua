@@ -159,6 +159,7 @@ function kPMServer:OnPlayerConnected(p_Player)
     NetEvents:SendTo("kPM:UpdateTeams", p_Player, self.m_Attackers:GetTeamId(), self.m_Defenders:GetTeamId())
 
     p_Player.teamId = self:GetTeam(p_Player)
+    p_Player.squadId = 1
 end
 
 function kPMServer:OnPlayerKilled(p_Player, p_inflictor, position, weapon, isRoadKill, isHeadShot, wasVictimInReviveState, info)
@@ -196,7 +197,7 @@ function kPMServer:GetTeam(p_Player)
     end
 
     local lowest = 999
-    for possibleTeamId = 4,1,-1 
+    for possibleTeamId = 16,1,-1 --4
     do 
         if teams[possibleTeamId] ~= nil and teams[possibleTeamId] < lowest then
             lowest = teams[possibleTeamId]
@@ -223,6 +224,7 @@ function kPMServer:OnPlayerSetSelectedTeam(p_Player, p_Team)
     end
 
     p_Player.teamId = self:GetTeam(p_Player)
+    p_Player.squadId = 1
     print("set team")
 
     if p_Player.soldier ~= nil then
