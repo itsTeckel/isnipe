@@ -116,10 +116,6 @@ function Match:OnEngineUpdate(p_GameState, p_DeltaTime)
             print("transitioning from " .. self.m_LastState .. " to " .. p_GameState)
         end
 
-        -- Reset tickets
-        TicketManager:SetTicketCount(self.m_Attackers:GetTeamId(), 0)
-        TicketManager:SetTicketCount(self.m_Defenders:GetTeamId(), 0)
-
         self.m_LastState = self.m_CurrentState
     end
 
@@ -166,8 +162,25 @@ function Match:OnPlaying(p_DeltaTime)
 
     if self.stateTicks[TickType.Timer] >= kPMConfig.TimeTick then
         self.stateTicks[TickType.Timer] = 0.0
-        TicketManager:SetTicketCount(self.m_Attackers:GetTeamId(), 0)
-        TicketManager:SetTicketCount(self.m_Defenders:GetTeamId(), 0)
+
+        -- Reset tickets
+        TicketManager:SetTicketCount(1, 0)
+        TicketManager:SetTicketCount(2, 0)
+        TicketManager:SetTicketCount(3, 0)
+        TicketManager:SetTicketCount(4, 0)
+        TicketManager:SetTicketCount(5, 0)
+        TicketManager:SetTicketCount(6, 0)
+        TicketManager:SetTicketCount(7, 0)
+        TicketManager:SetTicketCount(8, 0)
+        TicketManager:SetTicketCount(9, 0)
+        TicketManager:SetTicketCount(10, 0)
+        TicketManager:SetTicketCount(11, 0)
+        TicketManager:SetTicketCount(12, 0)
+        TicketManager:SetTicketCount(13, 0)
+        TicketManager:SetTicketCount(14, 0)
+        TicketManager:SetTicketCount(15, 0)
+        TicketManager:SetTicketCount(16, 0)
+
         self.m_Server:SetClientTimer(kPMConfig.MaxRoundTime - self.m_UpdateTicks[GameStates.Playing])
     end
 
