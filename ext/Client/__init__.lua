@@ -443,6 +443,7 @@ function kPMClient:OnEngineUpdate(p_DeltaTime, p_SimulationDeltaTime)
         self:GetSpawn()
         self.m_spawnCheckTime = 0.0
         WebUI:ExecuteJS("ChangeState(" .. self.m_GameState .. ");")
+        --print("SpawnChecktime over 3 seconds")
     end
 
     self.m_TabHeldTime = self.m_TabHeldTime + p_DeltaTime
@@ -924,7 +925,7 @@ function kPMClient:OnPlayerRespawn(p_Player)
 
     if p_Player.name == s_Player.name then
         --self.m_SpecCam:Disable()
-        IngameSpectator:disable()
+        --IngameSpectator:disable()
         WebUI:ExecuteJS('SpectatorEnabled('.. tostring(false) .. ');')
         if self.debug then
             print(string.format("exports.SS_OnSpawned(%s);", json.encode(self:PlayerCoordinates(s_Player))))
@@ -968,7 +969,7 @@ function kPMClient:OnPlayerKilled(p_Player)
     if p_Player.id == s_Player.id then
         self:EnablePlayerInputs()
 
-        IngameSpectator:enable()
+        --IngameSpectator:enable()
         WebUI:ExecuteJS("OnDeath();")--deathstreak
 
         -- inform spawn system of our death
