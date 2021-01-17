@@ -46,8 +46,9 @@ const LoadoutScene: React.FC<Props> = ({ show, setShowLoadoutPage, settings, set
     const onClickSelectedClass = (key: number) => {
         setSelectedClass(key);
         setOpenClassWindow(true);
-
+        console.log("abu");
         let weapons = Kits[key]["Weapons"];
+        console.log(weapons, key)
         if(weapons != null) {
             setCurrentLoadout({
                 class: Kits[key].Name,
@@ -165,13 +166,16 @@ const LoadoutScene: React.FC<Props> = ({ show, setShowLoadoutPage, settings, set
     }
 
     const doneLoadout = () => {
+        currentLoadout.class = "a";
         if (navigator.userAgent.includes('VeniceUnleashed')) {
             WebUI.Call('DispatchEventLocal', 'WebUISetSelectedLoadout', JSON.stringify(currentLoadout));
             WebUI.Call('ResetKeyboard');
             WebUI.Call('ResetMouse');
         }
         setShowLoadoutPage(false);
-        playPrepare();
+        if(settings.killStreakSound) {
+            playPrepare();
+        }
     }
 
     const getWeaponSlot = (name: string, weapons: any, defaultIndex: string) => {
@@ -264,11 +268,10 @@ const LoadoutScene: React.FC<Props> = ({ show, setShowLoadoutPage, settings, set
     const onSettingChange = (key: String) => {
         // @ts-ignore
         settings[key] = !settings[key];
-        console.log(key);
-        console.log(settings);
+        setSettings(settings);
     }
 
-    if(selectedClass === null) {
+    if(currentLoadout.class === null) {
         onClickSelectedClass(0);
     }
     return (
