@@ -29,6 +29,7 @@ import winSound from './assets/audio/win.mp3';
 import loseSound from './assets/audio/lose.mp3';
 
 import humilation from './assets/audio/humilation.mp3';
+import shutdown from './assets/audio/shutdown.mp3';
 
 import hattrick from './assets/audio/3kill/hattrick.wav';
 import multikill from './assets/audio/3kill/multikill.wav';
@@ -53,6 +54,7 @@ import whickedsick from './assets/audio/7kill/whickedsick.wav';
 import f_holyshit from './assets/audio/8kill/holyshit.mp3';
 import wickedsick from './assets/audio/9kill/wickedsick.mp3';
 import ultra from './assets/audio/10kill/ultra.mp3';
+import {Settings} from "./helpers/Settings";
 
 const deathStreaks = {
     3: [humilation],
@@ -146,10 +148,6 @@ const App: React.FC = () => {
         if (p_GameState !== GameStates.None && showHud !== true) {
             setShowHud(true)
         }
-
-        // Reset plant progress
-        setPlantProgress(0);
-        setPlantOrDefuse("plant");
     }
 
     const [gameType, setGameType] = useState<GameTypes>(GameTypes.Comp);
@@ -175,25 +173,32 @@ const App: React.FC = () => {
     const [round, setRound] = useState<number>(0);
     const [teamAttackersScore, setTeamAttackersScore] = useState<number>(0);
     const [teamDefendersScore, setTeamDefendersScore] = useState<number>(0);
-    const [bombPlantedOn, setBombPlantedOn] = useState<string|null>(null);
+    const [settings, setSettings] = useState<Settings>({
+        killStreakSound: true
+    });
 
+    const streakSound = function (sound: any) {
+        if(!settings.killStreakSound) {
+            return;
+        }
+        if(sound == null) {
+            return;
+        }
+        const audio = new Audio(sound);
+        audio.loop = false;
+        audio.play();
+    }
 
     const addKill = function () {
         setKillStreak(killStreak + 1);
         setDeathStreak(0);
         let streakAudio = getSound(killStreaks, killStreak + 1);
-        if(streakAudio != null) {
-            const audio = new Audio(streakAudio);
-            audio.loop = false;
-            audio.play();
-        }
+        streakSound(streakAudio);
     }
 
     const headshotAudio = new Audio(headshotSound);
     window.OnHeadShot = function () {
-        headshotAudio.volume = 1;
-        headshotAudio.loop = false;
-        headshotAudio.play();
+        streakSound(headshotAudio);
         addKill();
     }
 
@@ -209,27 +214,21 @@ const App: React.FC = () => {
     }
 
     window.OnDeath = function () {
+        if(killStreak >= 5){
+            streakSound(shutdown);
+        }
+
         setKillStreak(0);
         setDeathStreak(deathStreak + 1);
 
         let streakAudio = getSound(deathStreaks, deathStreak + 1);
-        if(streakAudio != null) {
-            const audio = new Audio(streakAudio);
-            audio.loop = false;
-            audio.play();
-        }
+        streakSound(streakAudio);
     }
 
     window.UpdateHeader = function (p_AttackerPoints: number, p_DefenderPoints: number, p_Rounds: number, p_BombSite?: string) {
         setTeamAttackersScore(p_AttackerPoints);
         setTeamDefendersScore(p_DefenderPoints);
         setRound(p_Rounds);
-
-        if (p_BombSite === undefined || p_BombSite === null || p_BombSite === 'nil') {
-            setBombPlantedOn(null);
-        } else {
-            setBombPlantedOn(p_BombSite.toString());
-        }
     }
 
     const [maxRounds, setMaxRounds] = useState<number>(12);
@@ -390,23 +389,9 @@ const App: React.FC = () => {
         setRupProgress(Math.round(m_RupHeldTime / MaxReadyUpTime * 100));
     }
 
-    const [plantProgress, setPlantProgress] = useState<number>(0);
-    const [plantOrDefuse, setPlantOrDefuse] = useState<string>("plant");
-    window.PlantInteractProgress = function(m_PlantOrDefuseHeldTime: number, PlantTime: number, plantOrDefuse: string) {
-        if (plantOrDefuse === 'none') {
-            setPlantProgress(0);
-            setPlantOrDefuse("plant");
-    
-        } else {
-            setPlantProgress(Math.round(m_PlantOrDefuseHeldTime / PlantTime * 100));
-            setPlantOrDefuse(plantOrDefuse);
-        }
-    }
-
     window.ResetUI = function() {
         setShowHud(false);
         setRound(0);
-        setBombPlantedOn(null);
 
         // Show the select team page
         setShowTeamsPage(true);
@@ -419,8 +404,6 @@ const App: React.FC = () => {
         setBombPlanted(null);
 
         setRupProgress(0);
-        setPlantProgress(0);
-        setPlantOrDefuse("plant");
         setGameWon(null);
     }
 
@@ -485,7 +468,7 @@ const App: React.FC = () => {
             }
             
             <div id="debug" className="global">
-                <button onClick={() => setShowLoadoutPage(true)}>Loadout</button>
+                <button onClick={() => setShowLoadoutPage(!showLoadoutPage)}>Loadout</button>
                 <button onClick={() => setScene(GameStates.EndGame)}>EndGame</button>
                 <button onClick={() => setShowHud(prevState => !prevState)}>ShowHeader On / Off</button>
                 <button onClick={() => setShowScoreboard(prevState => !prevState)}>Scoreboard On / Off</button>
@@ -494,16 +477,16 @@ const App: React.FC = () => {
                 <button onClick={() => setShowRoundEndInfoBox(prevState => !prevState)}>RoundEndInfo On / Off</button>
                 <button onClick={() => window.SetGameEnd(true, "")}>setGameWon</button>
                 <button onClick={() => setGameWinningTeam(Teams.Attackers)}>Attackers won the game</button>
-                <button onClick={() => setBombPlantedOn("B")}>Set bomb planted</button>
                 <br />
-                <button onClick={() => setTeamAttackersScore(prevState => prevState + 1)}>Attackers +1</button>
-                <button onClick={() => setTeamDefendersScore(prevState => prevState + 1)}>Defenders +1</button>
+                <button onClick={() => {window.OnKill()}}>Add kill</button>
+                <button onClick={() => {window.OnDeath()}}>Add Death</button>
             </div>
 
             <div className="window">
                 <Header
                     showHud={showHud}
                     clientPlayer={clientPlayer}
+                    killStreak={killStreak}
                 />
                 <GameStatesPage />
                 <TeamsScene
@@ -515,6 +498,8 @@ const App: React.FC = () => {
                 <LoadoutScene
                     show={showLoadoutPage && showHud}
                     setShowLoadoutPage={(show) => setShowLoadoutPage(show)}
+                    settings={settings}
+                    setSettings={setSettings}
                 />
                 <Scoreboard 
                     showScoreboard={showScoreboard && showHud}
@@ -526,10 +511,6 @@ const App: React.FC = () => {
                     round={round}
                     maxRounds={maxRounds}
                     roundsList={roundsList}
-                />
-                <PlantOrDefuseProgress 
-                    plantProgress={plantProgress}
-                    plantOrDefuse={plantOrDefuse}
                 />
                 <Spectator
                     spectating={spectating}

@@ -15,11 +15,13 @@ import './Header.scss';
 interface Props {
     showHud: boolean;
     clientPlayer: Player;
+    killStreak: number;
 }
 
 const Header: React.FC<Props> = ({
     showHud,
-    clientPlayer
+    clientPlayer,
+    killStreak
  }) => {
     window.SetTimer = function(p_Time: number) {
         setTime(1000 * p_Time);
@@ -75,7 +77,7 @@ const Header: React.FC<Props> = ({
                             </div>
                         </div>
                         <div id="scoreDefenders">
-                            <span className="points">{clientPlayer.kill} kills</span>
+                            <span className="points">{killStreak} streak</span>
                         </div>
                     </div>
                     <div className="playerIcons defenders">
