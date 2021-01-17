@@ -15,10 +15,10 @@
 
 
 function Bounds()
-    --    out of bounds for talah market
+    --    out of bounds for Talah Market
     local cqLogicPartitionGuid = Guid('71C3D342-5E82-47F4-A4E9-26D436884494')
     local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('6e1a052d-0c31-413b-8b9b-39037f218d0c'), function(instance)
-        print("patched red zone")
+        print("Talah Market: patched red zone")
         instance = VolumeVectorShapeData(instance)
         instance:MakeWritable()
         instance.points:clear()
@@ -51,10 +51,10 @@ function Bounds()
     end)
 
 
-    --    out of bounds for damavand peak
+    --    out of bounds for Damavand Peak
     local cqLogicPartitionGuid = Guid('75BE465D-33C4-4F3E-859F-7006515E8530')
     local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('640f05bf-d964-4a08-ba62-a018037b5ad2'), function(instance)
-        print("dikke rat")
+        print("Damavand Peak: patched red zone")
         instance = VolumeVectorShapeData(instance)
         instance:MakeWritable()
         instance.points:clear()
@@ -94,10 +94,10 @@ function Bounds()
         end
     end)
 
-    --    out of bounds for noshar
+    --    out of bounds for Noshar Canals
     local cqLogicPartitionGuid = Guid('2D132495-AF01-49E3-B460-2E095044D8CF')
     local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('ad37fe92-0d8d-4ed2-b71c-198e2f69e7b4'), function(instance)
-        print("patched red zone")
+        print("Noshar Canals: patched red zone")
         instance = VolumeVectorShapeData(instance)
         instance:MakeWritable()
         instance.points:clear()
@@ -122,6 +122,27 @@ function Bounds()
         end
     end)
 
+    -- XP5_001 Operation Riverside
+    local cqLogicPartitionGuid = Guid('3D62C4AF-4143-43AE-85A5-9A9434A6759B')
+    local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('57b0ac93-03b5-416d-9a2c-4a5395e08e5b'), riverside)
+    local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('f8c9f008-810a-4eea-91fe-d0ca4d48abf0'), riverside)
+    local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('9095600c-baf3-458d-99d5-c21b9124bcff'), riverside)
+    local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('4a732d6c-c0d4-4e50-b6ad-8e405fb7c729'), riverside)
+    local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('766b85b5-447f-4cfe-a6fe-b287800ac0f1'), riverside)
+    local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('cb871d52-6daa-45f5-a394-c3ae6ecdb8f3'), riverside)
+    local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('0fc98981-f114-4dec-8324-7cb0d7976cf6'), riverside)
+
+
+    -- XP3_Valley Death Valley
+    local cqLogicPartitionGuid = Guid('ECCB562C-6AC5-48CD-89E3-A23C9CF183A7')
+    local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('dc6825ee-35b5-4a38-a877-bb861ab005f7'), valley)
+    local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('50ba20e7-47df-402b-8cff-39139882a2ac'), valley)
+    local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('ffc16338-1ff5-40cf-9c2a-555c5789f196'), valley)
+    local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('b8b7a25f-6c8e-4c44-be0f-b8eaaafbe4d3'), valley)
+    local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('f5ca9aba-8c65-41cf-99ce-6f59f7eed7e9'), valley)
+    local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('ba38ff38-be2c-4e78-884b-e5de8e0298c9'), valley)
+    local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('c0890ca1-4d84-4e6b-ab8a-7da23d0ffc53'), valley)
+
     -- XP4_Parl: Azadi Palace out of bounds
     local cqLogicPartitionGuid = Guid('2D132495-AF01-49E3-B460-2E095044D8CF')
     local usRedzoneVectorData = ResourceManager:RegisterInstanceLoadHandler(cqLogicPartitionGuid, Guid('898d55c9-61d1-49d9-a980-d828c1ba5683'), azadi)
@@ -135,8 +156,80 @@ function Bounds()
 
 end
 
-function azadi(instance) --azadi has multiple VolumeVectorShapeData s
-    print("patched red zone")
+
+
+
+
+
+
+function riverside(instance) --valley has multiple VolumeVectorShapeData
+    print("Operation Riverside: patched red zone")
+    instance = VolumeVectorShapeData(instance)
+    instance:MakeWritable()
+    instance.points:clear()
+    local points = {
+        Vec3(151.409912, 111.226173, -95.167702),
+        Vec3(142.239365, 110.939194, -82.788254),
+        Vec3(130.087921, 111.060020, -91.900658),
+        Vec3(110.806030, 110.939194, -61.897068),
+        Vec3(89.616814, 111.246590, -75.367775),
+        Vec3(74.859970, 110.966644, -51.950924),
+        Vec3(109.209724, 110.939201, -30.155554),
+        Vec3(100.316566, 111.066772, -5.293375),
+        Vec3(122.514336, 110.958961, 3.851096),
+        Vec3(143.706467, 110.755722, 3.968064),
+        Vec3(151.532135, 110.938812, -8.491898),
+        Vec3(196.417511, 111.685028, 23.615294),
+        Vec3(205.751450, 110.923569, 22.587420),
+        Vec3(228.800278, 110.979881, -11.365573),
+        Vec3(230.917068, 110.939201, -34.886276),
+        Vec3(232.262100, 111.083359, -40.411755),
+        Vec3(218.886017, 110.939194, -49.308945),
+        Vec3(163.318985, 111.315361, -87.037216),
+        Vec3(157.395157, 111.324425, -91.448494)
+    }
+
+    for _,point in pairs(points) do
+        instance.points:add(point)
+    end
+end
+
+function valley(instance) --valley has multiple VolumeVectorShapeData
+    print("Death Valley: patched red zone")
+    instance = VolumeVectorShapeData(instance)
+    instance:MakeWritable()
+    instance.points:clear()
+    local points = {
+        Vec3(-138.645935, 137.845840, 269.647644),
+        Vec3(-173.904236, 137.939621, 262.321899),
+        Vec3(-175.023987, 137.939621, 267.726318),
+        Vec3(-190.101212, 137.845856, 264.574463),
+        Vec3(-192.878174, 137.068695, 277.348328),
+        Vec3(-187.849106, 137.934235, 278.661285),
+        Vec3(-189.981888, 137.175323, 289.997925),
+        Vec3(-194.756790, 137.251633, 312.473877),
+        Vec3(-192.740845, 138.056702, 328.574707),
+        Vec3(-201.644547, 141.177094, 376.358612),
+        Vec3(-193.503387, 138.988739, 376.213928),
+        Vec3(-198.947754, 147.697403, 394.112915),
+        Vec3(-165.403427, 146.750793, 399.321259),
+        Vec3(-151.349640, 137.492691, 372.028992),
+        Vec3(-146.611496, 137.882370, 341.442749),
+        Vec3(-143.353058, 137.834824, 329.028412),
+        Vec3(-150.941193, 137.921494, 327.579407)
+    }
+
+    for _,point in pairs(points) do
+        instance.points:add(point)
+    end
+end
+
+
+
+
+
+function azadi(instance) --azadi has multiple VolumeVectorShapeData
+    print("Azadi Palace: patched red zone")
     instance = VolumeVectorShapeData(instance)
     instance:MakeWritable()
     instance.points:clear()
