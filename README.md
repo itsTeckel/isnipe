@@ -78,3 +78,5 @@ In the future we intend to improve iSnipe even further
 * Functionality to choose killstreaks, like in COD
 * Custom assets soldiers
 * Enemy-Foe counter on death
+
+<img src=".\github_styles\footer.jpg"/>

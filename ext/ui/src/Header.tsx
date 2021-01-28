@@ -42,7 +42,7 @@ const Header: React.FC<Props> = ({
             </div>
 
             <div id="promodVersion">
-                v 0.1
+                v 1.0
             </div>
 
             <div id="debug">
