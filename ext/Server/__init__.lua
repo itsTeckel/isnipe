@@ -239,7 +239,8 @@ function kPMServer:OnPlayerSetSelectedKit(p_Player, p_Data)
 
     local l_Data = json.decode(p_Data)
 
-    if Kits[l_Data["class"]] == nil then
+    if l_Data["primaryAttachments"] == nil then
+        print(l_Data)
         print("err: invalid kit.")
         return
     end
