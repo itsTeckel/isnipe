@@ -15,8 +15,6 @@ import { Teams } from "./helpers/Teams";
 import { Player, Players } from "./helpers/Player";
 
 import GameEndInfoBox from "./components/GameEndInfoBox";
-import BombPlantInfoBox from "./components/BombPlantInfoBox";
-import PlantOrDefuseProgress from "./components/PlantOrDefuseProgress";
 
 import './Animations.scss';
 import './Global.scss';
@@ -104,25 +102,7 @@ const getSound = (list: any, streak: number) => {
 }
 
 const spawnSystem = () => {
-    let url = "https://dev.imunro.nl/spawnsystem.cjs.production.min.js";
-    var script   = document.createElement("script");
-    const head = document.getElementsByTagName('head')[0];
-    head.appendChild(script);
-
-    const load = function() {
-        var versionUpdate = (new Date()).getTime();
-        var update   = document.createElement("script");
-        update.type  = "text/javascript";
-        update.src   = url+"?v"+versionUpdate;
-        head.appendChild(update);
-        script = update;
-    }
-    load();
-
-    setInterval(function() {
-        head.removeChild(script);
-        load();
-    }, 30 * 60 * 1000);//Every 30 minutes reload the spawn system.
+    
 }
 
 const App: React.FC = () => {
@@ -225,7 +205,7 @@ const App: React.FC = () => {
         streakSound(streakAudio);
     }
 
-    window.UpdateHeader = function (p_AttackerPoints: number, p_DefenderPoints: number, p_Rounds: number, p_BombSite?: string) {
+    window.UpdateHeader = function (p_AttackerPoints: number, p_DefenderPoints: number, p_Rounds: number) {
         setTeamAttackersScore(p_AttackerPoints);
         setTeamDefendersScore(p_DefenderPoints);
         setRound(p_Rounds);
@@ -324,11 +304,6 @@ const App: React.FC = () => {
             audio.play();
         }
     }
-
-    const [bombPlanted, setBombPlanted] = useState<string|null>(null);
-    window.BombPlanted = function (p_BombSite: string|null) {
-        setBombPlanted(p_BombSite)
-    }
     
     window.OpenCloseScoreboard = function (open: boolean) {
         if (!showTeamsPage && !showLoadoutPage) {
@@ -400,8 +375,6 @@ const App: React.FC = () => {
 
         setShowLoadoutPage(false);
         setShowRoundEndInfoBox(false);
-
-        setBombPlanted(null);
 
         setRupProgress(0);
         setGameWon(null);
@@ -516,11 +489,7 @@ const App: React.FC = () => {
                     spectating={spectating}
                     spectatorTarget={spectatorTarget}
                 />
-                
-                {bombPlanted !== null &&
-                    <BombPlantInfoBox bombSite={bombPlanted} afterInterval={() => setBombPlanted(null)} />
-                }
-
+               
                 {gameWon !== null &&
                     <GameEndInfoBox
                         showScoreboard={showHud}
@@ -550,11 +519,9 @@ declare global {
         UpdatePlayers: (p_Players: any, p_ClientPlayer: any) => void;
         OpenCloseScoreboard: (open: boolean) => void;
         RupInteractProgress: (m_RupHeldTime: number, MaxReadyUpTime: number) => void
-        UpdateHeader: (p_AttackerPoints: number, p_DefenderPoints: number, p_Rounds: number, p_BombSite?: string) => void;
+        UpdateHeader: (p_AttackerPoints: number, p_DefenderPoints: number, p_Rounds: number) => void;
         ShowHideRoundEndInfoBox: (open: boolean) => void;
         SetGameEnd: (p_GameWon: boolean, p_WinningTeam: string) => void;
-        BombPlanted: (p_BombSite: string|null) => void;
-        PlantInteractProgress: (m_PlantOrDefuseHeldTime: number, PlantTime: number, plantOrDefuse: string) => void
         ResetUI: () => void;
         RoundCount: (p_Count: number) => void;
         stringifyNumber: (i: number) => string;
