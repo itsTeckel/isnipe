@@ -1,4 +1,4 @@
-require ("__shared/kPMConfig")
+require ("__shared/iSNConfig")
 
 ClientCommands = 
 {
@@ -43,7 +43,7 @@ ClientCommands =
         end
 
         -- Send the toggle event to the server
-        NetEvents:Send("kPM:ToggleRup")
+        NetEvents:Send("iSN:ToggleRup")
 
         return "Toggled Ready Up State"
     end,
@@ -58,12 +58,8 @@ ClientCommands =
             return ClientCommands.errInvalidCommand
         end
 
-        if localPlayer.name ~= kPMConfig.AdminName then
-            return ClientCommands.errInvalidCommand
-        end
-
         -- Send the toggle event to the server
-        NetEvents:Send("kPM:ForceToggleRup")
+        NetEvents:Send("iSN:ForceToggleRup")
 
         return "Froced all players to Ready Up State"
     end,

@@ -1,11 +1,11 @@
-class "kPMShared"
+class "iSNShared"
 
 require("__shared/MapsConfig")
 require("__shared/LevelNameHelper")
 require("__shared/Generators/MapMarkerEntityDataGenerator")
 require("__shared/Bounds")
 
-function kPMShared:__init()
+function iSNShared:__init()
     print("shared initialization")
 
     self.m_ExtensionLoadedEvent = Events:Subscribe("Extension:Loaded", self, self.OnExtensionLoaded)
@@ -14,7 +14,7 @@ function kPMShared:__init()
     self.m_LevelName = nil
 end
 
-function kPMShared:OnExtensionLoaded()
+function iSNShared:OnExtensionLoaded()
     -- Register all of the events
     self:RegisterEvents()
 
@@ -22,7 +22,7 @@ function kPMShared:OnExtensionLoaded()
     self:RegisterHooks()
 end
 
-function kPMShared:OnExtensionUnloaded()
+function iSNShared:OnExtensionUnloaded()
     self:UnregisterEvents()
     self:UnregisterHooks()
 end
@@ -30,7 +30,7 @@ end
 -- ==========
 -- Events
 -- ==========
-function kPMShared:RegisterEvents()
+function iSNShared:RegisterEvents()
     print("registering events")
 
     -- Level events
@@ -62,7 +62,7 @@ function kPMShared:RegisterEvents()
     --end)
 end
 
-function kPMShared:OnLevelLoadResources()
+function iSNShared:OnLevelLoadResources()
     ---- bicycle bundles
     --ResourceManager:MountSuperBundle('spchunks')
     --ResourceManager:MountSuperBundle('levels/sp_paris/sp_paris')
@@ -71,21 +71,21 @@ function kPMShared:OnLevelLoadResources()
     --ResourceManager:MountSuperBundle('levels/xp5_002/xp5_002')
 end
 
-function kPMShared:UnregisterEvents()
+function iSNShared:UnregisterEvents()
     print("unregistering events")
 end
 
-function kPMShared:OnLevelRegisterEntityResources()
+function iSNShared:OnLevelRegisterEntityResources()
     if self.m_LevelName == nil then
         self.m_LevelName = LevelNameHelper:GetLevelName()
     end
 end
 
-function kPMShared:OnLevelLoaded(p_LevelName, p_GameMode)
+function iSNShared:OnLevelLoaded(p_LevelName, p_GameMode)
 
 end
 
-function kPMShared:OnPartitionLoaded(p_Partition)
+function iSNShared:OnPartitionLoaded(p_Partition)
     if self.m_LevelName == nil then
         self.m_LevelName = LevelNameHelper:GetLevelName()
     end
@@ -95,12 +95,12 @@ end
 -- ==========
 -- Hooks
 -- ==========
-function kPMShared:RegisterHooks()
+function iSNShared:RegisterHooks()
     print("registering hooks")
 end
 
-function kPMShared:UnregisterHooks()
+function iSNShared:UnregisterHooks()
     print("unregistering hooks")
 end
 
-return kPMShared()
+return iSNShared()

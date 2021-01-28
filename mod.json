@@ -1,9 +1,9 @@
 {
-    "Name": "kPM",
-    "Description": "Promod for competitive Battlefield 3 experience.",
-    "Authors": [ "kiwidog", "KVN" ],
+    "Name": "iSnipe",
+    "Description": "iSnipe for Battlefield 3",
+    "Authors": [ "ItsTeckel", "RoNanor" ],
     "Tags": [ "isnipe" ],
-    "Version": "0.7.0",
+    "Version": "1.0.0",
     "HasVeniceEXT": true,
     "HasWebUI": true,
     "Dependencies": {

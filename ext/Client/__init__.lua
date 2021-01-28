@@ -1,17 +1,14 @@
-class "kPMClient"
+class "iSNClient"
 
 require("ClientCommands")
---require("SpecCam")
 require("UICleanup")
-require("StratVision")
 require("__shared/GameStates")
-require("__shared/kPMConfig")
+require("__shared/iSNConfig")
 require("__shared/MapsConfig")
 require("__shared/LevelNameHelper")
 
-local IngameSpectator = require('ingame-spectator')
 
-function kPMClient:__init()
+function iSNClient:__init()
     -- Start the client initialization
     print("client initialization")
 
@@ -47,14 +44,14 @@ function kPMClient:__init()
     self.m_ScoreboardActive = false
     
     -- The current gamestate, this is read-only and should only be changed by the SERVER
-    if kPMConfig.GameType == GameTypes.Public then
+    if iSNConfig.GameType == GameTypes.Public then
         self.m_GameState = GameStates.Warmup
     else
         self.m_GameState = GameStates.None
     end
     
     -- The current gametype
-    self.m_GameType = kPMConfig.GameType
+    self.m_GameType = iSNConfig.GameType
 
     self.m_AttackersTeamId = TeamId.Team2
     self.m_DefendersTeamId = TeamId.Team1
@@ -67,12 +64,9 @@ function kPMClient:__init()
     self.m_PlantedSoundEntityData = nil
     self.m_AlarmEntity = nil
     self.m_PlantSent = false
-
-    -- Start vision (black and white)
-    self.m_StatVision = StratVision()
 end
 
-function kPMClient:OnDrawHud() ---dikke ratten debug penis
+function iSNClient:OnDrawHud() ---dikke ratten debug penis
     if self.debug then
         for index, spawn in pairs(self.spawns) do
             local pos = Vec3(spawn[4][1], spawn[4][2], spawn[4][3])
@@ -103,7 +97,7 @@ function kPMClient:OnDrawHud() ---dikke ratten debug penis
     end
 end
 
-function kPMClient:Distance( x1, y1, z1, x2, y2, z2 )
+function iSNClient:Distance( x1, y1, z1, x2, y2, z2 )
     return math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)+(z2-z1)*(z2-z1))
 end
 
@@ -111,7 +105,7 @@ end
 -- Extensions
 -- ==========
 
-function kPMClient:OnExtensionLoaded()
+function iSNClient:OnExtensionLoaded()
     -- Register all of the console variable commands
     self:RegisterCommands()
 
@@ -125,7 +119,7 @@ function kPMClient:OnExtensionLoaded()
     WebUI:Show()
 end
 
-function kPMClient:OnExtensionUnloaded()
+function iSNClient:OnExtensionUnloaded()
     self:UnregisterCommands()
     self:UnregisterEvents()
 end
@@ -133,7 +127,7 @@ end
 -- ==========
 -- Events
 -- ==========
-function kPMClient:RegisterEvents()
+function iSNClient:RegisterEvents()
     print("registering events")
 
     -- Install input hooks
@@ -146,13 +140,13 @@ function kPMClient:RegisterEvents()
     self.m_PartitionLoadedEvent = Events:Subscribe('Partition:Loaded', self, self.OnPartitionLoaded)
 
     -- Game State events
-    self.m_GameStateChangedEvent = NetEvents:Subscribe("kPM:GameStateChanged", self, self.OnGameStateChanged)
+    self.m_GameStateChangedEvent = NetEvents:Subscribe("iSN:GameStateChanged", self, self.OnGameStateChanged)
 
     -- Game Type events
-    self.m_GameTypeChangedEvent = NetEvents:Subscribe("kPM:GameTypeChanged", self, self.OnGameTypeChanged)
+    self.m_GameTypeChangedEvent = NetEvents:Subscribe("iSN:GameTypeChanged", self, self.OnGameTypeChanged)
 
     -- Ready Up State Update
-    self.m_RupStateEvent = NetEvents:Subscribe("kPM:RupStateChanged", self, self.OnRupStateChanged)
+    self.m_RupStateEvent = NetEvents:Subscribe("iSN:RupStateChanged", self, self.OnRupStateChanged)
 
     -- Update ping table
     self.m_PlayerPing = NetEvents:Subscribe("Player:Ping", self, self.OnPlayerPing)
@@ -181,36 +175,36 @@ function kPMClient:RegisterEvents()
     self.m_WebUICalculatedSpawnEvent = Events:Subscribe("WebUICalculatedSpawn", self, self.OnCalculatedSpawn)
     self.m_WebUIDebugEvent = Events:Subscribe("WebUIDebug", self, self.OnDebug)
     
-    self.m_StartWebUITimerEvent = NetEvents:Subscribe("kPM:StartWebUITimer", self, self.OnStartWebUITimer)
-    self.m_UpdateHeaderEvent = NetEvents:Subscribe("kPM:UpdateHeader", self, self.OnUpdateHeader)
-    self.m_SetRoundEndInfoBoxEvent = NetEvents:Subscribe("kPM:SetRoundEndInfoBox", self, self.OnSetRoundEndInfoBox)
-    self.m_SetGameEndEvent = NetEvents:Subscribe("kPM:SetGameEnd", self, self.OnSetGameEnd)
-    self.m_ResetUIEvent = NetEvents:Subscribe("kPM:ResetUI", self, self.OnResetUI)
+    self.m_StartWebUITimerEvent = NetEvents:Subscribe("iSN:StartWebUITimer", self, self.OnStartWebUITimer)
+    self.m_UpdateHeaderEvent = NetEvents:Subscribe("iSN:UpdateHeader", self, self.OnUpdateHeader)
+    self.m_SetRoundEndInfoBoxEvent = NetEvents:Subscribe("iSN:SetRoundEndInfoBox", self, self.OnSetRoundEndInfoBox)
+    self.m_SetGameEndEvent = NetEvents:Subscribe("iSN:SetGameEnd", self, self.OnSetGameEnd)
+    self.m_ResetUIEvent = NetEvents:Subscribe("iSN:ResetUI", self, self.OnResetUI)
 
-    self.m_BombPlantedEvent = NetEvents:Subscribe("kPM:BombPlanted", self, self.OnBombPlanted)
-    self.m_BombDefusedEvent = NetEvents:Subscribe("kPM:BombDefused", self, self.OnBombDefused)
-    self.m_BombKaboomEvent = NetEvents:Subscribe("kPM:BombKaboom", self, self.OnBombKaboom)
+    self.m_BombPlantedEvent = NetEvents:Subscribe("iSN:BombPlanted", self, self.OnBombPlanted)
+    self.m_BombDefusedEvent = NetEvents:Subscribe("iSN:BombDefused", self, self.OnBombDefused)
+    self.m_BombKaboomEvent = NetEvents:Subscribe("iSN:BombKaboom", self, self.OnBombKaboom)
 
-    self.m_PlaySoundPlantingEvent = NetEvents:Subscribe("kPM:PlayAudio", self, self.OnPlayAudio)
+    self.m_PlaySoundPlantingEvent = NetEvents:Subscribe("iSN:PlayAudio", self, self.OnPlayAudio)
 
-    self.m_UpdateTeamsEvent = NetEvents:Subscribe("kPM:UpdateTeams", self, self.OnUpdateTeams)
+    self.m_UpdateTeamsEvent = NetEvents:Subscribe("iSN:UpdateTeams", self, self.OnUpdateTeams)
 
-    self.m_DisablePlayerInputsEvent = NetEvents:Subscribe("kPM:DisablePlayerInputs", self, self.OnDisablePlayerInputs)
-    self.m_EnablePlayerInputsEvent = NetEvents:Subscribe("kPM:EnablePlayerInputs", self, self.OnEnablePlayerInputs)
+    self.m_DisablePlayerInputsEvent = NetEvents:Subscribe("iSN:DisablePlayerInputs", self, self.OnDisablePlayerInputs)
+    self.m_EnablePlayerInputsEvent = NetEvents:Subscribe("iSN:EnablePlayerInputs", self, self.OnEnablePlayerInputs)
 
     -- Cleanup Events
-    self.m_CleanupEvent = NetEvents:Subscribe("kPM:Cleanup", self, self.OnCleanup)
+    self.m_CleanupEvent = NetEvents:Subscribe("iSN:Cleanup", self, self.OnCleanup)
 end
 
-function kPMClient:OnPartitionLoaded(p_Partition)
+function iSNClient:OnPartitionLoaded(p_Partition)
 
 end
 
-function kPMClient:UnregisterEvents()
+function iSNClient:UnregisterEvents()
     print("unregistering events")
 end
 
-function kPMClient:OnSetSelectedTeam(p_Team)
+function iSNClient:OnSetSelectedTeam(p_Team)
     if p_Team == nil then
         return
     end
@@ -235,20 +229,20 @@ function kPMClient:OnSetSelectedTeam(p_Team)
         end
 
         if s_AttackersCount > s_DefendersCount then
-            NetEvents:Send("kPM:PlayerSetSelectedTeam", self.m_DefendersTeamId)
+            NetEvents:Send("iSN:PlayerSetSelectedTeam", self.m_DefendersTeamId)
         elseif s_AttackersCount < s_DefendersCount then
-            NetEvents:Send("kPM:PlayerSetSelectedTeam", self.m_AttackersTeamId)
+            NetEvents:Send("iSN:PlayerSetSelectedTeam", self.m_AttackersTeamId)
         else
-            NetEvents:Send("kPM:PlayerSetSelectedTeam", self.m_AttackersTeamId)
+            NetEvents:Send("iSN:PlayerSetSelectedTeam", self.m_AttackersTeamId)
         end
     elseif p_Team == 2 then -- attackers
-        NetEvents:Send("kPM:PlayerSetSelectedTeam", self.m_AttackersTeamId)
+        NetEvents:Send("iSN:PlayerSetSelectedTeam", self.m_AttackersTeamId)
     else -- defenders
-        NetEvents:Send("kPM:PlayerSetSelectedTeam", self.m_DefendersTeamId)
+        NetEvents:Send("iSN:PlayerSetSelectedTeam", self.m_DefendersTeamId)
     end
 end
 
-function kPMClient:OnSetSelectedLoadout(p_Data)
+function iSNClient:OnSetSelectedLoadout(p_Data)
     if p_Data == nil then
         return
     end
@@ -263,7 +257,7 @@ function kPMClient:OnSetSelectedLoadout(p_Data)
         self.m_FirstSpawn = true
     end
 
-    NetEvents:Send("kPM:PlayerSetSelectedKit", p_Data)
+    NetEvents:Send("iSN:PlayerSetSelectedKit", p_Data)
 
     local localPlayer = PlayerManager:GetLocalPlayer()
     if localPlayer ~= nil then
@@ -275,15 +269,15 @@ end
 -- ==========
 -- Console Commands
 -- ==========
-function kPMClient:RegisterCommands()
+function iSNClient:RegisterCommands()
     self.m_debug = Console:Register("debug", "Sets debug mode on for iSnipe", ClientCommands.Debug)
 end
 
-function kPMClient:UnregisterCommands()
-    Console:Deregister("kpm_force_ready_up")
+function iSNClient:UnregisterCommands()
+    Console:Deregister("iSN_force_ready_up")
 end
 
-function kPMClient:OnLevelDestroyed()
+function iSNClient:OnLevelDestroyed()
     print('OnLevelDestroyed')
     WebUI:ExecuteJS("OnDeath();")
     
@@ -303,13 +297,13 @@ function kPMClient:OnLevelDestroyed()
     self.m_TabHeldTime = 0.0
     self.m_ScoreboardActive = false
     
-    --if kPMConfig.GameType == GameTypes.Public then
+    --if iSNConfig.GameType == GameTypes.Public then
     --    self.m_GameState = GameStates.Warmup
     --else
         self.m_GameState = GameStates.None
     --end
     
-    self.m_GameType = kPMConfig.GameType
+    self.m_GameType = iSNConfig.GameType
     
     self.m_AttackersTeamId = TeamId.Team2
     self.m_DefendersTeamId = TeamId.Team1
@@ -325,15 +319,15 @@ function kPMClient:OnLevelDestroyed()
     WebUI:ExecuteJS('ResetUI();')
 end
 
-function kPMClient:OnLevelLoaded()
+function iSNClient:OnLevelLoaded()
     self.levelLoaded = true
-    NetEvents:Send("kPM:PlayerConnected")
+    NetEvents:Send("iSN:PlayerConnected")
     WebUI:ExecuteJS("OpenCloseTeamMenu(true);")
-    WebUI:ExecuteJS("RoundCount(" .. kPMConfig.MatchDefaultRounds .. ");")
+    WebUI:ExecuteJS("RoundCount(" .. iSNConfig.MatchDefaultRounds .. ");")
     WebUI:ExecuteJS("ChangeState(" .. self.m_GameState .. ");")
 end
 
-function kPMClient:OnLevelLoadResources()
+function iSNClient:OnLevelLoadResources()
     print('OnLevelLoadResources')
     self.m_ExplosionEntityData = nil
 
@@ -343,7 +337,7 @@ function kPMClient:OnLevelLoadResources()
     self.levelLoaded = false
 end
 
-function kPMClient:OnUpdateInput(p_DeltaTime)
+function iSNClient:OnUpdateInput(p_DeltaTime)
     if InputManager:WentKeyDown(InputDeviceKeys.IDK_F9) then
         local localPlayer = PlayerManager:GetLocalPlayer()
         if localPlayer == nil then
@@ -384,7 +378,7 @@ function kPMClient:OnUpdateInput(p_DeltaTime)
     end
 end
 
-function kPMClient:OnUIInputConceptEvent(p_Hook, p_EventType, p_Action)    
+function iSNClient:OnUIInputConceptEvent(p_Hook, p_EventType, p_Action)    
     if p_Action == UIInputAction.UIInputAction_Tab then
         local s_Player = PlayerManager:GetLocalPlayer()
         if s_Player ~= nil then
@@ -405,7 +399,7 @@ function kPMClient:OnUIInputConceptEvent(p_Hook, p_EventType, p_Action)
     end
 end
 
-function kPMClient:OnInputPreUpdate(p_Hook, p_Cache, p_DeltaTime)
+function iSNClient:OnInputPreUpdate(p_Hook, p_Cache, p_DeltaTime)
     -- Validate our cache
     if p_Cache == nil then
         print("err: invalid input cache.")
@@ -436,14 +430,14 @@ function kPMClient:OnInputPreUpdate(p_Hook, p_Cache, p_DeltaTime)
         end
 
         -- Toggle the rup state
-        if self.m_RupHeldTime >= kPMConfig.MaxReadyUpTime then
+        if self.m_RupHeldTime >= iSNConfig.MaxReadyUpTime then
             if not self.m_RupHeldReady then
-                NetEvents:Send("kPM:ToggleRup")
-                WebUI:ExecuteJS("RupInteractProgress(" .. tostring(0) ..", " .. tostring(kPMConfig.MaxReadyUpTime) .. ");")
+                NetEvents:Send("iSN:ToggleRup")
+                WebUI:ExecuteJS("RupInteractProgress(" .. tostring(0) ..", " .. tostring(iSNConfig.MaxReadyUpTime) .. ");")
                 self.m_RupHeldReady = true
             end
         else
-            WebUI:ExecuteJS("RupInteractProgress(" .. tostring(self.m_RupHeldTime) ..", " .. tostring(kPMConfig.MaxReadyUpTime) .. ");")
+            WebUI:ExecuteJS("RupInteractProgress(" .. tostring(self.m_RupHeldTime) ..", " .. tostring(iSNConfig.MaxReadyUpTime) .. ");")
         end
     end
 
@@ -453,7 +447,7 @@ function kPMClient:OnInputPreUpdate(p_Hook, p_Cache, p_DeltaTime)
     end]]
 end
 
-function kPMClient:OnEngineUpdate(p_DeltaTime, p_SimulationDeltaTime)
+function iSNClient:OnEngineUpdate(p_DeltaTime, p_SimulationDeltaTime)
     if self.levelLoaded == false then
         return
     end
@@ -476,7 +470,7 @@ function kPMClient:OnEngineUpdate(p_DeltaTime, p_SimulationDeltaTime)
     self.m_spawnCheckTime = self.m_spawnCheckTime + p_DeltaTime
 end
 
-function kPMClient:OnRupStateChanged(p_WaitingOnPlayers, p_LocalRupStatus)
+function iSNClient:OnRupStateChanged(p_WaitingOnPlayers, p_LocalRupStatus)
     --[[if p_WaitingOnPlayers == nil then
         print("err: invalid waiting on player count.")
         return
@@ -488,15 +482,15 @@ function kPMClient:OnRupStateChanged(p_WaitingOnPlayers, p_LocalRupStatus)
     end]]
 end
 
-function kPMClient:OnPlayerPing(p_PingTable)
+function iSNClient:OnPlayerPing(p_PingTable)
     self.m_PingTable = p_PingTable
 end
 
-function kPMClient:OnReadyUpPlayers(p_ReadyUpPlayers)
+function iSNClient:OnReadyUpPlayers(p_ReadyUpPlayers)
     self.m_PlayerReadyUpPlayersTable = p_ReadyUpPlayers
 end
 
-function kPMClient:OnGameStateChanged(p_OldGameState, p_GameState)
+function iSNClient:OnGameStateChanged(p_OldGameState, p_GameState)
     -- Validate our gamestates
     if p_OldGameState == nil or p_GameState == nil then
         print("err: invalid gamestate from server")
@@ -522,19 +516,13 @@ function kPMClient:OnGameStateChanged(p_OldGameState, p_GameState)
         self.m_AlarmEntity = nil
     end
 
-    if p_GameState == GameStates.Strat then
-        self.m_StatVision:SetStratVision()
-    else
-        self.m_StatVision:RemoveStratVision()
-    end
-
     -- Update the WebUI
     if self.levelLoaded then
         WebUI:ExecuteJS("ChangeState(" .. self.m_GameState .. ");")
     end
 end
 
-function kPMClient:OnGameTypeChanged(p_GameType)
+function iSNClient:OnGameTypeChanged(p_GameType)
     -- Validate our gametype
     if p_GameType == nil then
         print("err: invalid gametype")
@@ -548,7 +536,7 @@ function kPMClient:OnGameTypeChanged(p_GameType)
     WebUI:ExecuteJS("ChangeType(" .. self.m_GameType .. ");")
 end
 
-function kPMClient:OnUpdateHeader(p_AttackerPoints, p_DefenderPoints, p_Rounds, p_BombSite)
+function iSNClient:OnUpdateHeader(p_AttackerPoints, p_DefenderPoints, p_Rounds, p_BombSite)
     if p_BombSite ~= nil then
         WebUI:ExecuteJS('UpdateHeader(' .. p_AttackerPoints .. ', ' .. p_DefenderPoints .. ', ' .. (p_Rounds + 1) .. ', "' .. tostring(p_BombSite) .. '");')
     else
@@ -556,7 +544,7 @@ function kPMClient:OnUpdateHeader(p_AttackerPoints, p_DefenderPoints, p_Rounds, 
     end
 end
 
-function kPMClient:OnUpdateTeams(p_AttackersTeamId, p_DefendersTeamId)
+function iSNClient:OnUpdateTeams(p_AttackersTeamId, p_DefendersTeamId)
     if self.m_AttackersTeamId ~= p_AttackersTeamId then
         self.m_AttackersTeamId = p_AttackersTeamId
     end
@@ -566,7 +554,7 @@ function kPMClient:OnUpdateTeams(p_AttackersTeamId, p_DefendersTeamId)
     end
 end
 
-function kPMClient:OnUpdateScoreboard()
+function iSNClient:OnUpdateScoreboard()
     local l_PlayerList = PlayerManager:GetPlayers()
     local p_Player = PlayerManager:GetLocalPlayer()
     if p_Player == nil then
@@ -618,7 +606,7 @@ function kPMClient:OnUpdateScoreboard()
 end
 
 --request, called every 3 ticks
-function kPMClient:GetSpawn() 
+function iSNClient:GetSpawn() 
     local s_Player = PlayerManager:GetLocalPlayer()
     if s_Player ~= nil then
         if s_Player.alive then
@@ -652,7 +640,7 @@ function kPMClient:GetSpawn()
 end
 
 -- response back from JS
-function kPMClient:OnCalculatedSpawn(p_Data)
+function iSNClient:OnCalculatedSpawn(p_Data)
     if p_Data == nil then
         return
     end
@@ -661,10 +649,10 @@ function kPMClient:OnCalculatedSpawn(p_Data)
         print(p_Data)
     end
     --Send it to server
-    NetEvents:Send("kPM:SetSpawn", p_Data)
+    NetEvents:Send("iSN:SetSpawn", p_Data)
 end
 
-function kPMClient:OnDebug(spawns_data)
+function iSNClient:OnDebug(spawns_data)
     if self.debug then
         self.debug = false
     else
@@ -673,11 +661,11 @@ function kPMClient:OnDebug(spawns_data)
     self.spawns = json.decode(spawns_data)
 end
 
-function kPMClient:OnStartWebUITimer(p_Time)
+function iSNClient:OnStartWebUITimer(p_Time)
     WebUI:ExecuteJS(string.format("SetTimer(%s);", p_Time))
 end
 
-function kPMClient:OnSetRoundEndInfoBox(p_WinnerTeamId)
+function iSNClient:OnSetRoundEndInfoBox(p_WinnerTeamId)
     local s_IsPlayerWinner = false
 
     local s_Player = PlayerManager:GetLocalPlayer()
@@ -698,7 +686,7 @@ function kPMClient:OnSetRoundEndInfoBox(p_WinnerTeamId)
     WebUI:ExecuteJS("ShowHideRoundEndInfoBox(true)")
 end
 
-function kPMClient:OnSetGameEnd(p_WinnerTeamId)
+function iSNClient:OnSetGameEnd(p_WinnerTeamId)
     local s_IsPlayerWinner = false
 
     if p_WinnerTeamId == nil then
@@ -722,11 +710,11 @@ function kPMClient:OnSetGameEnd(p_WinnerTeamId)
 end
 
 
-function kPMClient:OnResetUI()
+function iSNClient:OnResetUI()
     WebUI:ExecuteJS('ResetUI();')
 end
 
-function kPMClient:OnBombPlanted(p_BombSite, p_BombLocation)
+function iSNClient:OnBombPlanted(p_BombSite, p_BombLocation)
     if p_BombSite == nil or p_BombLocation == nil then
         return
     end
@@ -741,7 +729,7 @@ function kPMClient:OnBombPlanted(p_BombSite, p_BombLocation)
     WebUI:ExecuteJS('BombPlanted("' .. p_BombSite .. '");')
 end
 
-function kPMClient:OnBombDefused()
+function iSNClient:OnBombDefused()
     print('info: bomb defused')
 
     if self.m_AlarmEntity ~= nil then
@@ -755,7 +743,7 @@ function kPMClient:OnBombDefused()
     self:DestroyLaptop()
 end
 
-function kPMClient:OnBombKaboom()
+function iSNClient:OnBombKaboom()
     local s_Data = self:GetExplosionEntityData()
 
 	if s_Data == nil then
@@ -777,7 +765,7 @@ function kPMClient:OnBombKaboom()
 	s_Entity:Detonate(s_Transform, Vec3(0, 1, 0), 1.0, nil)
 end
 
-function kPMClient:GetExplosionEntityData()
+function iSNClient:GetExplosionEntityData()
    	-- Stole this from NoFaTe's battlefieldv mod
 	if self.m_ExplosionEntityData ~= nil then
 		return self.m_ExplosionEntityData
@@ -805,7 +793,7 @@ function kPMClient:GetExplosionEntityData()
 	return self.m_ExplosionEntityData
 end
 
-function kPMClient:OnPlayAudio(track)
+function iSNClient:OnPlayAudio(track)
     if track == nil then
 		return
     end
@@ -824,7 +812,7 @@ function kPMClient:OnPlayAudio(track)
     print(track .. "is not mapped")
 end
 
-function kPMClient:GetPlantSoundEntityData()
+function iSNClient:GetPlantSoundEntityData()
     if self.m_PlantSoundEntityData ~= nil then
 		return self.m_PlantSoundEntityData
     end
@@ -853,7 +841,7 @@ function kPMClient:GetPlantSoundEntityData()
 	return self.m_PlantSoundEntityData
 end
 
-function kPMClient:OnPlaySoundPlanted(p_Trans)
+function iSNClient:OnPlaySoundPlanted(p_Trans)
     if p_Trans == nil then
 		print('No plant location')
 		return
@@ -885,7 +873,7 @@ function kPMClient:OnPlaySoundPlanted(p_Trans)
     self.m_AlarmEntity:FireEvent('Start')
 end
 
-function kPMClient:GetPlantedSoundEntityData()
+function iSNClient:GetPlantedSoundEntityData()
     if self.m_PlantedSoundEntityData ~= nil then
 		return self.m_PlantedSoundEntityData
     end
@@ -915,7 +903,7 @@ function kPMClient:GetPlantedSoundEntityData()
 	return self.m_PlantedSoundEntityData
 end
 
-function kPMClient:OnCleanup(p_EntityType)
+function iSNClient:OnCleanup(p_EntityType)
     if p_EntityType == nil then
         return
     end
@@ -935,7 +923,7 @@ function kPMClient:OnCleanup(p_EntityType)
     end
 end
 
-function kPMClient:OnPlayerRespawn(p_Player)
+function iSNClient:OnPlayerRespawn(p_Player)
     -- Validate player
     if p_Player == nil then
         return
@@ -960,7 +948,7 @@ function kPMClient:OnPlayerRespawn(p_Player)
     end
 end
 
-function kPMClient:PlayerCoordinates(player)
+function iSNClient:PlayerCoordinates(player)
     if player == nil then
         return nil
     end
@@ -980,7 +968,7 @@ function kPMClient:PlayerCoordinates(player)
 end
 
 --XP4_FD SquadDeathMatch0 1
-function kPMClient:OnPlayerKilled(p_Player)
+function iSNClient:OnPlayerKilled(p_Player)
     -- Validate player
     if p_Player == nil then
         return
@@ -1007,7 +995,7 @@ function kPMClient:OnPlayerKilled(p_Player)
     self:GetSpawn()
 end
 
-function kPMClient:OnSoldierHealthAction(p_Soldier, p_Action)
+function iSNClient:OnSoldierHealthAction(p_Soldier, p_Action)
     local s_Player = PlayerManager:GetLocalPlayer()
     -- Validate local player
     if s_Player == nil then
@@ -1022,7 +1010,7 @@ function kPMClient:OnSoldierHealthAction(p_Soldier, p_Action)
     end
 end
 
-function kPMClient:OnPlayerDeleted(p_Player)
+function iSNClient:OnPlayerDeleted(p_Player)
     -- Validate player
     if p_Player == nil then
         return
@@ -1031,11 +1019,11 @@ function kPMClient:OnPlayerDeleted(p_Player)
     print('OnPlayerDeleted')
 end
 
-function kPMClient:OnDisablePlayerInputs()
+function iSNClient:OnDisablePlayerInputs()
     self:DisablePlayerInputs()
 end
 
-function kPMClient:DisablePlayerInputs()
+function iSNClient:DisablePlayerInputs()
     if self.m_PlayerInputs then
         local s_Player = PlayerManager:GetLocalPlayer()
         if s_Player ~= nil then
@@ -1053,11 +1041,11 @@ function kPMClient:DisablePlayerInputs()
     end
 end
 
-function kPMClient:OnEnablePlayerInputs()
+function iSNClient:OnEnablePlayerInputs()
     self:EnablePlayerInputs()
 end
 
-function kPMClient:EnablePlayerInputs()
+function iSNClient:EnablePlayerInputs()
     if not self.m_PlayerInputs then
         local s_Player = PlayerManager:GetLocalPlayer()
         if s_Player ~= nil then
@@ -1075,7 +1063,7 @@ function kPMClient:EnablePlayerInputs()
     end
 end
 
-function kPMClient:PlaceLaptop()
+function iSNClient:PlaceLaptop()
     local s_PlantBp = ResourceManager:SearchForDataContainer('Objects/Laptop_01/Laptop_01')
 
 	if s_PlantBp == nil then
@@ -1101,7 +1089,7 @@ function kPMClient:PlaceLaptop()
 	end
 end
 
-function kPMClient:DestroyLaptop()
+function iSNClient:DestroyLaptop()
     if self.m_LaptopEntity == nil then
         return
     end
@@ -1115,4 +1103,4 @@ function kPMClient:DestroyLaptop()
     self.m_LaptopEntity = nil
 end
 
-return kPMClient()
+return iSNClient()

@@ -5,7 +5,4 @@ GameTypes =
 
     -- Competitive mode
     Comp = 1,
-
-    -- Strategy mode for practicing
-    Strat = 2,
 }

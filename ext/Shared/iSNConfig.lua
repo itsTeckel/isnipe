@@ -1,16 +1,11 @@
 require ("__shared/GameTypes")
 
-kPMConfig =
+iSNConfig =
 {
     -- ==========
     -- Debug mode options
     -- ==========
     DebugMode = true,
-
-    -- ==========
-    -- Server configuration options
-    -- ==========
-    AdminName = "ItsTeckel",
 
     -- ==========
     -- Client configuration options
@@ -34,29 +29,11 @@ kPMConfig =
     -- Shared configuration options
     -- ==========
 
-    -- Maximums
-    MaxTeamNameLength = 32,
-    MaxClanTagLength = 4,
 
     -- ==========
     -- Server configuration options
     -- ==========
     MatchDefaultRounds = 12,
-
-    -- Minimum of 2 players in order to start a match
-    MinPlayerCount = 1,
-
-    -- Minimum clan tag length
-    MinClanTagLength = 1,
-
-    -- Maximum strat time (default: 5 seconds)
-    MaxStratTime = 10.0,
-
-    -- Maximum knife round time (default: 5 minutes)
-    MaxKnifeRoundTime = 120.0,
-
-    -- Maximum transitition time between gamestates (default: 2 seconds)
-    MaxTransititionTime = 5.0,
 
     -- Round time (default: 10 minutes)
     MaxRoundTime = 910.0,
@@ -69,10 +46,4 @@ kPMConfig =
 
     -- Default gametype is GameTypes.Public
     GameType = GameTypes.Public,
-
-    -- Bomb related stuff
-    BombRadius = 1.5,
-    BombTime = 60.0,
-    PlantTime = 5.0,
-    DefuseTime = 5.0,
 }

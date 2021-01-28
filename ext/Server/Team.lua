@@ -1,6 +1,6 @@
 local Team = class("Team")
 
-require ("__shared/kPMConfig")
+require ("__shared/iSNConfig")
 
 function Team:__init(p_TeamId, p_TeamName, p_ClanTag)
     -- Check that we have a valid team
@@ -11,16 +11,6 @@ function Team:__init(p_TeamId, p_TeamName, p_ClanTag)
 
     if p_TeamId >= TeamId.TeamIdCount then
         print("err: invalid team id.")
-        return
-    end
-
-    if #p_TeamName == 0 or #p_TeamName > kPMConfig.MaxTeamNameLength then
-        print("err: invalid team name")
-        return
-    end
-
-    if #p_ClanTag > kPMConfig.MaxClanTagLength then
-        print("err: invalid clantag length")
         return
     end
 
@@ -62,7 +52,7 @@ function Team:UpdateTeamId(p_TeamId)
     self.m_TeamId = p_TeamId
 
     -- Debugging information
-    if kPMConfig.DebugMode then
+    if iSNConfig.DebugMode then
         print("updated team: " .. self.m_Name .. " team id to " .. p_TeamId)
     end
 end

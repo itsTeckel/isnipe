@@ -1,7 +1,7 @@
 local Match = class("Match")
 require ("__shared/MapsConfig")
 require ("__shared/GameStates")
-require ("__shared/kPMConfig")
+require ("__shared/iSNConfig")
 require ("__shared/LevelNameHelper")
 require ("__shared/GameTypes")
 require ("__shared/TickType")
@@ -9,7 +9,6 @@ require ("__shared/Util/TableHelper")
 
 require ("Team")
 require ("LoadoutManager")
-require ("LoadoutDefinitions")
 
 function Match:__init(p_Server, p_TeamAttackers, p_TeamDefenders, p_RoundCount, loadoutManager, p_GameType)
     if p_GameType ~= GameTypes.Public then
@@ -59,7 +58,7 @@ function Match:__init(p_Server, p_TeamAttackers, p_TeamDefenders, p_RoundCount, 
     self.m_KillQueue = { }
     self.m_SpawnQueue = { }
     self.m_UpdateManagerUpdateEvent = Events:Subscribe("UpdateManager:Update", self, self.OnUpdateManagerUpdate)
-    self.m_SetSpawnEvent = NetEvents:Subscribe("kPM:SetSpawn", self, self.OnSetSpawn)
+    self.m_SetSpawnEvent = NetEvents:Subscribe("iSN:SetSpawn", self, self.OnSetSpawn)
 
     self.m_RestartQueue = false
 
@@ -112,7 +111,7 @@ function Match:OnEngineUpdate(p_GameState, p_DeltaTime)
     end
 
     if self.m_CurrentState ~= p_GameState then
-        if kPMConfig.DebugMode then
+        if iSNConfig.DebugMode then
             print("transitioning from " .. self.m_LastState .. " to " .. p_GameState)
         end
 
@@ -130,11 +129,11 @@ function Match:OnWarmup(p_DeltaTime)
     end
 
     -- Check to see if the current time is greater or equal than our max
-    if self.m_UpdateTicks[GameStates.Warmup] >= kPMConfig.MaxRupTick then
+    if self.m_UpdateTicks[GameStates.Warmup] >= iSNConfig.MaxRupTick then
         self.m_UpdateTicks[GameStates.Warmup] = 0.0
 
         local players = Match:GetPlayers()
-        if players < kPMConfig.MinPlayers then
+        if players < iSNConfig.MinPlayers then
             -- print("Waiting. Not enough players...." .. players)
             return
         end
@@ -153,14 +152,14 @@ end
 
 function Match:OnPlaying(p_DeltaTime)
     if self.m_UpdateTicks[GameStates.Playing] == 0.0 then
-        self.m_Server:SetClientTimer(kPMConfig.MaxRoundTime)
+        self.m_Server:SetClientTimer(iSNConfig.MaxRoundTime)
     end
 
-    if self.m_UpdateTicks[GameStates.Playing] >= kPMConfig.MaxRoundTime then
+    if self.m_UpdateTicks[GameStates.Playing] >= iSNConfig.MaxRoundTime then
         self.m_Server:ChangeGameState(GameStates.EndGame)
     end
 
-    if self.stateTicks[TickType.Timer] >= kPMConfig.TimeTick then
+    if self.stateTicks[TickType.Timer] >= iSNConfig.TimeTick then
         self.stateTicks[TickType.Timer] = 0.0
 
         -- Reset tickets
@@ -181,7 +180,7 @@ function Match:OnPlaying(p_DeltaTime)
         TicketManager:SetTicketCount(15, 0)
         TicketManager:SetTicketCount(16, 0)
 
-        self.m_Server:SetClientTimer(kPMConfig.MaxRoundTime - self.m_UpdateTicks[GameStates.Playing])
+        self.m_Server:SetClientTimer(iSNConfig.MaxRoundTime - self.m_UpdateTicks[GameStates.Playing])
     end
 
     self.m_UpdateTicks[GameStates.Playing] = self.m_UpdateTicks[GameStates.Playing] + p_DeltaTime
@@ -193,10 +192,10 @@ function Match:OnEndGame(p_DeltaTime)
     if self.m_UpdateTicks[GameStates.EndGame] == 0.0 then
         self:DisablePlayerInputs()
         self.m_Server:SetGameEnd(nil)
-        self.m_Server:SetClientTimer(kPMConfig.MaxEndgameTime)
+        self.m_Server:SetClientTimer(iSNConfig.MaxEndgameTime)
     end
 
-    if self.m_UpdateTicks[GameStates.EndGame] >= kPMConfig.MaxEndgameTime then
+    if self.m_UpdateTicks[GameStates.EndGame] >= iSNConfig.MaxEndgameTime then
         -- Set the restart queue so we can trigger an rcon restart or something like that
         self.m_RestartQueue = true
         self.m_UpdateTicks[GameStates.EndGame] = 0
@@ -210,55 +209,21 @@ function Match:ForceUpdateHeader(p_Player)
         return
     end
 
-    NetEvents:SendTo("kPM:UpdateHeader", p_Player, self.m_Attackers:CountRoundWon(), self.m_Defenders:CountRoundWon(), self.m_CurrentRound)
+    NetEvents:SendTo("iSN:UpdateHeader", p_Player, self.m_Attackers:CountRoundWon(), self.m_Defenders:CountRoundWon(), self.m_CurrentRound)
 end
 
 function Match:OnPartitionLoaded(p_Partition)
     if p_Partition == nil then
         return
     end
-
-    --if self.m_defaultSpawn == nil then
-        -- for _, l_Instance in pairs(p_Partition.instances) do
-        --     if l_Instance:Is("CameraEntityData") then
-        --         local cameraEntityData = CameraEntityData(l_Instance)
-        --         print("found it")
-        --         print(cameraEntityData.transform)
-        --         self.m_defaultSpawn = cameraEntityData.transform
-        --     end
-        -- end
-    --end
-
 end
 
 function Match:DisablePlayerInputs()
-    --[[local s_Players = PlayerManager:GetPlayers()
-    for l_Index, l_Player in ipairs(s_Players) do
-        l_Player:EnableInput(EntryInputActionEnum.EIAFire, false)
-        l_Player:EnableInput(EntryInputActionEnum.EIAJump, false)
-        l_Player:EnableInput(EntryInputActionEnum.EIAThrowGrenade, false)
-        l_Player:EnableInput(EntryInputActionEnum.EIAThrottle, false)
-        l_Player:EnableInput(EntryInputActionEnum.EIAStrafe, false)
-        l_Player:EnableInput(EntryInputActionEnum.EIAMeleeAttack, false)
-        l_Player:EnableInput(EntryInputActionEnum.EIAChangePose, false)
-        l_Player:EnableInput(EntryInputActionEnum.EIAProne, false)
-    end]]
-    NetEvents:Broadcast("kPM:DisablePlayerInputs")
+    NetEvents:Broadcast("iSN:DisablePlayerInputs")
 end
 
 function Match:EnablePlayerInputs()
-    --[[local s_Players = PlayerManager:GetPlayers()
-    for l_Index, l_Player in ipairs(s_Players) do
-        l_Player:EnableInput(EntryInputActionEnum.EIAFire, true)
-        l_Player:EnableInput(EntryInputActionEnum.EIAJump, true)
-        l_Player:EnableInput(EntryInputActionEnum.EIAThrowGrenade, true)
-        l_Player:EnableInput(EntryInputActionEnum.EIAThrottle, true)
-        l_Player:EnableInput(EntryInputActionEnum.EIAStrafe, true)
-        l_Player:EnableInput(EntryInputActionEnum.EIAMeleeAttack, true)
-        l_Player:EnableInput(EntryInputActionEnum.EIAChangePose, true)
-        l_Player:EnableInput(EntryInputActionEnum.EIAProne, true)
-    end]]
-    NetEvents:Broadcast("kPM:EnablePlayerInputs")
+   NetEvents:Broadcast("iSN:EnablePlayerInputs")
 end
 
 function Match:ClearReadyUpState()
@@ -271,10 +236,8 @@ function Match:OnPlayerRup(p_Player)
         print("err: invalid player tried to rup.")
         return
     end
-
     -- Get the player id
     local s_PlayerId = p_Player.id
-
     -- Player does not exist in our ready up state yet
     self.m_ReadyUpPlayers[s_PlayerId] = true
     print("info: player " .. p_Player.name .. " ready up!")
@@ -298,7 +261,6 @@ function Match:KillAllPlayers(p_IsAllowedToSpawn)
 
         -- Kill the player
         self:KillPlayer(l_Player, p_IsAllowedToSpawn)
-
         ::_knife_continue_::
     end
 end
@@ -617,23 +579,23 @@ end
 
 function Match:Cleanup()
     self:CleanupSpecificEntity("ServerPickupEntity")
-    NetEvents:Broadcast("kPM:Cleanup", "ClientPickupEntity")
+    NetEvents:Broadcast("iSN:Cleanup", "ClientPickupEntity")
 
     self:CleanupSpecificEntity("ServerMedicBagEntity")
     self:CleanupSpecificEntity("ServerMedicBagHealingSphereEntity")
-    NetEvents:Broadcast("kPM:Cleanup", "ClientMedicBagEntity")
-    NetEvents:Broadcast("kPM:Cleanup", "ClientMedicBagHealingSphereEntity")
+    NetEvents:Broadcast("iSN:Cleanup", "ClientMedicBagEntity")
+    NetEvents:Broadcast("iSN:Cleanup", "ClientMedicBagHealingSphereEntity")
 
     self:CleanupSpecificEntity("ServerSupplySphereEntity")
-    NetEvents:Broadcast("kPM:Cleanup", "ClientSupplySphereEntity")
+    NetEvents:Broadcast("iSN:Cleanup", "ClientSupplySphereEntity")
 
     self:CleanupSpecificEntity("ServerExplosionEntity")
     self:CleanupSpecificEntity("ServerExplosionPackEntity")
-    NetEvents:Broadcast("kPM:Cleanup", "ClientExplosionEntity")
-    NetEvents:Broadcast("kPM:Cleanup", "ClientExplosionPackEntity")
+    NetEvents:Broadcast("iSN:Cleanup", "ClientExplosionEntity")
+    NetEvents:Broadcast("iSN:Cleanup", "ClientExplosionPackEntity")
 
     self:CleanupSpecificEntity("ServerGrenadeEntity")
-    NetEvents:Broadcast("kPM:Cleanup", "ClientGrenadeEntity")
+    NetEvents:Broadcast("iSN:Cleanup", "ClientGrenadeEntity")
 end
 
 function Match:CleanupSpecificEntity(p_EntityType)
@@ -704,14 +666,13 @@ function Match:RestartMatch()
 
     self.m_BombSite = nil
     self.m_BombLocation = nil
-    self.m_BombTime = nil
 
     self.m_Attackers:RoundReset()
     self.m_Defenders:RoundReset()
 
     self.m_Server:ChangeGameState(GameStates.Warmup)
 
-    NetEvents:Broadcast("kPM:ResetUI")
+    NetEvents:Broadcast("iSN:ResetUI")
 
     self:KillAllPlayers(false)
 end
