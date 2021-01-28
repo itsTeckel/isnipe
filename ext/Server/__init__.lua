@@ -294,36 +294,6 @@ function iSNServer:OnForceToggleRup(p_Player)
     self.m_Match:ForceAllPlayerRup()
 end
 
-function iSNServer:OnTogglePlant(p_Player, p_PlantOrDefuse, p_BombSite, p_BombLocation, p_Force)
-    -- Check to see if we have a valid player
-    if p_Player == nil then
-        print("err: invalid player tried to " .. p_PlantOrDefuse)
-        return
-    end
-
-    if p_BombSite == nil then
-        print("err: invalid bombsite")
-        return
-    end
-
-    if self.m_GameState == GameStates.FirstHalf or self.m_GameState == GameStates.SecondHalf then
-        self.m_Match:OnTogglePlant(p_Player, p_PlantOrDefuse, p_BombSite, p_BombLocation, p_Force)
-    else
-        print("err: player " .. p_Player.name .. " tried to " .. p_PlantOrDefuse .. " in non-round?")
-    end
-end
-
-function iSNServer:OnPlaySoundPlanting(p_Player, p_Trans)
-    print('Someone planting on:')
-    print(p_Trans)
-    
-    if p_Trans == nil then
-        return
-    end
-
-    NetEvents:Broadcast("iSN:PlaySoundPlanting", p_Trans)
-end
-
 function iSNServer:OnPlayerChat(p_Player, p_RecipientMask, p_Message)
     -- Check the player
     if p_Player == nil then

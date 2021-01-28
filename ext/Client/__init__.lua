@@ -27,13 +27,6 @@ function iSNClient:__init()
     self.m_RupHeldTime = 0.0
     self.m_RupHeldReady = false
 
-    -- Plant Inputs
-    self.m_PlantOrDefuseHeldTime = 0.0
-    self.m_StartedPlantingOrDefusing = false
-    self.m_BombSite = nil
-    self.m_BombLocation = nil
-    self.m_LaptopEntity = nil
-
     self.m_PlayerInputs = true
     self.debug = false
     self.spawns = {}
@@ -181,10 +174,6 @@ function iSNClient:RegisterEvents()
     self.m_SetGameEndEvent = NetEvents:Subscribe("iSN:SetGameEnd", self, self.OnSetGameEnd)
     self.m_ResetUIEvent = NetEvents:Subscribe("iSN:ResetUI", self, self.OnResetUI)
 
-    self.m_BombPlantedEvent = NetEvents:Subscribe("iSN:BombPlanted", self, self.OnBombPlanted)
-    self.m_BombDefusedEvent = NetEvents:Subscribe("iSN:BombDefused", self, self.OnBombDefused)
-    self.m_BombKaboomEvent = NetEvents:Subscribe("iSN:BombKaboom", self, self.OnBombKaboom)
-
     self.m_PlaySoundPlantingEvent = NetEvents:Subscribe("iSN:PlayAudio", self, self.OnPlayAudio)
 
     self.m_UpdateTeamsEvent = NetEvents:Subscribe("iSN:UpdateTeams", self, self.OnUpdateTeams)
@@ -285,13 +274,6 @@ function iSNClient:OnLevelDestroyed()
     self.m_PlayerReadyUpPlayersTable = {}
     self.m_RupHeldTime = 0.0
     self.m_RupHeldReady = false
-
-    self.m_PlantOrDefuseHeldTime = 0.0
-    self.m_StartedPlantingOrDefusing = false
-    self.m_BombSite = nil
-    self.m_BombLocation = nil
-    self.m_LaptopEntity = nil
-
     self.m_PlayerInputs = true
 
     self.m_TabHeldTime = 0.0
@@ -506,11 +488,6 @@ function iSNClient:OnGameStateChanged(p_OldGameState, p_GameState)
     print("info: gamestate " .. p_OldGameState .. " -> " .. p_GameState)
     self.m_GameState = p_GameState
 
-    -- Reset the bomb plant status
-    self.m_BombSite = nil
-    self.m_BombLocation = nil
-    self:DestroyLaptop()
-
     if self.m_AlarmEntity ~= nil then
         self.m_AlarmEntity:FireEvent('Stop')
         self.m_AlarmEntity = nil
@@ -536,12 +513,8 @@ function iSNClient:OnGameTypeChanged(p_GameType)
     WebUI:ExecuteJS("ChangeType(" .. self.m_GameType .. ");")
 end
 
-function iSNClient:OnUpdateHeader(p_AttackerPoints, p_DefenderPoints, p_Rounds, p_BombSite)
-    if p_BombSite ~= nil then
-        WebUI:ExecuteJS('UpdateHeader(' .. p_AttackerPoints .. ', ' .. p_DefenderPoints .. ', ' .. (p_Rounds + 1) .. ', "' .. tostring(p_BombSite) .. '");')
-    else
+function iSNClient:OnUpdateHeader(p_AttackerPoints, p_DefenderPoints, p_Rounds)
         WebUI:ExecuteJS('UpdateHeader(' .. p_AttackerPoints .. ', ' .. p_DefenderPoints .. ', ' .. (p_Rounds + 1) .. ');')
-    end
 end
 
 function iSNClient:OnUpdateTeams(p_AttackersTeamId, p_DefendersTeamId)
@@ -712,85 +685,6 @@ end
 
 function iSNClient:OnResetUI()
     WebUI:ExecuteJS('ResetUI();')
-end
-
-function iSNClient:OnBombPlanted(p_BombSite, p_BombLocation)
-    if p_BombSite == nil or p_BombLocation == nil then
-        return
-    end
-
-    print('info: bomb has been planted on ' .. p_BombSite)
-
-    self.m_BombSite = p_BombSite
-    self.m_BombLocation = p_BombLocation
-    self:PlaceLaptop()
-    self:OnPlaySoundPlanted(p_BombLocation)
-
-    WebUI:ExecuteJS('BombPlanted("' .. p_BombSite .. '");')
-end
-
-function iSNClient:OnBombDefused()
-    print('info: bomb defused')
-
-    if self.m_AlarmEntity ~= nil then
-        self.m_AlarmEntity:FireEvent('Stop')
-        self.m_AlarmEntity = nil
-    end
-
-    -- I dont think this is necessary because on gamestate change we clear out the bombsites
-    self.m_BombSite = nil
-    self.m_BombLocation = nil
-    self:DestroyLaptop()
-end
-
-function iSNClient:OnBombKaboom()
-    local s_Data = self:GetExplosionEntityData()
-
-	if s_Data == nil then
-		print('Could not get explosion data')
-		return
-    end
-    
-	local s_Transform = LinearTransform()
-	s_Transform.trans = self.m_BombLocation
-
-	local s_Entity = EntityManager:CreateEntity(s_Data, s_Transform)
-
-	if s_Entity == nil then
-		print('Could not create kaboom entity.')
-		return
-    end 
-    
-	s_Entity = ExplosionEntity(s_Entity)
-	s_Entity:Detonate(s_Transform, Vec3(0, 1, 0), 1.0, nil)
-end
-
-function iSNClient:GetExplosionEntityData()
-   	-- Stole this from NoFaTe's battlefieldv mod
-	if self.m_ExplosionEntityData ~= nil then
-		return self.m_ExplosionEntityData
-    end
-    
-	local s_Original = ResourceManager:SearchForInstanceByGuid(Guid('F2D79077-51D0-455C-8707-FDD38E9EE3D7'))
-
-	if s_Original == nil then
-		print('Could not find explosion template')
-		return nil
-    end
-    
-	self.m_ExplosionEntityData = VeniceExplosionEntityData(s_Original:Clone())
-	self.m_ExplosionEntityData.innerBlastRadius = 10
-	self.m_ExplosionEntityData.blastRadius = 30
-	self.m_ExplosionEntityData.blastDamage = 1000
-	self.m_ExplosionEntityData.blastImpulse = 1000
-	self.m_ExplosionEntityData.hasStunEffect = true
-	self.m_ExplosionEntityData.shockwaveRadius = 55
-	self.m_ExplosionEntityData.shockwaveTime = 0.75
-	self.m_ExplosionEntityData.shockwaveDamage = 10
-	self.m_ExplosionEntityData.shockwaveImpulse = 200
-	self.m_ExplosionEntityData.cameraShockwaveRadius = 10
-
-	return self.m_ExplosionEntityData
 end
 
 function iSNClient:OnPlayAudio(track)
@@ -1015,7 +909,6 @@ function iSNClient:OnPlayerDeleted(p_Player)
     if p_Player == nil then
         return
     end
-
     print('OnPlayerDeleted')
 end
 
@@ -1061,46 +954,6 @@ function iSNClient:EnablePlayerInputs()
             self.m_PlayerInputs = true
         end
     end
-end
-
-function iSNClient:PlaceLaptop()
-    local s_PlantBp = ResourceManager:SearchForDataContainer('Objects/Laptop_01/Laptop_01')
-
-	if s_PlantBp == nil then
-		error('err: could not find the plant blueprint.')
-		return
-    end
-    
-	local s_Params = EntityCreationParams()
-	s_Params.transform.trans = self.m_BombLocation
-	s_Params.networked = false
-
-    local s_Bus = EntityManager:CreateEntitiesFromBlueprint(s_PlantBp, s_Params)
-
-    if s_Bus ~= nil then
-        for _, entity in pairs(s_Bus.entities) do
-            entity:Init(Realm.Realm_Client, true)
-        end
-
-        self.m_LaptopEntity = s_Bus
-    else
-		error('err: could not spawn laptop.')
-		return
-	end
-end
-
-function iSNClient:DestroyLaptop()
-    if self.m_LaptopEntity == nil then
-        return
-    end
-
-    for _, entity in pairs(self.m_LaptopEntity.entities) do
-        if entity ~= nil then
-            entity:Destroy()
-        end 
-    end
-
-    self.m_LaptopEntity = nil
 end
 
 return iSNClient()

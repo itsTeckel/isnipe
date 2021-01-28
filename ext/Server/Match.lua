@@ -664,9 +664,6 @@ function Match:RestartMatch()
 
     self.m_RestartQueue = false
 
-    self.m_BombSite = nil
-    self.m_BombLocation = nil
-
     self.m_Attackers:RoundReset()
     self.m_Defenders:RoundReset()
 
