@@ -14,6 +14,7 @@ Custom spawn system with algorithm that chooses best spawn. Currently the best s
 
 Possibility to select all snipers in the game. Certain snipers have ACOGs , some do not for balancing. Originally based on [KVN's Battlefield 3 Competitive mod](https://github.com/kiwidoggie/kPM), thanks KVN!
 
+<img src=".\github_styles\loadout.jpg"/>
 ![](.\github_styles\loadout.jpg)
 
 
