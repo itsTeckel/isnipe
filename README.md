@@ -37,4 +37,6 @@ Currently only features a Venom helicopter which is flown by an AI. Player spawn
 
 ## Video
 
-![[Onn Sight made a video when iSnipe was still in alpha](https://www.youtube.com/channel/UC-zjnIOt4CHbRTFo39ZbcPQ)](https://img.youtube.com/vi/k_CJvRTIK5M/0.jpg)(https://www.youtube.com/watch?v=k_CJvRTIK5M)
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=k_CJvRTIK5M
+" target="_blank"><img src="http://img.youtube.com/vi/k_CJvRTIK5M/0.jpg" 
+alt="Onn Sight made a video when iSnipe was still in alpha"/></a>
