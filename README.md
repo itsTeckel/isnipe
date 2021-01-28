@@ -1,4 +1,4 @@
-![](.\github_styles\isnipe.jpg)
+<img src=".\github_styles\isnipe.jpg"/>
 
 # iSnipe - Sniper Game mode for Venice Unleashed Battlefield 3
 
@@ -15,8 +15,6 @@ Custom spawn system with algorithm that chooses best spawn. Currently the best s
 Possibility to select all snipers in the game. Certain snipers have ACOGs , some do not for balancing. Originally based on [KVN's Battlefield 3 Competitive mod](https://github.com/kiwidoggie/kPM), thanks KVN!
 
 <img src=".\github_styles\loadout.jpg"/>
-![](.\github_styles\loadout.jpg)
-
 
 
 #### Killstreak Sounds
@@ -35,10 +33,8 @@ iSnipe is a (smaller) game mode which is best played with a maximum of 24 player
 
 Currently only features a Venom helicopter which is flown by an AI. Player spawns in the gunner seat, and has about two orbits to wreak havoc on the map. Adds on to [VU-Killstreak](https://github.com/Maxinger15/VU-Killstreak). The Venom killstreak is not directly incorporated into iSnipe, so you can choose to add it on. The Venom-Killstreak can be found [here](github.com/RonnieOnTheHub/VenomKillstreak).
 
-![](.\github_styles\killstreak.gif)
+<img src=".\github_styles\killstreak.gif">
 
 ## Video
 
-[![[Onn Sight made a video when iSnipe was still in alpha](https://www.youtube.com/channel/UC-zjnIOt4CHbRTFo39ZbcPQ)](https://img.youtube.com/vi/k_CJvRTIK5M/0.jpg)](https://www.youtube.com/watch?v=k_CJvRTIK5M)
-
-## 
+![[Onn Sight made a video when iSnipe was still in alpha](https://www.youtube.com/channel/UC-zjnIOt4CHbRTFo39ZbcPQ)](https://img.youtube.com/vi/k_CJvRTIK5M/0.jpg)(https://www.youtube.com/watch?v=k_CJvRTIK5M)
