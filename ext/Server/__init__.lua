@@ -62,8 +62,6 @@ function iSNServer:RegisterEvents()
     self.m_SoldierDamageHook = Hooks:Install("Soldier:Damage", 1, self, self.OnSoldierDamage)
     self.m_PlayerKilledEvent = Events:Subscribe("Player:Killed", self, self.OnPlayerKilled)
 
-    self.m_PlaySoundPlantingEvent = NetEvents:Subscribe("iSN:PlaySoundPlanting", self, self.OnPlaySoundPlanting)
-
     -- TODO: This is a debug only function
     self.m_ToggleRupEvent = NetEvents:Subscribe("iSN:ToggleRup", self, self.OnToggleRup)
     self.m_ForceToggleRupEvent = NetEvents:Subscribe("iSN:ForceToggleRup", self, self.OnForceToggleRup)

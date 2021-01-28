@@ -52,14 +52,9 @@ function iSNClient:__init()
     self.m_FirstSpawn = false
 
     self.m_ExplosionEntityData = nil
-
-    self.m_PlantSoundEntityData = nil
-    self.m_PlantedSoundEntityData = nil
-    self.m_AlarmEntity = nil
-    self.m_PlantSent = false
 end
 
-function iSNClient:OnDrawHud() ---dikke ratten debug penis
+function iSNClient:OnDrawHud()
     if self.debug then
         for index, spawn in pairs(self.spawns) do
             local pos = Vec3(spawn[4][1], spawn[4][2], spawn[4][3])
@@ -173,8 +168,6 @@ function iSNClient:RegisterEvents()
     self.m_SetRoundEndInfoBoxEvent = NetEvents:Subscribe("iSN:SetRoundEndInfoBox", self, self.OnSetRoundEndInfoBox)
     self.m_SetGameEndEvent = NetEvents:Subscribe("iSN:SetGameEnd", self, self.OnSetGameEnd)
     self.m_ResetUIEvent = NetEvents:Subscribe("iSN:ResetUI", self, self.OnResetUI)
-
-    self.m_PlaySoundPlantingEvent = NetEvents:Subscribe("iSN:PlayAudio", self, self.OnPlayAudio)
 
     self.m_UpdateTeamsEvent = NetEvents:Subscribe("iSN:UpdateTeams", self, self.OnUpdateTeams)
 
@@ -294,10 +287,6 @@ function iSNClient:OnLevelDestroyed()
     self.m_ExplosionEntityData = nil
     self.levelLoaded = false
 
-    self.m_PlantSoundEntityData = nil
-    self.m_PlantedSoundEntityData = nil
-    self.m_AlarmEntity = nil
-    self.m_PlantSent = false
     WebUI:ExecuteJS('ResetUI();')
 end
 
@@ -312,10 +301,6 @@ end
 function iSNClient:OnLevelLoadResources()
     print('OnLevelLoadResources')
     self.m_ExplosionEntityData = nil
-
-    self.m_PlantSoundEntityData = nil
-    self.m_PlantedSoundEntityData = nil
-    self.m_AlarmEntity = nil
     self.levelLoaded = false
 end
 
@@ -704,97 +689,6 @@ function iSNClient:OnPlayAudio(track)
         return
     end
     print(track .. "is not mapped")
-end
-
-function iSNClient:GetPlantSoundEntityData()
-    if self.m_PlantSoundEntityData ~= nil then
-		return self.m_PlantSoundEntityData
-    end
-    
-	local s_Original = ResourceManager:SearchForInstanceByGuid(Guid('3BED6616-97F4-45A9-9432-8B8876F554B3'))
-
-	if s_Original == nil then
-		print('Could not find sound template')
-		return nil
-    end
-
-    local s_Beep = ResourceManager:SearchForInstanceByGuid(Guid('30BDBD94-5011-4929-B714-85702A9CA53C'))
-
-	if s_Beep == nil then
-		print('Could not find beep template')
-		return nil
-    end
-
-    local s_BeepEntity = SoundPatchAsset(s_Beep:Clone())
-    s_BeepEntity.loudness = 100.0
-    s_BeepEntity.radius = 35.0
-    
-    self.m_PlantSoundEntityData = SoundEffectEntityData(s_Original:Clone())
-    self.m_PlantSoundEntityData.sound = s_BeepEntity
-    
-	return self.m_PlantSoundEntityData
-end
-
-function iSNClient:OnPlaySoundPlanted(p_Trans)
-    if p_Trans == nil then
-		print('No plant location')
-		return
-    end
-
-    local s_Data = self:GetPlantedSoundEntityData()
-
-	if s_Data == nil then
-		print('Could not get sound data')
-		return
-    end
-    
-	local s_Transform = LinearTransform()
-	s_Transform.trans = p_Trans
-
-	local s_Entity = EntityManager:CreateEntity(s_Data, s_Transform)
-
-	if s_Entity == nil then
-		print('Could not create planted entity.')
-		return
-    end
-
-    if self.m_AlarmEntity ~= nil then
-        self.m_AlarmEntity:Destory()
-        self.m_AlarmEntity = nil
-    end
-
-    self.m_AlarmEntity = s_Entity
-    self.m_AlarmEntity:FireEvent('Start')
-end
-
-function iSNClient:GetPlantedSoundEntityData()
-    if self.m_PlantedSoundEntityData ~= nil then
-		return self.m_PlantedSoundEntityData
-    end
-    
-	local s_Original = ResourceManager:SearchForInstanceByGuid(Guid('3BED6616-97F4-45A9-9432-8B8876F554B3'))
-
-	if s_Original == nil then
-		print('Could not find sound template')
-		return nil
-    end
-
-    local s_Alarm = ResourceManager:SearchForInstanceByGuid(Guid('ACF794EC-7C7E-4055-A20D-E108F61FDFF7'))
-
-	if s_Alarm == nil then
-		print('Could not find beep template')
-		return nil
-    end
-
-    local s_AlarmEntity = SoundPatchAsset(s_Alarm:Clone())
-    s_AlarmEntity.loudness = 60.0
-    s_AlarmEntity.radius = 15.0
-    s_AlarmEntity.isLooping = false
-    
-    self.m_PlantedSoundEntityData = SoundEffectEntityData(s_Original:Clone())
-    self.m_PlantedSoundEntityData.sound = s_AlarmEntity
-    
-	return self.m_PlantedSoundEntityData
 end
 
 function iSNClient:OnCleanup(p_EntityType)
