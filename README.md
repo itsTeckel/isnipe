@@ -38,7 +38,7 @@ iSnipe is a (smaller) game mode which is best played with a maximum of 24 player
 
 Currently only features a Venom helicopter which is flown by an AI. Player spawns in the gunner seat, and has about two orbits to wreak havoc on the map. Adds on to [VU-Killstreak](https://github.com/Maxinger15/VU-Killstreak). The Venom killstreak is not directly incorporated into iSnipe, so you can choose to add it on. The Venom-Killstreak can be found [here](github.com/RonnieOnTheHub/VenomKillstreak).
 
-<img src=".\github_styles\killstreak.gif" width: 900px />
+<img src=".\github_styles\killstreak.gif" width="900px" />
 
 
 
@@ -64,7 +64,7 @@ iSnipe features many maps, but not all of the maps currently offered in BF3 and 
 ## Video
 Onn Sight made a video when iSnipe was still in alpha:
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=k_CJvRTIK5M" target="_blank">
-    <img src="http://img.youtube.com/vi/k_CJvRTIK5M/0.jpg" width: 900px>
+    <img src="http://img.youtube.com/vi/k_CJvRTIK5M/0.jpg" width="900px" />
 </a>
 
 
