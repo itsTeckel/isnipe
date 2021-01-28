@@ -1,78 +1,43 @@
-# iSnipe - Sniper Gamemode for Venice Unleashed Battlefield 3
-Mod built for [Venice Unleashed](https://veniceunleashed.net/) based on the original popular mod iSnipe from the Call of Duty: Modern Warfare 2 days. The objective is to get to the top of the leaderboard, by getting the most kills. 
+![](.\github_styles\isnipe.jpg)
+
+# iSnipe - Sniper Game mode for Venice Unleashed Battlefield 3
+
+Mod built for [Venice Unleashed](https://veniceunleashed.net/) based on the original popular mod iSnipe from the Call of Duty: Modern Warfare 2 days. The objective is to get to the top of the leader board, by getting the most kills. It uses Bf3's Squad Death Match as basis, as this most represents a free-for-all and we did not intend to make a FFA game mode into the game.
 
 ## Current Features
 
 #### Custom Spawn System
 
-* Custom spawn system with algorithm that chooses best spawn
-
-#### Killstreak System
-
-* Based 
-
-#### Custom Out Of Bounds
-
-* Map Specific
-* Uses [MapZoneHelper](https://github.com/J4nssent/VU-Mods/tree/master/MapZoneHelper). Thanks J4nssent!
-
-#### Killstreak sounds
-
-
+Custom spawn system with algorithm that chooses best spawn. Currently the best spawn is determined by the distance to all players.
 
 #### Loadout Manager
 
-* 
-* Originally based on [KVN's Battlefield 3 Competitive mod](https://github.com/kiwidoggie/kPM). Thanks KVN!
+Possibility to select all snipers in the game. Certain snipers have ACOGs , some do not for balancing. Originally based on [KVN's Battlefield 3 Competitive mod](https://github.com/kiwidoggie/kPM), thanks KVN!
+
+![](.\github_styles\loadout.jpg)
 
 
 
-[ ] ~~Match/Round~~
+#### Killstreak Sounds
 
-[ ] Customized scoreboard
-* ~~Warmup~~
-* ~~First Half~~
-* ~~Second Half~~
-* Timeout
-* ~~Strat~~
+[Remember going godlike in Quake or CSS deathmatch server?](https://www.youtube.com/watch?v=6duy25F8lpo) the iSnipe mod in VU features the same announcer killstreak, so you can make the best killstreak compilation and post it on YouTube. Don't like the sounds? Every client can easily disable them in the settings tab when selecting their loadout.
 
-[ ] ~~Ready Up Period~~
-* ~~Wait's for all players to ready up before switching~~
-* ~~Visible "You are ready/not ready"~~
-* ~~Can see everyones RUP status on the scoreboard~~
+#### Custom Out Of Bounds
 
-[ ] Enable/Disable death chat
+iSnipe is a (smaller) game mode which is best played with a maximum of 24 players. Normally the original map size of a Squad Death Math is too large for this player size. To ensure intense gameplay whether 10 or 20+ players are online, the out of bounds map are decreased. Uses [MapZoneHelper](https://github.com/J4nssent/VU-Mods/tree/master/MapZoneHelper), thanks J4nssent!
 
-[ ] Disable respawns
-* Implement death spectating in 1p
 
-[ ] Customized/balanced weapon stats
-* Improved grenade tosses
-* Add smoke grenades
 
-[ ] Bot support for strat mode
-* Invinceable but will tell you how much damage and which weapon
-* Move bots around
+## Additional Features
 
-[ ] Strat mode
-* Camera to follow grenades when tossed
+#### Killstreak System
 
-[ ] ~~Strat time (before a round)~~
-* ~~10s where teams can discuss their approach~~
+Currently only features a Venom helicopter which is flown by an AI. Player spawns in the gunner seat, and has about two orbits to wreak havoc on the map. Adds on to [VU-Killstreak](https://github.com/Maxinger15/VU-Killstreak). The Venom killstreak is not directly incorporated into iSnipe, so you can choose to add it on. The Venom-Killstreak can be found [here](github.com/RonnieOnTheHub/VenomKillstreak).
 
-[ ] Multiple game modes
-* Comp public (snipers/restricted weapons done on current player count)
-* Strat mode
-* Match mode
-* Knockout
-* Knife Rounds ( to determine who is attacking/defending )
+![](.\github_styles\killstreak.gif)
 
-[ ] Team names/colors
-* Implement clan tags
+## Video
 
-[ ] Spectator features
-* xray/always spotted/nametags
+[![[Onn Sight made a video when iSnipe was still in alpha](https://www.youtube.com/channel/UC-zjnIOt4CHbRTFo39ZbcPQ)](https://img.youtube.com/vi/k_CJvRTIK5M/0.jpg)](https://www.youtube.com/watch?v=k_CJvRTIK5M)
 
-[ ] Weapon modifications
-* Remove random deviation
-* Remove spread when ADS (only keeping recoil)
+## 
