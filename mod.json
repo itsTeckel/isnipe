@@ -1,0 +1,12 @@
+{
+    "Name": "iSnipe",
+    "Description": "iSnipe for Battlefield 3",
+    "Authors": [ "ItsTeckel", "RoNanor" ],
+    "Tags": [ "isnipe" ],
+    "Version": "1.0.0",
+    "HasVeniceEXT": true,
+    "HasWebUI": true,
+    "Dependencies": {
+        "veniceext": "^1.0.0"
+    }
+}
