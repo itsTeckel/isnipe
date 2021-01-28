@@ -6,6 +6,7 @@ iSNConfig =
     -- Debug mode options
     -- ==========
     DebugMode = true,
+    DebugPass = "iSnipe", --change me
 
     -- ==========
     -- Client configuration options

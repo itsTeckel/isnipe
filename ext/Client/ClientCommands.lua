@@ -66,11 +66,11 @@ ClientCommands =
 
     -- Enables debug mode, showing spawns etc.
     Debug = function(args)
-        if #args ~= 1 then
+        if #args ~= 1 then  
             return ClientCommands.errInvalidCommand
         end
 
-        if args[1] ~= "dogdog" then
+        if args[1] ~= iSNConfig.DebugPass then
             return ClientCommands.errInvalidCommand
         end
 
