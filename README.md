@@ -4,6 +4,10 @@
 
 iSnipe is a fast paced, high intensity, close quarter combat mod built for [Venice Unleashed.](https://veniceunleashed.net/) Based on the original popular mod iSnipe from the Call of Duty: Modern Warfare 2 days, the objective is to get to the top of the leader board by getting the most kills. It uses BF3's Squad Death Match as basis, as this most represents a free-for-all. The mod features one-hit kill snipers, and removes the crosshair to encourage quick scoping instead of no scoping. 
 
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=JwgmctZOdCo" target="_blank">
+    <img src="http://img.youtube.com/vi/JwgmctZOdCo/0.jpg" width="900px" />
+</a>
+
 ## Features
 
 ### Custom Spawn System
