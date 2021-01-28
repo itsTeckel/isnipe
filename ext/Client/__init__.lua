@@ -407,11 +407,6 @@ function iSNClient:OnInputPreUpdate(p_Hook, p_Cache, p_DeltaTime)
             WebUI:ExecuteJS("RupInteractProgress(" .. tostring(self.m_RupHeldTime) ..", " .. tostring(iSNConfig.MaxReadyUpTime) .. ");")
         end
     end
-
-    -- Update the freecam
-    --[[if self.m_SpecCam ~= nil then
-        self.m_SpecCam:OnUpdateInputHook(p_Hook, p_Cache, p_DeltaTime)
-    end]]
 end
 
 function iSNClient:OnEngineUpdate(p_DeltaTime, p_SimulationDeltaTime)

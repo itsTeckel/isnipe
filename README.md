@@ -1,12 +1,31 @@
-# kPM - Battlefield 3 Competitive mod
+# iSnipe - Sniper Gamemode for Venice Unleashed Battlefield 3
+Mod built for [Venice Unleashed](https://veniceunleashed.net/) based on the original popular mod iSnipe from the Call of Duty: Modern Warfare 2 days. The objective is to get to the top of the leaderboard, by getting the most kills. 
 
-This mod is inspried by the older Call of Duty 4 Promod, but you know for Venice Unleashed
+## Current Features
 
-## List of wanted Features
+#### Custom Spawn System
 
-[ ] Visual Tweaks
-- Should be saveable/slightly configurable
-- ~~Can give FPS benefits~~
+* Custom spawn system with algorithm that chooses best spawn
+
+#### Killstreak System
+
+* Based 
+
+#### Custom Out Of Bounds
+
+* Map Specific
+* Uses [MapZoneHelper](https://github.com/J4nssent/VU-Mods/tree/master/MapZoneHelper). Thanks J4nssent!
+
+#### Killstreak sounds
+
+
+
+#### Loadout Manager
+
+* 
+* Originally based on [KVN's Battlefield 3 Competitive mod](https://github.com/kiwidoggie/kPM). Thanks KVN!
+
+
 
 [ ] ~~Match/Round~~
 
