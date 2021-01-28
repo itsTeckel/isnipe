@@ -36,7 +36,6 @@ Currently only features a Venom helicopter which is flown by an AI. Player spawn
 <img src=".\github_styles\killstreak.gif">
 
 ## Video
-
+Onn Sight made a video when iSnipe was still in alpha:
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=k_CJvRTIK5M
-" target="_blank"><img src="http://img.youtube.com/vi/k_CJvRTIK5M/0.jpg" 
-alt="Onn Sight made a video when iSnipe was still in alpha"/></a>
+" target="_blank"><img src="http://img.youtube.com/vi/k_CJvRTIK5M/0.jpg"/></a>
