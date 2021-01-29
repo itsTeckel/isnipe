@@ -162,12 +162,13 @@ function iSNClient:RegisterEvents()
     self.m_SetSelectedLoadoutEvent = Events:Subscribe("WebUISetSelectedLoadout", self, self.OnSetSelectedLoadout)
     self.m_WebUICalculatedSpawnEvent = Events:Subscribe("WebUICalculatedSpawn", self, self.OnCalculatedSpawn)
     self.m_WebUIDebugEvent = Events:Subscribe("WebUIDebug", self, self.OnDebug)
-    
+
     self.m_StartWebUITimerEvent = NetEvents:Subscribe("iSN:StartWebUITimer", self, self.OnStartWebUITimer)
     self.m_UpdateHeaderEvent = NetEvents:Subscribe("iSN:UpdateHeader", self, self.OnUpdateHeader)
     self.m_SetRoundEndInfoBoxEvent = NetEvents:Subscribe("iSN:SetRoundEndInfoBox", self, self.OnSetRoundEndInfoBox)
     self.m_SetGameEndEvent = NetEvents:Subscribe("iSN:SetGameEnd", self, self.OnSetGameEnd)
     self.m_ResetUIEvent = NetEvents:Subscribe("iSN:ResetUI", self, self.OnResetUI)
+    self.m_PlaySoundPlantingEvent = NetEvents:Subscribe("iSN:PlayAudio", self, self.OnPlayAudio)
 
     self.m_UpdateTeamsEvent = NetEvents:Subscribe("iSN:UpdateTeams", self, self.OnUpdateTeams)
 
